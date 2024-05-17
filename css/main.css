@@ -74,7 +74,9 @@
     width: 470px;
     height: 370px;
     padding-right: 30px;
-  }
+    border-radius: 10px;
+    margin-right: 20px;
+}
   
   #animate-image {
     position: relative;

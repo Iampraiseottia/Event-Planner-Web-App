@@ -1,0 +1,77 @@
+
+#About{
+    text-align: center;
+    margin-top: 120px;
+}
+
+.about-heading h2 {
+    color: #37517e;
+    font-weight: 700;
+    font-size: 48px;
+}
+  
+.line {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 80px;
+}
+  
+
+.line1,
+.line3 {
+    height: 2px;
+    width: 45px;
+    background-color: gray;
+    border: none;
+}
+  
+.line2 {
+    border: none;
+    width: 45px;
+    background-color: rgb(5, 5, 255);
+    height: 4px;
+}
+  
+.why-us-img {
+    width: 450px;
+    height: 300px;
+    box-shadow: 2px 8px 16px gray;
+    margin-left: 40px;
+    margin-right: 20px;
+}
+  
+  .about-body {
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 27px;
+    margin-left: 37px;
+    line-height: 1.5;
+    display: flex;
+}
+  
+.why-us {
+    font-size: 18px;
+    margin-right: 2px;
+    margin-left: 12px;
+}
+
+  ul li{
+    font-size: 19px;
+  }
+  
+  .double{
+    vertical-align: middle;
+}
+
+  .section {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  
+  .section.show {
+    opacity: 1;
+    transform: none;
+  }
