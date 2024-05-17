@@ -1,0 +1,95 @@
+
+#home-content {
+    background-color: #5491fb;
+    height: 500px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 90px;
+  }
+  
+  .Organize {
+    font-weight: bold;
+    color: white;
+    font-size: 42px;
+    text-align: left;
+    margin-right: 10px;
+    line-height: 1.4;
+  }
+  
+  .home-content-left {
+    width: 60%;
+    padding-left: 59px;
+  }
+  
+  span {
+    color: white;
+  }
+  
+  .difference {
+    font-size: 22px;
+    color: rgb(37, 36, 36);
+    text-align: left;
+    line-height: 1.4;
+    font-weight: bold;
+    opacity: 0.7;
+    padding-right: 80px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .home-nav {
+    display: flex;
+    text-align: center;
+  }
+  
+  .signBTN,
+  .logbtn {
+    cursor: pointer;
+    height: 60px;
+    width: 200px;
+    padding: 12px 20px;
+    font-size: 25px;
+    border: 1px solid rgb(10, 185, 253);
+    background-color: rgb(10, 185, 253);
+    color: white;
+    border-radius: 60px;
+    transition: 0.15s;
+  }
+  
+  .signBTN:hover,
+  .logbtn:hover {
+    background-color: rgba(0, 183, 255, 0.8);
+  }
+  
+  .signBTN a,
+  .logbtn a {
+    text-decoration: none;
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  
+  .main-img {
+    width: 470px;
+    height: 370px;
+    padding-right: 30px;
+  }
+  
+  #animate-image {
+    position: relative;
+    animation-name: moveUpDown;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+  
+  @keyframes moveUpDown {
+    from {
+      top: 0;
+    }
+    to {
+      top: 30px;
+    }
+  }
+  
