@@ -186,3 +186,24 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 
+  // Responsiveness
+  const close = document.getElementById('close');
+  const menu = document.getElementById('menu');
+  const navBar = document.querySelector('.nav');
+  const header = document.getElementById('header');
+
+
+  menu.addEventListener('click', () => {
+    menu.style.visibility = 'hidden';
+    close.style.visibility = 'visible';
+    navBar.style.visibility = 'visible';
+    header.style.height = 'auto';
+  })
+
+  close.addEventListener('click', () => {
+    menu.style.visibility = 'visible';
+    close.style.visibility = 'hidden';
+    navBar.style.visibility = 'hidden';
+    header.style.height = '50px';    
+  })
+

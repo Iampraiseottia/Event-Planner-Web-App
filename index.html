@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="./css/contact.css">
     <link rel="stylesheet" href="./css/newaletter.css">
     <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="icon" href="./img/EVENT2.jpg" style="border-radius: 50%;">
+
 </head>
 <body>
     
@@ -23,9 +26,11 @@
     <section id="header">
         <div class="header-container">  
             <h1 style="user-select: none; font-size: 30px; letter-spacing: 1px; font-weight: bold;">
-                <img src="./img/event3.jpg" class="home-img"> EVENTIFY
+                <img src="./img/event3.jpg" class="home-img" style="margin-right: 5px;"> EVENTIFY
+                <i class="fa-solid fa-x" id="close" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: visible;"></i>
+                <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: hidden;"></i>
             </h1>
-            <nav>
+            <nav class="nav">
                 <ul>
                     <li class="current"><a href="index.html">Home</a></li>
                     <li><a href="#clients">About</a></li>
@@ -39,7 +44,7 @@
                           <a href="#testimony-main">Nji Pekins</a>
                         </div>
                     </div>
-                    <li><a href="#contact-us">Contact</a></li>
+                    <li class="con"><a href="#contact-us">Contact</a></li>
                     <button class="signIn"><a href="./html/login.html">Sign In</a></button>
                 </ul>
             </nav>
