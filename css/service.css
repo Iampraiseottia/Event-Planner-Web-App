@@ -1,0 +1,105 @@
+
+/* SERVICES */
+#services,
+#team {
+  background-color: rgb(236, 236, 236);
+  margin: 200px 0px 50px 0px;
+  padding: 70px;
+  height: auto;
+}
+
+.service-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-title h3 {
+  height: 60px;
+  width: 60px;
+  background: snow;
+  color: blue;
+  text-align: center;
+  padding-top: 3px;
+  font-size: 40px;
+  font-weight: 900;
+  margin-left: 10px;
+}
+
+.service-title h3:hover {
+  user-select: none;
+}
+
+.catch {
+  font-size: 19px;
+  text-align: center;
+  line-height: 2;
+  letter-spacing: 2px;
+  margin-bottom: 40px;
+  padding-top: 40px;
+}
+
+.mbappe,
+.praise {
+  background-color: white;
+  height: 280px;
+  width: 400px;
+  line-height: 2;
+  padding-left: 30px;
+  padding-right: 30px;
+  box-shadow: 1px 8px 16px rgb(172, 170, 170);
+}
+
+.mbappe ,
+.praise{
+  margin-right: 30px;
+  text-align: center;
+  padding-top: 30px;
+}
+
+.service-img {
+  height: 140px;
+  width: 140px;
+  border: 1px solid lightgray;
+  border-radius: 50%;
+}
+
+.service-body-top-one {
+  justify-content: space-evenly;
+  display: flex;
+  margin-top: 35px;
+}
+
+.mbappe h3 a,
+.praise h3 a {
+  color: #0d63f6;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.mbappe h3 a:hover,
+.praise h3 a:hover {
+  opacity: 0.8;
+}
+
+.mbappe p .praise p {
+  font-size: 16.5px;
+  user-select: none;
+}
+
+.mbappe:hover,
+.praise:hover {
+  margin-top: -10px;
+  transition: 0.35s;
+}
+
+.serviceSection {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.serviceSection.serviceShow {
+  opacity: 1;
+  transform: none;
+}

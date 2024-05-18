@@ -40,3 +40,26 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   
 
+//Service Section Appear
+document.addEventListener("DOMContentLoaded", function () {
+    var serviceSection = document.querySelector("#services");
+  
+    var serviceOptions = {
+      threshold: 0.25,
+    };
+  
+    var serviceObserver = new IntersectionObserver(function (
+      serviceEntries,
+      observer
+    ) {
+      serviceEntries.forEach(function (serviceEntry) {
+        if (serviceEntry.isIntersecting) {
+          serviceEntry.target.classList.add("serviceShow");
+          observer.unobserve(serviceEntry.target);
+        }
+      });
+    },
+    serviceOptions);
+  
+    serviceObserver.observe(serviceSection);
+  });
