@@ -110,27 +110,79 @@ document.addEventListener("DOMContentLoaded", function () {
     testimonyObserver.observe(testimonySection);
   });
 
-  //Testimony Section Appear
+  //contact Section Appear
 document.addEventListener("DOMContentLoaded", function () {
-    var testimonySection = document.querySelector("#contact");
+    var contactSection = document.querySelector("#contact");
   
-    var testimonyOption = {
+    var contactOption = {
       threshold: 0.24,
     };
   
-    var testimonyObserver = new IntersectionObserver(function (
-      testimonyEntries,
+    var contactObserver = new IntersectionObserver(function (
+      contactEntries,
       observer
     ) {
-      testimonyEntries.forEach(function (testimonyEntry) {
-        if (testimonyEntry.isIntersecting) {
-          testimonyEntry.target.classList.add("contactShow");
-          observer.unobserve(testimonyEntry.target);
+      contactEntries.forEach(function (contactEntry) {
+        if (contactEntry.isIntersecting) {
+          contactEntry.target.classList.add("contactShow");
+          observer.unobserve(contactEntry.target);
         }
       });
     },
-    testimonyOption);
+    contactOption);
   
-    testimonyObserver.observe(testimonySection);
+    contactObserver.observe(contactSection);
   });
+
+
+  
+  //Newsletter Section Appear
+document.addEventListener("DOMContentLoaded", function () {
+    var NewsletterSection = document.querySelector("#newletter");
+  
+    var NewsletterOption = {
+      threshold: 0.30,
+    };
+  
+    var NewsletterObserver = new IntersectionObserver(function (
+      NewsletterEntries,
+      observer
+    ) {
+      NewsletterEntries.forEach(function (NewsletterEntry) {
+        if (NewsletterEntry.isIntersecting) {
+          NewsletterEntry.target.classList.add("newsShow");
+          observer.unobserve(NewsletterEntry.target);
+        }
+      });
+    },
+    NewsletterOption);
+  
+    NewsletterObserver.observe(NewsletterSection);
+  });
+
+
+    //Testimony Section Appear
+document.addEventListener("DOMContentLoaded", function () {
+    var footerSection = document.querySelector("#footer");
+  
+    var footerOption = {
+      threshold: 0.36,
+    };
+  
+    var footerObserver = new IntersectionObserver(function (
+      footerEntries,
+      observer
+    ) {
+      footerEntries.forEach(function (footerEntry) {
+        if (footerEntry.isIntersecting) {
+          footerEntry.target.classList.add("footerShow");
+          observer.unobserve(footerEntry.target);
+        }
+      });
+    },
+    footerOption);
+  
+    footerObserver.observe(footerSection);
+  });
+
 

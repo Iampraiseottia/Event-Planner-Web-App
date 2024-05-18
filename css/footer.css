@@ -1,0 +1,94 @@
+
+/* FOOTER  */
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 36px 70px 36px;
+    text-align: center;
+  }
+  
+  .Ease-details,
+  .useful-links,
+  .our-service {
+    margin-right: 40px;
+  }
+  
+  .Ease-details h2 {
+    font-weight: 780;
+    font-size: 27px;
+    color: #173f83;
+    padding-bottom: 10px;
+  }
+  
+  .Ease-details p {
+    font-size: 15px;
+    color: rgb(79, 79, 79);
+  }
+  
+  .useful-links h4,
+  .our-service h4,
+  .our-social h4 {
+    font-size: 19px;
+    color: #173f83;
+    font-weight: 700;
+  }
+  
+  .useful-links ul {
+    margin-left: -25px;
+  }
+  
+  .our-service ul {
+    margin-left: -35px;
+  }
+  
+  .useful-links ul li a,
+  .our-service ul li a {
+    font-size: 16.8px;
+    text-decoration: none;
+    color: gray;
+    padding-left: 5px;
+  }
+  
+  .useful-links ul li a:hover,
+  .our-service ul li a:hover {
+    cursor: pointer;
+    color: #307bfd;
+    opacity: 0.8;
+    transition: 0.15s;
+  }
+  
+  .social-img {
+    display: flex;
+  }
+  
+  .our-social {
+    line-height: 2;
+  }
+  
+  .footer-conclude {
+    background-color: #37517e;
+    color: white;
+    padding: 30px 30px 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 2px;
+  }
+  
+  .social-img-pic:hover {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+    transition: 0.15s;
+  }
+  
+  .footerSection {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  
+  .footerSection.footerShow {
+    opacity: 1;
+    transform: none;
+  }
