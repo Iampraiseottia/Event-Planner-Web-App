@@ -83,3 +83,29 @@ document.addEventListener("DOMContentLoaded", function () {
   
     teamObserver.observe(teamSection);
   });
+
+  
+
+//Testimony Section Appear
+document.addEventListener("DOMContentLoaded", function () {
+    var testimonySection = document.querySelector("#testimony");
+  
+    var testimonyOption = {
+      threshold: 0.19,
+    };
+  
+    var testimonyObserver = new IntersectionObserver(function (
+      testimonyEntries,
+      observer
+    ) {
+      testimonyEntries.forEach(function (testimonyEntry) {
+        if (testimonyEntry.isIntersecting) {
+          testimonyEntry.target.classList.add("testimonyShow");
+          observer.unobserve(testimonyEntry.target);
+        }
+      });
+    },
+    testimonyOption);
+  
+    testimonyObserver.observe(testimonySection);
+  });
