@@ -109,3 +109,28 @@ document.addEventListener("DOMContentLoaded", function () {
   
     testimonyObserver.observe(testimonySection);
   });
+
+  //Testimony Section Appear
+document.addEventListener("DOMContentLoaded", function () {
+    var testimonySection = document.querySelector("#contact");
+  
+    var testimonyOption = {
+      threshold: 0.24,
+    };
+  
+    var testimonyObserver = new IntersectionObserver(function (
+      testimonyEntries,
+      observer
+    ) {
+      testimonyEntries.forEach(function (testimonyEntry) {
+        if (testimonyEntry.isIntersecting) {
+          testimonyEntry.target.classList.add("contactShow");
+          observer.unobserve(testimonyEntry.target);
+        }
+      });
+    },
+    testimonyOption);
+  
+    testimonyObserver.observe(testimonySection);
+  });
+
