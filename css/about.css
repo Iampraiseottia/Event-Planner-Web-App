@@ -75,3 +75,30 @@
     opacity: 1;
     transform: none;
   }
+
+  @media (max-width: 999px) {    
+    .about-body{
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .why-us-img{
+      margin-right: 50px;
+      width: 400px;
+      margin-bottom: 36px;
+    }
+
+    .why-us{
+      margin: 0px -5px;
+    }    
+  }
+
+  @media (min-width: 600px) {
+    .why-us{
+      margin: 0px 5px;
+    }
+
+    .why-us-img{
+      width: 490px;
+    }
+  }

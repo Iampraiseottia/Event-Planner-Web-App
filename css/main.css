@@ -6,6 +6,8 @@
     justify-content: space-between;
     align-items: center;
     padding-bottom: 90px;
+    /* background: url("../img/event2.jpg"), no-repeat; */
+    width: 100%;
   }
   
   .Organize {
@@ -94,4 +96,6 @@
       top: 30px;
     }
   }
+
+
   
