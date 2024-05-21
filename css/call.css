@@ -77,3 +77,26 @@
     opacity: 1;
     transform: none;
   }
+
+  @media (max-width: 600px) {
+    .to{
+      display: flex;
+      flex-direction: column-reverse;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .taketo{
+      margin-left: 25px;
+    }
+
+    #call-to-action {
+      background: url("../img/call.jpg");
+      height: 400px;
+      margin-top: 150px;
+      margin-bottom: 80px;
+      background-position: right;
+      background-color: #3f6ab3;
+      background-blend-mode: multiply;
+    }
+  }
