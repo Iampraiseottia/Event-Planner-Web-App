@@ -143,17 +143,17 @@
   .country-name {
     padding-left: 44px;
   }
-/*   
+  
   .contactSection {
     opacity: 0;
     transform: translateY(50px);
     transition: opacity 0.5s, transform 0.5s;
   }
-   */
-  /* .contactSection.contactShow {
+  
+  .contactSection.contactShow {
     opacity: 1;
     transform: none;
-  } */
+  }
 
   @media (max-width: 900px) {
 
@@ -250,10 +250,6 @@
   }
 
   @media (min-width: 901px) {
-    #contact{
-      /* background-color: red; */
-    }
-
     .contact-main-details{
       width: 380px;
       height: 900px;
