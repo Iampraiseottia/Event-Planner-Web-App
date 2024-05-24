@@ -1,0 +1,181 @@
+*{
+    box-sizing: border-box;
+}
+body {
+    background-color: rgb(232, 232, 232);
+  }
+  
+  /* HEADER  */
+  .back:hover {
+    background-color: #5491fb;
+    color: white;
+    cursor: pointer;
+    border: 1px solid #5491fb;
+  }
+  
+  .back a {
+    text-decoration: none;
+    color: white;
+  }
+  
+  .back {
+    height: 50px;
+    width: 250px;
+    color: white;
+    background-color: #37517e;
+    border: 2px solid #47b2e4;
+    border-radius: 17px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 7px 12px;
+  }
+  
+  #header {
+    background-color: #37517e;
+    color: white;
+    padding: 50px 50px;
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+  }
+  
+  .home-img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    vertical-align: top;
+  }
+  
+  .header-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+  
+  @media (max-width: 624px) {
+    .header-container {
+      flex-direction: column;
+    }
+  
+    .home-img {
+      margin-bottom: 10px;
+    }
+  
+    .back {
+      width: auto;
+      padding: 7px 12px;
+    }
+  }
+
+/* EVENT  */
+
+marquee {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: 0.15s linear infinite;
+    margin-bottom: 20px;
+}
+
+marquee span {
+    display: inline-block;
+    padding-right: 20px;
+    animation: 0.15s infinite;
+    margin-top: 20px;
+    font-size: 35px;
+    color: blue;
+    text-align: center;
+    font-weight: 690;
+}
+
+.event1{
+    background-color: snow;
+    margin: 10px 40px;
+    height: auto;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.event1-title{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.event1-img{
+    height: 22px;
+    width: 22px;
+    border-radius: 50%; 
+    vertical-align: top;
+}
+
+.event1-title h1{
+    color: chocolate;
+    letter-spacing: 3px;
+    font-weight: 800;
+}
+
+.event1-title p{
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.card .image-box{
+    height: 237px;
+}
+
+.card{
+    background-color: white;
+    box-shadow: 4px 8px 16px lightgray;
+    border-radius: 8px;
+    width: 355.5px;
+}
+
+.card-wrapper{
+    justify-content: center;
+}
+
+.card .image-box img{
+    height: 100%;
+    border-radius: 10px 10px 0 0;
+}
+
+.event-planner{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 32px;
+}    
+
+.card .profile-details img{
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+.card .profile-details{
+    display: flex;
+    align-items: center;
+    column-gap: 15px;
+    padding: 17px;
+}
+
+.profile-details .name{
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.profile-details .job{
+    font-size: 12px;
+    font-weight: 400;
+    color: #4d4d4d;
+}
+
+.container{
+    background-color: lightgrey;
+    width: 356px;
+}

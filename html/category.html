@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Swiper demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+  <!-- Link Swiper's CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="../css/category.css">
+  <link rel="icon" href="./img/planner1.webp" style="border-radius: 50%;">
+
+  <!-- Demo styles -->
+  <style>
+    html,
+    body {
+      position: relative;
+      height: 100%;
+    }
+
+    body {
+      background: #eee;
+      font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      color: #000;
+      margin: 0;
+      padding: 0;
+    }
+
+    .swiper {
+      width: 94%;
+      height: 100%;
+    }
+
+    .swiper-slide {
+      text-align: center;
+      font-size: 18px;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .swiper-slide img {
+      display: block;
+      width: 82%;
+      height: 70%;
+      object-fit: cover;
+    }
+
+    .swiper {
+      margin-left: 40px;
+      margin-right: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+   <!-------------------- Nav Bar ~ Header  ------------------------>
+
+   <section id="header">
+    <div class="header-container">  
+        <h1 style="user-select: none; font-size: 30px; letter-spacing: 1px; font-weight: bold;">
+            <img src="../img/event3.jpg" class="home-img" style="margin-right: 5px;"> EVENTIFY
+            <i class="fa-solid fa-x" id="close" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: visible;"></i>
+            <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: hidden;"></i>
+        </h1>
+        <button class="back"><a href="../index.html">Back To Home</a></button>
+    </div>
+</section>
+
+
+<div class="event1-title">
+  <h1>Wedding Celebrations ~ <button><a href="../html/book.html">Book Now!</a></button></h1>
+  
+</div>
+
+
+  <!-- Swiper -->
+  <div class="swiper mySwiper">
+    <div class="swiper-wrapper">
+      
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile1.jpg"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner7.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile2.jpg"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner2.jpg" >
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile3.webp"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner4.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile4.webp"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner5.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile5.webp"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner6.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile6.avif"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner3.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile7.webp"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner8.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile8.webp"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner9.jpg" alt="">
+      </div>
+
+      <div class="swiper-slide">
+        <div class="profile-details">
+          <img src="../img/profile9.webp"  style="height: 50px; width: 50px; border-radius: 50%; margin-right: 15px;">
+          <div style="display: flex; flex-direction: column; line-height: 0; ">
+            <h3 class="name">
+              Nkum Brandon Kanjo
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Event Planner
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              +237 652 789 862
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Contact Details
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              nkumbrandon@gmail.com
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Email Address
+            </h4>
+          </div>
+          <div style="margin-left: 30px; display: flex; flex-direction: column; line-height: 0;">
+            <h3 class="name">
+              UB Junction, Buea, Cameroon
+            </h3><br>
+            <h4 class="job" style="margin-top: 4px;">
+              Location
+            </h4>
+          </div>
+        </div>
+        <br>
+        <img src="../img/planner9.jpg" alt="">
+      </div>
+    </div>
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-pagination"></div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <!-- Initialize Swiper -->
+  <script>
+    var swiper = new Swiper(".mySwiper", {
+      slidesPerView: 1,
+      spaceBetween: 30,
+      loop: true,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+    });
+  </script>
+</body>
+
+</html>
