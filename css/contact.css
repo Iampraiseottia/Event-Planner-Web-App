@@ -57,6 +57,10 @@
   .contact-main-details-content p {
     color: #3b609f;
   }
+
+  .contact-main-details-content-main{
+    line-height: 1.3;
+  }
   
   .contact-main-details:hover,
   .contact-main-input:hover {
@@ -139,14 +143,257 @@
   .country-name {
     padding-left: 44px;
   }
-  
+/*   
   .contactSection {
     opacity: 0;
     transform: translateY(50px);
     transition: opacity 0.5s, transform 0.5s;
   }
-  
-  .contactSection.contactShow {
+   */
+  /* .contactSection.contactShow {
     opacity: 1;
     transform: none;
+  } */
+
+  @media (max-width: 900px) {
+
+    .team-para{
+      margin: 0px 20px;
+    }
+
+    .contact-main{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .contact-main-input{
+      margin-top: 90px;
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .name-input{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    
+    .name-input label{
+      display: flex;
+      flex-direction: column;
+        margin-left: -80px;
+    }
+
+    .contact-main-input-field{
+      width: 380px;
+    }
+
+    .country-name{
+      height: 65px;
+      width: 410px;
+      margin-left: -29px;
+    }
+
+    .contact-main-input{
+      height: 1100px;
+      margin-left: -13px;
+      padding-left: 50px;
+      width: 460px;
+    }
+
+    .Message{
+      margin-left: -90px;
+      width: 420px;
+  
+    }
+
+    .one-btn{
+      margin-left: -80px;
+    }
+
+  }
+
+  @media (min-width: 680px) {
+    .contact-main-input{
+      width: 550px;
+    }
+
+    .contact-main-input-field{
+      width: 460px;
+    }
+    
+    .team-para{
+      margin: 0px 30px;
+    }
+
+    .country-name{
+      width: 490px;
+    }
+
+    .Message{
+      width: 485px;
+    }
+
+    .contact-main-details{
+      width: 500px;
+    }
+
+    .contact-pic{
+      width: 480px;
+    }
+  }
+
+  @media (min-width: 901px) {
+    #contact{
+      /* background-color: red; */
+    }
+
+    .contact-main-details{
+      width: 380px;
+      height: 900px;
+    }
+
+    .contact-pic{
+      width: 340px;
+      height: 580px;
+    }
+
+    .contact-main-input{
+      width: 400px;
+      height: auto;
+    }
+
+    .Message{
+      height: 120px;
+      width: 360px;
+    }
+
+    .team-para{
+      margin: 0px 30px;
+    }
+
+    .name-input{
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contact-main-input-field{
+      width: 330px;
+      height: 35px;
+    }
+
+    .country-name{
+      height: 54px;
+      margin-left: 50px;
+      width: 360px;
+    }
+
+    .country-title{
+      margin-left: 54px;
+    }
+
+    .send-btn{
+      margin-left: 60px;
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .Message{
+      width: 430px;
+    }
+
+    .team-para{
+      margin: 0px 30px;
+    }
+
+    .contact-main-input{
+      width: 520px;
+      height: auto;
+    }
+
+    .contact-main-input-field{
+      width: 400px;
+      height: 35px;
+    }
+  
+
+  .country-name{
+    height: 54px;
+    margin-left: 50px;
+    width: 420px;
+  }
+
+  .country-title{
+    margin-left: 54px;
+  }
+
+  .send-btn{
+    margin-left: 60px;
+  }
+
+  .send-btn{
+    margin-left: 100px;
+  }
+  
+  }
+  
+  @media (min-width: 1210px) {
+    #contact{
+      margin-left: 50px;
+      margin-right: 50px;
+    }
+
+    .team-para{
+      margin: 0px 30px;
+    }
+
+    .contact-main-input{
+      width: 770px;
+    }
+
+    .name-input{
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }    
+
+    .contact-main-details{
+      width: 400px;
+      height: 600px;
+    }
+
+    .contact-pic{
+      height: 240px;
+      width: auto;
+    }
+
+    .Subject{
+      text-align: left; 
+      margin-left: 50px;
+    }
+
+    .Message{
+      width: 670px;
+    }
+
+    .send-btn{
+      margin-left: 240px;
+    }
+
+    .Subject label input{
+      width: 650px;
+    }
+
+    .contact-main-input-field{
+      width: 300px;
+      margin-right: 20px;
+    }
+
   }
