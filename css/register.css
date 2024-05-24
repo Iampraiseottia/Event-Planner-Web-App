@@ -1,0 +1,172 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "poppins", "sans-serif";
+    box-sizing: border-box;
+  }
+  
+  .wrapper {
+    background: transparent;
+    border: 2px solid rgb(156, 35, 122s);
+    backdrop-filter: blur(30px);
+    box-shadow: 0 0 10px #333;
+    width: 500px;
+    border-radius: 10px;
+    padding: 40px;
+  }
+  
+  .wrapper .borderline {
+    border: 2px solid #3b609f;
+    border-radius: 10px;
+    padding: 40px;
+  }
+  
+  .wrapper h1 {
+    text-align: center;
+    font-size: 36px;
+    color: #0b52cd;
+    font-weight: 600;
+  }
+  
+  .wrapper .input_box {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 30px 0;
+  }
+  
+  .Country-reg {
+    height: 60px;
+    width: 329px;
+    border: 2px solid rgb(0, 0, 0);
+    background-color: transparent;
+    padding-left: 100px;
+    font-size: 16px;
+  }
+  
+  .input_box input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    border-radius: 30px;
+    padding: 0px 35px;
+    color: rgb(0, 0, 0);
+    font-size: 18px;
+  }
+  
+  .input_box label {
+    position: absolute;
+    left: 35px;
+    top: 30%;
+    color: rgb(0, 0, 0);
+    transition: 0.5s;
+    pointer-events: none;
+  }
+  
+  .input_box input:valid ~ label,
+  .input_box input:focus ~ label {
+    color: #3b79e5;
+    font-size: 16px;
+    transform: translateY(-25px);
+    font-size: 17px;
+  }
+  
+  .input_box i {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    overflow: hidden;
+    transition: 0.5s;
+    pointer-events: none;
+    background: rgb(0, 0, 0);
+  }
+  
+  .input_box small {
+    margin: 0 2px;
+    visibility: hidden;
+    color: rgba(253, 6, 6, 0.843);
+  }
+  
+  .input_box box-icon {
+    position: absolute;
+    left: 7px;
+    font-size: 36px;
+  }
+  
+  .wrapper .btn {
+    width: 100%;
+    height: 45px;
+    background: #0b52cd;
+    border: none;
+    outline: none;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-left: -2px;
+  }
+  
+  .wrapper .btn a {
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 17.5px;
+    font-weight: 600;
+  }
+  
+  .wrapper .btn:hover {
+    opacity: 0.9;
+    transition: 0.15s;
+  }
+  
+  .kudi {
+    text-align: center;
+    margin-top: 18px;
+  }
+  
+  .kudi a {
+    color: #0b52cd;
+    font-size: 18px;
+  }
+  
+  .terms {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+  }
+  
+  textarea {
+    width: 335px;
+    height: 60px;
+    padding: 15px 35px;
+    font-size: 16px;
+    background-color: transparent;
+    border: 2px solid black;
+    border-radius: 4px;
+  }
+  textarea ::placeholder {
+    color: black;
+  }
+  
+  /* Add animation (fade in the popup) */
+  @-webkit-keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
