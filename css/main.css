@@ -1,101 +1,119 @@
-
 #home-content {
-    background-color: #5491fb;
-    height: 500px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 90px;
-    /* background: url("../img/event2.jpg"), no-repeat; */
-    width: 100%;
+  height: 100%;
+  align-items: center;
+  padding-bottom: 120px;
+  background: url("../img/planner5.jpg"), no-repeat;
+  width: 100%;
+  background-color: gray;
+  background-blend-mode: multiply;
+  text-align: center;
+  padding-top: 80px;
+}
+
+.Organize {
+  font-weight: bold;
+  color: white;
+  font-size: 42px;
+  margin-right: 10px;
+  line-height: 1.4;
+}
+
+.home-content-left {
+  width: 100%;
+  padding-left: 59px;
+  justify-content: center;
+  text-align: center;
+}
+
+span {
+  color: white;
+}
+
+.difference {
+  font-size: 22px;
+  color: snow;
+  line-height: 1.4;
+  font-weight: bold;
+  opacity: 0.7;
+  padding-right: 80px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.home-nav {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.signBTN,
+.logbtn {
+  cursor: pointer;
+  height: 60px;
+  width: 200px;
+  padding: 12px 20px;
+  font-size: 25px;
+  border: 1px solid rgb(10, 185, 253);
+  background-color: rgb(10, 185, 253);
+  color: white;
+  border-radius: 60px;
+  transition: 0.15s;
+  margin: 10px;
+}
+
+.signBTN:hover,
+.logbtn:hover {
+  background-color: rgba(0, 183, 255, 0.8);
+}
+
+.signBTN a,
+.logbtn a {
+  text-decoration: none;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.main-img {
+  width: 470px;
+  height: 370px;
+  padding-right: 30px;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+@media screen and (max-width: 768px) {
+  #home-content {
+    padding-top: 40px;
+    padding-bottom: 80px;
   }
-  
+
   .Organize {
-    font-weight: bold;
-    color: white;
-    font-size: 42px;
-    text-align: left;
-    margin-right: 10px;
-    line-height: 1.4;
+    font-size: 32px;
   }
-  
-  .home-content-left {
-    width: 60%;
-    padding-left: 59px;
-  }
-  
-  span {
-    color: white;
-  }
-  
+
   .difference {
-    font-size: 22px;
-    color: rgb(37, 36, 36);
-    text-align: left;
-    line-height: 1.4;
-    font-weight: bold;
-    opacity: 0.7;
-    padding-right: 80px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    font-size: 18px;
+    padding-right: 40px;
   }
-  
+
+  .main-img {
+    width: 300px;
+    height: 240px;
+    padding-right: 0;
+    margin-right: 0;
+  }
+
   .home-nav {
-    display: flex;
-    text-align: center;
+    flex-direction: column;
+    align-items: center;
   }
-  
+
   .signBTN,
   .logbtn {
-    cursor: pointer;
-    height: 60px;
-    width: 200px;
-    padding: 12px 20px;
-    font-size: 25px;
-    border: 1px solid rgb(10, 185, 253);
-    background-color: rgb(10, 185, 253);
-    color: white;
-    border-radius: 60px;
-    transition: 0.15s;
+    width: 160px;
+    font-size: 20px;
+    margin: 10px;
   }
-  
-  .signBTN:hover,
-  .logbtn:hover {
-    background-color: rgba(0, 183, 255, 0.8);
-  }
-  
-  .signBTN a,
-  .logbtn a {
-    text-decoration: none;
-    color: white;
-    font-size: 22px;
-    font-weight: bold;
-  }
-  
-  .main-img {
-    width: 470px;
-    height: 370px;
-    padding-right: 30px;
-    border-radius: 10px;
-    margin-right: 20px;
 }
-  
-  #animate-image {
-    position: relative;
-    animation-name: moveUpDown;
-    animation-duration: 2s;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-  }
-  
-  @keyframes moveUpDown {
-    from {
-      top: 0;
-    }
-    to {
-      top: 30px;
-    }
-  }
-
-
-  
