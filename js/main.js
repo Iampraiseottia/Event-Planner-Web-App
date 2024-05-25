@@ -207,3 +207,53 @@ document.addEventListener("DOMContentLoaded", function () {
     header.style.height = '50px';    
   })
 
+
+  //Book
+
+      function handleSubmit(event) {
+          event.preventDefault(); 
+          const formData = {}; 
+  
+          // Get values from the form fields
+          const plannerName = document.querySelector('.planner-name').value;
+          const fullName = document.querySelector('#name').value;
+          const phoneNumber = document.querySelector('#phone_number').value;
+          const email = document.querySelector('#email').value;
+          const eventType = document.querySelectorAll('#Country')[0].value;
+          const category = document.querySelectorAll('#Country')[1].value;
+          const location = document.querySelector('#location').value;
+          const date = document.querySelector('#date').value;
+          const time = document.querySelector('#time').value;
+          const requirements = document.querySelector('#order').value;
+  
+          // Store values in the formData object
+          formData.plannerName = plannerName;
+          formData.fullName = fullName;
+          formData.phoneNumber = phoneNumber;
+          formData.email = email;
+          formData.eventType = eventType;
+          formData.category = category;
+          formData.location = location;
+          formData.date = date;
+          formData.time = time;
+          formData.requirements = requirements;
+  
+          // Display the formData object in the console
+          console.log(formData);
+  
+          // Reset form fields to blank
+          document.querySelector('.planner-name').value = '';
+          document.querySelector('#name').value = '';
+          document.querySelector('#phone_number').value = '';
+          document.querySelector('#email').value = '';
+          document.querySelectorAll('#Country')[0].value = '';
+          document.querySelectorAll('#Country')[1].value = '';
+          document.querySelector('#location').value = '';
+          document.querySelector('#date').value = '';
+          document.querySelector('#time').value = '';
+          document.querySelector('#order').value = '';
+      }
+  
+      // Add event listener to the form submission
+      const form = document.querySelector('form');
+      form.addEventListener('submit', handleSubmit);
