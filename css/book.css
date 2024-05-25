@@ -34,7 +34,7 @@ body {
   #header {
     background-color: #37517e;
     color: white;
-    padding: 50px 50px;
+    padding: 27px 27px;
     position: sticky;
     top: 0;
     left: 0;
@@ -70,112 +70,150 @@ body {
     }
   }
 
-/* EVENT  */
 
-marquee {
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    animation: 0.15s linear infinite;
-    margin-bottom: 20px;
+  /* BOOK  */
+#book{
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+  
+.wrapper {
+  background: transparent;
+  border: 2px solid rgb(156, 35, 122s);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 0 10px #333;
+  width: 700px;
+  border-radius: 10px;
+  padding: 40px;
+  height: 1120px;
 }
 
-marquee span {
-    display: inline-block;
-    padding-right: 20px;
-    animation: 0.15s infinite;
-    margin-top: 20px;
-    font-size: 35px;
-    color: blue;
-    text-align: center;
-    font-weight: 690;
+.wrapper .borderline {
+  border: 2px solid #3b609f;
+  border-radius: 10px;
+  padding: 40px;
+  height: 100%;
 }
 
-.event1{
-    background-color: snow;
-    margin: 10px 40px;
-    height: auto;
-    padding: 30px;
-    margin-bottom: 30px;
+.wrapper h1 {
+  text-align: center;
+  font-size: 36px;
+  color: #0b52cd;
+  font-weight: 600;
 }
 
-.event1-title{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.wrapper .input_box {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin: 30px 0;
 }
 
-.event1-img{
-    height: 22px;
-    width: 22px;
-    border-radius: 50%; 
-    vertical-align: top;
+.Country-reg {
+  height: 60px;
+  width: 329px;
+  border: 2px solid rgb(0, 0, 0);
+  background-color: transparent;
+  padding-left: 100px;
+  font-size: 16px;
 }
 
-.event1-title h1{
-    color: chocolate;
-    letter-spacing: 3px;
-    font-weight: 800;
+.input_box input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border-radius: 30px;
+  padding: 0px 35px;
+  color: rgb(0, 0, 0);
+  font-size: 18px;
 }
 
-.event1-title p{
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: 1px;
+.input_box label {
+  position: absolute;
+  left: 35px;
+  top: 30%;
+  color: rgb(0, 0, 0);
+  transition: 0.5s;
+  pointer-events: none;
 }
 
-.card .image-box{
-    height: 237px;
+.input_box input:valid ~ label,
+.input_box input:focus ~ label {
+  color: #3b79e5;
+  font-size: 16px;
+  transform: translateY(-25px);
+  font-size: 17px;
 }
 
-.card{
-    background-color: white;
-    box-shadow: 4px 8px 16px lightgray;
-    border-radius: 8px;
-    width: 355.5px;
+.input_box i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  transition: 0.5s;
+  pointer-events: none;
+  background: rgb(0, 0, 0);
 }
 
-.card-wrapper{
-    justify-content: center;
+.input_box small {
+  margin: 0 2px;
+  visibility: hidden;
+  color: rgba(253, 6, 6, 0.843);
 }
 
-.card .image-box img{
-    height: 100%;
-    border-radius: 10px 10px 0 0;
+.input_box box-icon {
+  position: absolute;
+  left: 7px;
+  font-size: 36px;
 }
 
-.event-planner{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 32px;
-}    
-
-.card .profile-details img{
-    height: 40px;
-    width: 40px;
-    border-radius: 50%;
+.wrapper .btn {
+  width: 100%;
+  height: 45px;
+  background: #0b52cd;
+  border: none;
+  outline: none;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 60px;
+  margin-left: -2px;
+  color: white;
+  font-weight: 900;
+  letter-spacing: 2px;
 }
 
-.card .profile-details{
-    display: flex;
-    align-items: center;
-    column-gap: 15px;
-    padding: 17px;
+.wrapper .btn a {
+  letter-spacing: 2px;
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 17.5px;
+  font-weight: 600;
 }
 
-.profile-details .name{
-    font-size: 15px;
-    font-weight: 600;
+.wrapper .btn:hover {
+  opacity: 0.9;
+  transition: 0.15s;
 }
 
-.profile-details .job{
-    font-size: 12px;
-    font-weight: 400;
-    color: #4d4d4d;
+
+.planner-name,
+.order{
+  height: 60px;
+  width: 96vh;
+  padding: 12px 50px;
+  font-size: 17px;
+  border: 2px solid black;
+  background-color: rgb(232, 232, 232);
 }
 
-.container{
-    background-color: lightgrey;
-    width: 356px;
+.order{
+  height: 120px;
+  padding: 30px;
 }
+

@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Event</title>
+    <title>Book Event Planners</title>
     <link rel="stylesheet" href="../css/book.css">
     <link rel="stylesheet" href="../style.css">
-    <!-- Link Swiper's CSS -->
-    <link rel="stylesheet" href="../css/swiper-bundle.min.css" />
 
 </head>
 <body>
@@ -20,86 +18,116 @@
                 <i class="fa-solid fa-x" id="close" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: visible;"></i>
                 <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: hidden;"></i>
             </h1>
-            <button class="back"><a href="../index.html">Back To Home</a></button>
+            <button class="back"><a href="../html/category.html">Back To Categories</a></button>
         </div>
     </section>
 
-    <!-- Event  -->
-    <section id="event">
-        <marquee>
-            <span>
-                Book An Event Planner To Cover Your Events
-            </span>
-        </marquee>
-        <div class="event1">
-            <div class="event1-title">
-                <h1>Wedding Celebrations</h1>
-                <p>Rating: 9,765,456,345 <img src="../img/star.jpg" class="event1-img"></p>
-            </div>
-            <div class="event-planner">
-                <div class="container">
-                    <div class="slide-container ">
-                        <div class="card-wrapper swiper-wrapper">
-                            <div class="card swiper-slide" style="margin-right: 1px;">
-                                <div class="image-box">
-                                    <img src="../img/planner1.webp">
-                                </div>
-                                <div class="profile-details">
-                                    <img src="../img/profile1.jpg" >
-                                    <div class="name-job">
-                                        <h3 class="name">
-                                            Nkum Brandon Kanjo
-                                        </h3>
-                                        <h4 class="job">
-                                            Event Planner
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card swiper-slide" style="margin-right: 1px;">
-                                <div class="image-box">
-                                    <img src="../img/planner3.jpg">
-                                </div>
-                                <div class="profile-details">
-                                    <img src="../img/profile2.jpg" >
-                                    <div class="name-job">
-                                        <h3 class="name">
-                                            Mbih Villan Njang
-                                        </h3>
-                                        <h4 class="job">
-                                            Event Planner
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="card swiper-slide">
-                                <div class="image-box">
-                                    <img src="../img/planner5.jpg">
-                                </div>
-                                <div class="profile-details">
-                                    <img src="../img/profile4.webp" >
-                                    <div class="name-job">
-                                        <h3 class="name">
-                                            Ekongomandem Karen Nji
-                                        </h3>
-                                        <h4 class="job">
-                                            Event Planner
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                        </div>
-                        <div class="swiper-button-next" style="margin-top: 220px; margin-right: 40px;"></div>
-                        <div class="swiper-button-prev" style="margin-top: 220px; margin-left: 40px;"></div>
-                        <div class="swiper-pagination" style="margin-top: 220px;"></div>
+    <!---------------- BOOK  ------------------------->
+    
+    <section id="book">
+        <div class="wrapper">
+            <div class="borderline">
+                <h1>Book An Event Planner</h1>
+                <form method="post">
+                    <div class="input_box">
+                        <box-icon name="rename" color="#4c0e2e"></box-icon>
+                        <select id="Country" class="planner-name">
+                            <option value="">Choose An Event Planner</option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                            <option value="" style="font-weight: 600;">Select </option>
+                            <option value="" style="font-weight: 600;">Select </option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                            <option value="" style="font-weight: 600;">Select  </option>
+                        </select>
                     </div>
-                </div>
+    
+                   <div class="input_box">
+                        <box-icon type='solid' name='envelope'></box-icon>                
+                        <input name="text" id="text" autocomplete="off" type="text" required>
+                        <label for="text">Your Full Names</label>
+                        <i></i>
+                    </div>
+    
+                    <div class="input_box">
+                        <box-icon type='solid' name='phone-call'></box-icon>                
+                        <input name="phone_number" id="phone_number" autocomplete="off" type="number" required>
+                        <label for="phone_number">Your Phone Number</label>
+                        <i></i>
+                    </div>
+                    
+    
+                   <div class="input_box">
+                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
+                        <input name="email" id="email" autocomplete="off" type="email" required>
+                        <label for="email">Your Email Address</label>
+                        <i></i>
+                    </div>
+
+                    <div class="input_box">
+                        <box-icon name="rename" color="#4c0e2e"></box-icon>
+                        <select id="Country" class="planner-name">
+                            <option value="" >Choose Event Type</option>
+                            <option value="" style="font-weight: 600;">Wedding Celebrations  </option>
+                            <option value="" style="font-weight: 600;">Funerals / Memorials </option>
+                            <option value="" style="font-weight: 600;">Birthday Celebrations </option>
+                            <option value="" style="font-weight: 600;">Anniversary Celebrations  </option>
+                        </select>
+                    </div>
+
+                    <div class="input_box">
+                        <box-icon name="rename" color="#4c0e2e"></box-icon>
+                        <select id="Country" class="planner-name">
+                            <option value="">Choose Category ~ Pricing</option>
+                            <option value="" style="font-weight: 600;">Platinum ~ 2.5M  </option>
+                            <option value="" style="font-weight: 600;">Diamond ~ 1.5M </option>
+                            <option value="" style="font-weight: 600;">Gold ~ 1.0M </option>
+                            <option value="" style="font-weight: 600;">Bronze ~ 800K  </option>
+                            <option value="" style="font-weight: 600;">Silver ~ 500K  </option>
+                            <option value="" style="font-weight: 600;">High Class ~ 250K  </option>
+                            <option value="" style="font-weight: 600;">Normal Class ~ 120K  </option>
+                            <option value="" style="font-weight: 600;">Lowest Class ~ 80K  </option>
+                        </select>
+                    </div>
+                    
+                    <div class="input_box">
+                        <box-icon type='solid' name='phone-call'></box-icon>                
+                        <input name="location" id="location" autocomplete="off" type="text" required>
+                        <label for="location">Event Location</label>
+                        <i></i>
+                    </div>
+                    
+    
+                   <div class="input_box">
+                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
+                        <input name="date" id="date" autocomplete="off" type="date" required>
+                        <label for="date" style="margin-top: -12px;">Event Due Date</label>
+                        <i></i>
+                    </div>
+
+                   <div class="input_box">
+                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
+                        <input name="time" id="time" autocomplete="off" type="time" required >
+                        <label for="time" style="margin-top: -10px;">Event Due Time</label>
+                        <i></i>
+                    </div>       
+                    
+                    <div class="input_box">
+                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
+                        <textarea name="order" id="order" class="order" placeholder="Your Requirements In Specificity e.g 500 Chairs, ... etc"></textarea>
+                    </div> 
+    
+                   <div class="field">
+                        <input type="submit" class="btn" name="submit" value="BOOK NOW!" required>
+                   </div> 
+    
+                </form>
             </div>
         </div>
     </section>
-
 
 </body>
 
