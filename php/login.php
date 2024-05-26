@@ -45,7 +45,7 @@
          $_SESSION['email'] = $row['email'];
 
          echo "<div class='message'><p><b>Welcome!!!. <span>Sucessful Login</span></b></p></div><br>";
-         echo "<a href='../html/event.html'><button class='btn full'>Proceed...</button></a>";
+         echo "<a href='../html/category.html'><button class='btn full'>Proceed...</button></a>";
 
 
         } else{

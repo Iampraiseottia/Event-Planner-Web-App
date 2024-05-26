@@ -257,3 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Add event listener to the form submission
       const form = document.querySelector('form');
       form.addEventListener('submit', handleSubmit);
+
+
+      // FORM Admin Register 
+     

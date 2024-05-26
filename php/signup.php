@@ -1,4 +1,4 @@
-<style>
+<!-- <style>
         *{
             background: lightblue;
             text-align: center;
@@ -25,7 +25,7 @@
         span{
             color: blue;
         }
-      </style>
+      </style> -->
       
       <!----php code-->
       <?php 
@@ -38,10 +38,14 @@
                 $confirm_password = $_POST['confirm_password'];
 
     mysqli_query($con,"INSERT INTO user(full_name,email,phone_number,Password,confirm_password) VALUES('$full_name','$email','$phone_number','$password','$confirm_password')") or die("Error occurred");
-    echo "<div class='message'><p> Registration successfully!. Welcome to <span>EASE INVOICE</span></p></div><br>";
-    echo "<a href='../html/event.html'><button class='btn full'>Continue...</button></a>";
+    // echo "<div class='message'><p> Registration successfully!. Welcome to <span>EVENTIFY</span></p></div><br>";
+    // echo "<a href='../html/category.html'><button class='btn full'>Continue...</button></a>";
             }
  else{
    
         }
+        ?>
+
+        <?php
+            include('../html/category.html')
         ?>
