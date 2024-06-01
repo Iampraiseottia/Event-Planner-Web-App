@@ -16,16 +16,37 @@
             align-items: center;
             width: 100%;
             height: fit-content;
-            background: url(../img/register.png) no-repeat;
+            background: url(../img/planner6.jpg) no-repeat;
             background-size: cover;
             background-position: center;
+            flex-direction: column;
         }
+
+        .active {
+            background-color: transparent;
+            color: #0b52cd;
+        }
+
+        .closePlan {
+            display: none;
+        }
+
+        .closeCus {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
-    <div class="wrapper">
+    <div class="toggle" style="margin-top: 30px;">
+        <div class="customer" id="regCus" onclick="showCustomerSec()">Register As Customer</div>
+        <p class="divide"></p>
+        <div class="planner" id="regPlan" onclick="showPlannerSec()">Register As Planner</div>
+    </div>
+
+    <div class="wrapper" style="margin-bottom: 90px;" id="regCustomer">
         <div class="borderline">
-            <h1>Sign Up</h1>
+            <h1>Sign Up As Customer</h1>
             <form method="post" action="../php/signup.php">
                 <div class="input_box">
                     <box-icon name="rename" color="#4c0e2e"></box-icon>
@@ -73,7 +94,7 @@
                 </div>
 
                <div class="field">
-                    <input type="submit" class="btn" name="submit" value="REGISTER" required>
+                    <input style="color: white; font-size: 18px;" type="submit" class="btn" name="submit" value="Register As Customer" required>
                </div> 
 
                <div class="kudi" >
@@ -83,6 +104,91 @@
         </div>
     </div>
 
+
+    <div class="wrapper" style="margin-bottom: 50px; " id="regPlanner">
+        <div class="borderline">
+            <h1>Sign Up As Planner</h1>
+            <form method="post" action="../php/signup.php">
+                <div class="input_box">
+                    <box-icon name="rename" color="#4c0e2e"></box-icon>
+                    <input type="text" id="title" minlength="2" maxlength="30" name="full_name" autocomplete="off" required>
+                    <label for="title">Full Name</label>
+                    <i></i>
+                    <small id="titleerror">error message</small>
+                </div>
+
+               <div class="input_box">
+                    <box-icon type='solid' name='envelope'></box-icon>                
+                    <input name="email" id="email" autocomplete="off" type="email" required>
+                    <label for="email">Email Address</label>
+                    <i></i>
+                    <small>error message</small>        
+                </div>
+
+                <div class="input_box">
+                    <box-icon type='solid' name='phone-call'></box-icon>                
+                    <input name="phone_number" id="phone_number" autocomplete="off" type="number" required>
+                    <label for="phone_number">Phone Number</label>
+                    <i></i>
+                    <small>error message</small>        
+                </div>
+                
+
+               <div class="input_box">
+                    <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
+                    <input name="password" id="password" autocomplete="off" type="password" required>
+                    <label for="password">Password</label>
+                    <i></i>
+                    <small>error message</small>   
+                </div>
+
+               <div class="input_box">
+                    <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
+                    <input name="confirm_password" id="confirm_password" autocomplete="off" type="password" required >
+                    <label for="confirm_password">Confirm Password</label>
+                    <i></i>
+                    <small>error message</small>        
+                </div>
+
+                <div class="terms">
+                    <input type="checkbox"><p style="margin-left: 10px;">Agree to <span>Terms</span> and <span>Condition</span></p>
+                </div>
+
+               <div class="field">
+                    <input type="submit" style="color: white; font-size: 17px;" class="btn" name="submit" value="Register As Event Planner" required>
+               </div> 
+
+               <div class="kudi" >
+                Aready a memeber? <a href="../html/login.html">Sign In</a>
+               </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        function showCustomerSec() {
+            document.getElementById("regCus").classList.add("active");
+            document.getElementById("regPlan").classList.remove("active");
+            document.getElementById("regCustomer").classList.remove("closeCus");
+            document.getElementById("regPlanner").classList.add("closePlan");
+            document.getElementById("regCus").style.color = '#0b52cd';            
+            document.getElementById("regCus").style.opacity = '1';            
+            document.getElementById("regPlan").style.color = 'white';            
+            document.getElementById("regPlan").style.opacity = '0.4';             
+        }
+
+        function showPlannerSec() {
+            document.getElementById("regPlan").classList.add("active");
+            document.getElementById("regCus").classList.remove("active");
+            document.getElementById("regPlanner").classList.remove("closePlan");
+            document.getElementById("regCustomer").classList.add("closeCus");
+            document.getElementById("regCus").style.color = 'white';            
+            document.getElementById("regCus").style.opacity = '0.4';            
+            document.getElementById("regPlan").style.color = '#0b52cd';            
+            document.getElementById("regPlan").style.opacity = '1';            
+        }
+    </script>
 
 </body>
 </html>

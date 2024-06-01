@@ -11,8 +11,11 @@
     backdrop-filter: blur(30px);
     box-shadow: 0 0 10px #333;
     width: 500px;
-    border-radius: 10px;
+    /* border-radius: 10px; */
     padding: 40px;
+    border-top: none;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
   }
   
   .wrapper .borderline {
@@ -137,5 +140,41 @@
     justify-content: center;
     margin-bottom: 5px;
   }
+
+
+.toggle{
+  display: flex;
+  text-align: center;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 55px;
+  width: 88vh;
+  background: transparent;
+  border: 2px solid rgb(156, 35, 122s);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 0 10px #333;
+  z-index: 10;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
   
-  
+.planner,
+.customer{
+  color: #0b52cd;
+  font-weight: 900;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.divide{
+  height: 100%;
+  width: 3px;
+  background-color: lightslategray;
+}
+
+.planner{
+  color: white;
+  opacity: 0.4;
+}
+
+
