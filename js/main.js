@@ -250,56 +250,325 @@ document.querySelectorAll(".nav ul li a").forEach((link) => {
 });
 
 
+// Form validation functions
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+function validatePhone(phone) {
+  // Allow various phone number formats including international
+  const re = /^[\+]?[0-9\s\-\(\)]{10,15}$/;
+  return re.test(phone.replace(/\s/g, ''));
+}
+
+function validateRequired(value) {
+  return value.trim().length > 0;
+}
+
+function validateMinLength(value, minLength) {
+  return value.trim().length >= minLength;
+}
+
+// Replace the existing handleSubmit function with this updated version
 function handleSubmit(event) {
   event.preventDefault();
+  
+  // Clear any previous error styling
+  clearErrors();
+  
   const formData = {};
+  const errors = [];
 
-  // Get values from the form fields
-  const plannerName = document.querySelector(".planner-name")?.value || "";
-  const fullName = document.querySelector("#name")?.value || "";
-  const phoneNumber = document.querySelector("#phone_number")?.value || "";
-  const email = document.querySelector("#email")?.value || "";
-  const eventType = document.querySelectorAll("#Country")[0]?.value || "";
-  const category = document.querySelectorAll("#Country")[1]?.value || "";
-  const location = document.querySelector("#location")?.value || "";
-  const date = document.querySelector("#date")?.value || "";
-  const time = document.querySelector("#time")?.value || "";
-  const requirements = document.querySelector("#order")?.value || "";
+  // Get values from the contact form fields
+  const fullName = document.querySelector("#admin_full_name")?.value || "";
+  const eventType = document.querySelector("#admin_event_type")?.value || "";
+  const email = document.querySelector("#admin_email")?.value || "";
+  const phoneNumber = document.querySelector("#admin_phone_number")?.value || "";
+  const cityTown = document.querySelector("#admin_city_street")?.value || "";
+  const country = document.querySelector("#Country")?.value || "";
+  const subject = document.querySelector("#admin_subject")?.value || "";
+  const message = document.querySelector("#admin_request")?.value || "";
 
-  formData.plannerName = plannerName;
+  // Validation checks
+  if (!validateRequired(fullName)) {
+    errors.push("Full Name is required");
+    addErrorStyle("#admin_full_name");
+  } else if (!validateMinLength(fullName, 2)) {
+    errors.push("Full Name must be at least 2 characters long");
+    addErrorStyle("#admin_full_name");
+  }
+
+  if (!validateRequired(eventType)) {
+    errors.push("Event Type is required");
+    addErrorStyle("#admin_event_type");
+  }
+
+  if (!validateRequired(email)) {
+    errors.push("Email is required");
+    addErrorStyle("#admin_email");
+  } else if (!validateEmail(email)) {
+    errors.push("Please enter a valid email address");
+    addErrorStyle("#admin_email");
+  }
+
+  if (!validateRequired(phoneNumber)) {
+    errors.push("Phone Number is required");
+    addErrorStyle("#admin_phone_number");
+  } else if (!validatePhone(phoneNumber)) {
+    errors.push("Please enter a valid phone number");
+    addErrorStyle("#admin_phone_number");
+  }
+
+  if (!validateRequired(cityTown)) {
+    errors.push("City/Town is required");
+    addErrorStyle("#admin_city_street");
+  }
+
+  if (!validateRequired(country) || country === "Select Your Country") {
+    errors.push("Please select your country");
+    addErrorStyle("#Country");
+  }
+
+  if (!validateRequired(subject)) {
+    errors.push("Subject is required");
+    addErrorStyle("#admin_subject");
+  } else if (!validateMinLength(subject, 3)) {
+    errors.push("Subject must be at least 3 characters long");
+    addErrorStyle("#admin_subject");
+  }
+
+  if (!validateRequired(message)) {
+    errors.push("Message is required");
+    addErrorStyle("#admin_request");
+  } else if (!validateMinLength(message, 10)) {
+    errors.push("Message must be at least 10 characters long");
+    addErrorStyle("#admin_request");
+  }
+
+  // If there are errors, display them and stop submission
+  if (errors.length > 0) {
+    displayErrors(errors);
+    return;
+  }
+
+  // Build the form data object (only if validation passes)
   formData.fullName = fullName;
-  formData.phoneNumber = phoneNumber;
-  formData.email = email;
   formData.eventType = eventType;
-  formData.category = category;
-  formData.location = location;
-  formData.date = date;
-  formData.time = time;
-  formData.requirements = requirements;
+  formData.email = email;
+  formData.phoneNumber = phoneNumber;
+  formData.cityTown = cityTown;
+  formData.country = country;
+  formData.subject = subject;
+  formData.message = message;
 
-  console.log(formData);
+  // Display the collected data in console
+  console.log("Contact Form Data:", formData);
 
-  if (document.querySelector(".planner-name"))
-    document.querySelector(".planner-name").value = "";
-  if (document.querySelector("#name"))
-    document.querySelector("#name").value = "";
-  if (document.querySelector("#phone_number"))
-    document.querySelector("#phone_number").value = "";
-  if (document.querySelector("#email"))
-    document.querySelector("#email").value = "";
-  if (document.querySelectorAll("#Country")[0])
-    document.querySelectorAll("#Country")[0].value = "";
-  if (document.querySelectorAll("#Country")[1])
-    document.querySelectorAll("#Country")[1].value = "";
-  if (document.querySelector("#location"))
-    document.querySelector("#location").value = "";
-  if (document.querySelector("#date"))
-    document.querySelector("#date").value = "";
-  if (document.querySelector("#time"))
-    document.querySelector("#time").value = "";
-  if (document.querySelector("#order"))
-    document.querySelector("#order").value = "";
+  // Optional: Display a more formatted version
+  console.log("=== CONTACT FORM SUBMISSION ===");
+  console.log("Full Name:", formData.fullName);
+  console.log("Event Type:", formData.eventType);
+  console.log("Email:", formData.email);
+  console.log("Phone Number:", formData.phoneNumber);
+  console.log("City/Town:", formData.cityTown);
+  console.log("Country:", formData.country);
+  console.log("Subject:", formData.subject);
+  console.log("Message:", formData.message);
+  console.log("===============================");
+
+  // Clear form fields after submission
+  document.querySelector("#admin_full_name").value = "";
+  document.querySelector("#admin_event_type").value = "";
+  document.querySelector("#admin_email").value = "";
+  document.querySelector("#admin_phone_number").value = "";
+  document.querySelector("#admin_city_street").value = "";
+  document.querySelector("#Country").value = "";
+  document.querySelector("#admin_subject").value = "";
+  document.querySelector("#admin_request").value = "";
+
+  // Show success message to user
+  alert("Thank you for your message! We'll get back to you soon.");
 }
+
+// Error handling functions
+function addErrorStyle(selector) {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.style.borderColor = "#dc3545";
+    element.style.borderWidth = "2px";
+    element.style.boxShadow = "0 0 0 0.2rem rgba(220, 53, 69, 0.25)";
+  }
+}
+
+function clearErrors() {
+  const formFields = [
+    "#admin_full_name", "#admin_event_type", "#admin_email", 
+    "#admin_phone_number", "#admin_city_street", "#Country", 
+    "#admin_subject", "#admin_request"
+  ];
+  
+  formFields.forEach(selector => {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.style.borderColor = "";
+      element.style.borderWidth = "";
+      element.style.boxShadow = "";
+    }
+  });
+  
+  // Remove any existing error message
+  const existingError = document.querySelector(".error-message");
+  if (existingError) {
+    existingError.remove();
+  }
+}
+
+function displayErrors(errors) {
+  // Create error message container
+  const errorDiv = document.createElement("div");
+  errorDiv.className = "error-message";
+  errorDiv.style.cssText = `
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.4;
+  `;
+  
+  const errorTitle = document.createElement("strong");
+  errorTitle.textContent = "Please fix the following errors:";
+  errorDiv.appendChild(errorTitle);
+  
+  const errorList = document.createElement("ul");
+  errorList.style.marginTop = "10px";
+  errorList.style.paddingLeft = "20px";
+  
+  errors.forEach(error => {
+    const listItem = document.createElement("li");
+    listItem.textContent = error;
+    errorList.appendChild(listItem);
+  });
+  
+  errorDiv.appendChild(errorList);
+  
+  // Insert error message at the top of the form
+  const form = document.querySelector("form[action='./php/admin.php']");
+  if (form) {
+    form.insertBefore(errorDiv, form.firstChild);
+    // Scroll to the error message
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// Real-time validation on input blur
+function setupRealTimeValidation() {
+  const validations = [
+    {
+      selector: "#admin_full_name",
+      validate: (value) => validateRequired(value) && validateMinLength(value, 2),
+      message: "Full Name is required (minimum 2 characters)"
+    },
+    {
+      selector: "#admin_event_type",
+      validate: (value) => validateRequired(value),
+      message: "Event Type is required"
+    },
+    {
+      selector: "#admin_email",
+      validate: (value) => validateRequired(value) && validateEmail(value),
+      message: "Please enter a valid email address"
+    },
+    {
+      selector: "#admin_phone_number",
+      validate: (value) => validateRequired(value) && validatePhone(value),
+      message: "Please enter a valid phone number"
+    },
+    {
+      selector: "#admin_city_street",
+      validate: (value) => validateRequired(value),
+      message: "City/Town is required"
+    },
+    {
+      selector: "#Country",
+      validate: (value) => validateRequired(value) && value !== "Select Your Country",
+      message: "Please select your country"
+    },
+    {
+      selector: "#admin_subject",
+      validate: (value) => validateRequired(value) && validateMinLength(value, 3),
+      message: "Subject is required (minimum 3 characters)"
+    },
+    {
+      selector: "#admin_request",
+      validate: (value) => validateRequired(value) && validateMinLength(value, 10),
+      message: "Message is required (minimum 10 characters)"
+    }
+  ];
+
+  validations.forEach(({ selector, validate, message }) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.addEventListener('blur', function() {
+        if (!validate(this.value)) {
+          addErrorStyle(selector);
+          showFieldError(selector, message);
+        } else {
+          clearFieldError(selector);
+        }
+      });
+      
+      // Clear error on focus
+      element.addEventListener('focus', function() {
+        clearFieldError(selector);
+      });
+    }
+  });
+}
+
+function showFieldError(selector, message) {
+  clearFieldError(selector);
+  
+  const element = document.querySelector(selector);
+  if (element) {
+    const errorSpan = document.createElement("span");
+    errorSpan.className = "field-error";
+    errorSpan.style.cssText = `
+      color: #dc3545;
+      font-size: 12px;
+      display: block;
+      margin-top: 5px;
+    `;
+    errorSpan.textContent = message;
+    
+    element.parentNode.appendChild(errorSpan);
+  }
+}
+
+function clearFieldError(selector) {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.style.borderColor = "";
+    element.style.borderWidth = "";
+    element.style.boxShadow = "";
+    
+    const existingError = element.parentNode.querySelector(".field-error");
+    if (existingError) {
+      existingError.remove();
+    }
+  }
+}
+
+// Make sure the form event listener targets the correct form
+document.addEventListener("DOMContentLoaded", function() {
+  const contactForm = document.querySelector("form[action='./php/admin.php']");
+  if (contactForm) {
+    contactForm.addEventListener("submit", handleSubmit);
+  }
+});
 
 const form = document.querySelector("form");
 if (form) {
