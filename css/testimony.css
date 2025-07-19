@@ -1,4 +1,3 @@
-
 /*TESTIMONY*/
 #testimony {
   background-color: rgb(230, 230, 230);
@@ -11,16 +10,41 @@
   margin-bottom: 250px;
 }
 
-.heart {
+
+
+.testTitle {
   padding-top: 90px;
   padding-bottom: 40px;
+  text-align: center;
+}
+
+@media (max-width: 450px) {
+  .testTitle {
+    width: 100%;
+    margin-left: -15px;
+  }
+
+  .testTitle h3 {
+    font-size: 18px !important;
+  }
+
+  .testTitle h3 {
+    height: clamp(25px, 7vw, 60px);
+    width: clamp(25px, 7vw, 60px);
+  }
+}
+
+.testTitle h3 {
+  display: inline-block;
 }
 
 .love {
   display: flex;
   align-items: center;
   margin: 30px 50px;
-  justify-content: space-between;
+  justify-content: space-evenly;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .rating input {
@@ -43,13 +67,20 @@
   line-height: 1.8;
   padding: 80px 20px 20px 20px;
   cursor: text;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Enhanced hover animations */
 .testimony1:hover,
 .testimony2:hover,
 .testimony3:hover {
-  margin-top: -10px;
-  transition: 0.35s;
+  scale: 1.03;
+  transition: ease-in-out;
+  animation-duration: 5s;
 }
 
 .testimony1 h3 a,
@@ -61,69 +92,194 @@
   text-decoration: none;
 }
 
+/* Image animations */
+.our-team-img {
+  transition: transform 0.3s ease, filter 0.3s ease;
+  border-radius: 50%;
+}
+
+.testimony-img:hover .our-team-img {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Section entrance animation */
 .testimonySection {
   opacity: 0;
   transform: translateY(50px);
-  transition: opacity 0.5s, transform 0.5s;
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
 .testimonySection.testimonyShow {
   opacity: 1;
-  transform: none;
+  transform: translateY(0);
 }
 
-@media (max-width: 900px) {
+/* Staggered animation for testimony cards */
+.testimony1,
+.testimony2,
+.testimony3 {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideInUp 0.6s ease forwards;
+}
 
-   .heart{
+.testimony1 {
+  animation-delay: 0.2s;
+}
+
+.testimony2 {
+  animation-delay: 0.4s;
+}
+
+.testimony3 {
+  animation-delay: 0.6s;
+}
+
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  #testimony {
+    margin: 20px 0;
+    padding-bottom: 40px;
+  }
+
+  .testTitle {
+    padding: 40px 10px 20px;
+  }
+
+  .testTitle h3 {
+    font-size: 0.9em;
+    margin: 0 1px;
+    letter-spacing: 1px;
+  }
+
+  .love {
+    margin: 15px 15px;
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .testimony1,
+  .testimony2,
+  .testimony3 {
+    width: calc(100vw - 40px);
+    max-width: 300px;
+    height: auto;
+    min-height: 320px;
+    padding: 40px 15px 20px;
+  }
+
+  .star-profile {
+    height: 25px;
+    width: 25px;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 481px) {
+  .testTitle {
     margin: 0px 30px;
-   }
+    padding: 60px 20px 30px;
+  }
 
-   .love{
-    display: flex;
+  .testTitle h3 {
+    font-size: 1.1em;
+    margin: 0 2px;
+  }
+
+  .love {
+    flex-direction: column;
+    margin: 20px 30px;
+    gap: 30px;
+  }
+
+  .testimony1,
+  .testimony2,
+  .testimony3 {
+    width: min(400px, calc(100vw - 60px));
+    margin: 0;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
+  .testTitle {
+    margin: 0px 30px;
+  }
+
+  .love {
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-   }
+    gap: 25px;
+  }
 
-   .testimony1,
-   .testimony2,
-   .testimony3{
-    margin-bottom: 25px;
+  .testimony1,
+  .testimony2,
+  .testimony3 {
     width: 400px;
-   }
+    margin: 0;
+  }
 }
 
-@media (min-width: 931px) {
-   .testimony1{
-    margin-left: -20px;
-    margin-right: 27px;
-   }
+@media (min-width: 901px) and (max-width: 1100px) {
+  .love {
+    margin: 30px 30px;
+    gap: 15px;
+  }
 
-   .testimony3{
-    margin-left: 27px;
-    margin-right: -30px;
-   }
+  .testimony1,
+  .testimony2,
+  .testimony3 {
+    width: 280px;
+    padding: 60px 15px 20px;
+  }
+}
 
-   .testimony2{
+@media (min-width: 1101px) and (max-width: 1300px) {
+  .love {
+    margin: 30px 40px;
+    gap: 20px;
+  }
+
+  .testimony1,
+  .testimony2,
+  .testimony3 {
+    width: 320px;
+  }
+}
+
+@media (min-width: 1301px) {
+  .love {
+    margin: 30px 50px;
+    gap: 25px;
+  }
+
+  .testimony1,
+  .testimony2,
+  .testimony3 {
     width: 350px;
-   }
+  }
 }
 
-@media (min-width: 1230px) {
-   .testimony1{
-    margin-left: -20px; 
-    margin-right: 15px;
-   }
-
-   .testimony3{
-    margin-left: 15px;
-    margin-right: -20px;
-   }
-
-   .testimony2,
-   .testimony1,
-   .testimony3{
-    width: 350px;
-   }
+.service-title h3:nth-child(8) {
+  animation: bounceIn 0.6s ease 0.6s both;
+}
+.service-title h3:nth-child(9) {
+  animation: bounceIn 0.6s ease 0.7s both;
 }
 
+@media (max-width: 1199px) and (min-width: 992px) {
+  .love{
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-evenly !important;
+    align-items: center !important;
+    gap: 5px !important;
+  }
+
+}
