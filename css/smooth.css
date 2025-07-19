@@ -1,0 +1,329 @@
+
+.nav ul li.current a {
+  color: gold !important;
+  position: relative;
+}
+
+.nav ul li.current a::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 2px;
+  background: gold;
+  border-radius: 2px;
+}
+
+.nav ul li a {
+  transition: color 0.3s ease;
+}
+
+
+#About,
+#call-to-action,
+#services,
+#services-desktop,
+#team,
+#testimony,
+#contact,
+#newletter,
+#footer {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease;
+}
+
+#About.show,
+#call-to-action.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#services.serviceShow,
+#services-desktop.serviceShow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.service-card {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease;
+}
+
+.service-card.animate-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.service-card:nth-child(1) { transition-delay: 0.1s; }
+.service-card:nth-child(2) { transition-delay: 0.2s; }
+.service-card:nth-child(3) { transition-delay: 0.3s; }
+.service-card:nth-child(4) { transition-delay: 0.4s; }
+
+#team.teamShow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.team1 {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.7s ease;
+}
+
+.team1.animate-team {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.team1:nth-child(1) { transition-delay: 0.1s; }
+.team1:nth-child(2) { transition-delay: 0.2s; }
+.team1:nth-child(3) { transition-delay: 0.3s; }
+
+#testimony.testimonyShow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.testimony1,
+.testimony2,
+.testimony3 {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.6s ease;
+}
+
+.testimony1.animate-testimony,
+.testimony2.animate-testimony,
+.testimony3.animate-testimony {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.testimony1 { transition-delay: 0.1s; }
+.testimony2 { transition-delay: 0.2s; }
+.testimony3 { transition-delay: 0.3s; }
+
+#contact.contactShow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#newletter.newsShow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#footer.footerShow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+.service-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.team1 {
+  transition: all 0.3s ease;
+}
+
+.team1:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.testimony1,
+.testimony2,
+.testimony3 {
+  transition: all 0.3s ease;
+}
+
+.testimony1:hover,
+.testimony2:hover,
+.testimony3:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+
+.signBTN,
+.logbtn,
+.take,
+.news-btn,
+.send-btn {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.signBTN:hover,
+.logbtn:hover,
+.take:hover,
+.news-btn:hover,
+.send-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+
+#scrollToTop:hover {
+  background: #2a4169 !important;
+  transform: translateY(-2px);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  #About,
+  #call-to-action,
+  #services,
+  #services-desktop,
+  #team,
+  #testimony,
+  #contact,
+  #newletter,
+  #footer {
+    transform: translateY(30px);
+  }
+  
+  .service-card,
+  .team1 {
+    transform: translateY(20px);
+  }
+  
+  .testimony1,
+  .testimony2,
+  .testimony3 {
+    transform: translateX(-20px);
+  }
+  
+  #About,
+  #call-to-action,
+  #services,
+  #services-desktop,
+  #team,
+  #testimony,
+  #contact,
+  #newletter,
+  #footer {
+    transition-duration: 0.6s;
+  }
+}
+
+
+html {
+  scroll-behavior: smooth;
+}
+
+.nav ul li a:focus,
+.signBTN:focus,
+.logbtn:focus,
+.take:focus,
+.news-btn:focus,
+.send-btn:focus {
+  outline: 2px solid #47b2e4;
+  outline-offset: 2px;
+}
+
+img {
+  transition: opacity 0.3s ease;
+}
+
+img:not([src]),
+img[src=""] {
+  opacity: 0;
+}
+
+#home-content {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #37517e;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a4169;
+}
