@@ -188,24 +188,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Responsiveness
   const close = document.getElementById('close');
-  const menu = document.getElementById('menu');
-  const navBar = document.querySelector('.nav');
-  const header = document.getElementById('header');
+const menu = document.getElementById('menu');
+const navBar = document.querySelector('.nav');
+const header = document.getElementById('header');
+const body = document.body;
 
+menu.addEventListener('click', () => {
+  menu.style.visibility = 'hidden';
+  close.style.visibility = 'visible';
+  navBar.style.visibility = 'visible';
+  header.classList.add('menu-open');
+  body.classList.add('menu-open');
+})
 
-  menu.addEventListener('click', () => {
-    menu.style.visibility = 'hidden';
-    close.style.visibility = 'visible';
-    navBar.style.visibility = 'visible';
-    header.style.height = 'auto';
-  })
-
-  close.addEventListener('click', () => {
-    menu.style.visibility = 'visible';
-    close.style.visibility = 'hidden';
-    navBar.style.visibility = 'hidden';
-    header.style.height = '50px';    
-  })
+close.addEventListener('click', () => {
+  menu.style.visibility = 'visible';
+  close.style.visibility = 'hidden';
+  navBar.style.visibility = 'hidden';
+  header.classList.remove('menu-open');
+  body.classList.remove('menu-open');
+})
 
 
   //Book
