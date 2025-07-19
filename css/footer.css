@@ -168,3 +168,11 @@
   }
 }
 
+
+.Ease-details,
+.useful-links,
+.our-service,
+.our-social,
+.footer-conclude{
+  animation: fadeInUp 0.8s ease 0.8s both;
+}
