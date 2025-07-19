@@ -1,102 +1,186 @@
 /* CALL TO ACTION */
 #call-to-action {
-    background: url("../img/call.jpg");
-    height: 400px;
-    margin-top: 150px;
-    margin-bottom: 80px;
-    background-position: left;
-    background-color: #3f6ab3;
-    background-blend-mode: multiply;
-  }
-  
-  #call-to-action h3 {
-    text-align: center;
-    color: white;
-    padding-top: 60px;
-    font-size: 40px;
-    font-weight: 700;
-  }
-  
-  .call p {
-    color: white;
-    padding-top: 50px;
-    font-size: 24px;
-  }
-  
-  .take {
-    margin-top: 50px;
-    height: 55px;
-    width: 250px;
-    border: 2px solid white;
-    border-radius: 27px;
-    font-size: 17px;
-    font-weight: 600;
-    background: transparent;
-  }
-  
-  .take a {
-    text-decoration: none;
-    color: white;
-    height: auto;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    padding-left: 40.5px;
-    padding-right: 40.5px;
-    border-radius: 22px;
-  }
-  
-  .take:hover {
-    background-color: white;
-    cursor: pointer;
-    border: 4px solid #173f83;
-  }
-  
-  .take a:hover {
-    color: rgb(0, 0, 255);
-    font-weight: 900;
-    transition: 0.15s;
-  }
-  
-  marquee {
-    animation: infinite 0.15s;
-  }
-  
-.to{
-    display: flex;
-    justify-content: center;
+  background: url("../img/call.jpg") no-repeat center center;
+  background-size: cover;
+  height: auto;
+  min-height: clamp(350px, 50vh, 400px);
+  margin-top: clamp(80px, 12vw, 150px);
+  margin-bottom: clamp(50px, 8vw, 80px);
+  background-color: #3f6ab3;
+  background-blend-mode: multiply;
+  padding: clamp(40px, 8vw, 60px) 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
+#call-to-action h3 {
+  text-align: center;
+  color: white;
+  font-size: clamp(28px, 6vw, 40px);
+  font-weight: 700;
+  margin-bottom: clamp(20px, 4vw, 30px);
+}
+
+.call {
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: clamp(30px, 5vw, 50px);
+}
+
+.call p {
+  color: white;
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 500;
+  animation: scroll-left 15s linear infinite;
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* Replace marquee with CSS animation */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.to {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(15px, 4vw, 31px);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.take {
+  height: clamp(45px, 6vw, 55px);
+  width: clamp(200px, 30vw, 250px);
+  border: 2px solid white;
+  border-radius: 27px;
+  font-size: clamp(15px, 2.2vw, 17px);
+  font-weight: 600;
+  background: transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.take a {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  border-radius: 25px;
+  transition: all 0.15s ease;
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+.take:hover {
+  background-color: white;
+  border: 4px solid #173f83;
+  transform: translateY(-2px);
+}
+
+.take a:hover {
+  color: rgb(0, 0, 255);
+  font-weight: 900;
+}
 
 .section {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 0.5s, transform 0.5s;
-  }
-  
-  .section.show {
-    opacity: 1;
-    transform: none;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.section.show {
+  opacity: 1;
+  transform: none;
+}
+
+/* Small mobile devices */
+@media screen and (max-width: 480px) {
+  #call-to-action {
+    padding: 30px 15px;
+    min-height: 300px;
   }
 
-  @media (max-width: 600px) {
-    .to{
-      display: flex;
-      flex-direction: column-reverse;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .taketo{
-      margin-left: 25px;
-    }
-
-    #call-to-action {
-      background: url("../img/call.jpg");
-      height: 400px;
-      margin-top: 150px;
-      margin-bottom: 80px;
-      background-position: right;
-      background-color: #3f6ab3;
-      background-blend-mode: multiply;
-    }
+  .call p {
+    animation-duration: 12s;
+    font-size: 16px;
   }
+
+  .to {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .take {
+    width: min(280px, 90vw);
+    height: 45px;
+  }
+
+  .taketo{
+    margin-left: 30px;
+    margin-bottom: 6px;
+  }
+}
+
+/* Medium mobile devices */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  #call-to-action {
+    padding: 40px 20px;
+    background-position: center;
+  }
+
+  .to {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .take {
+    width: min(250px, 80vw);
+  }
+}
+
+/* Tablets */
+@media screen and (min-width: 769px) and (max-width: 999px) {
+  #call-to-action {
+    padding: 50px 30px;
+  }
+
+  .to {
+    flex-direction: row;
+    gap: 25px;
+  }
+
+  .take {
+    width: 220px;
+  }
+}
+
+/* Large screens */
+@media screen and (min-width: 1200px) {
+  #call-to-action {
+    padding: 70px 40px;
+    min-height: 450px;
+  }
+
+  .call p {
+    font-size: 26px;
+    animation-duration: 20s;
+  }
+
+  .take {
+    width: 280px;
+    height: 60px;
+    font-size: 18px;
+  }
+}
