@@ -184,3 +184,293 @@
     font-size: 18px;
   }
 }
+
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6);
+  }
+}
+
+@keyframes button-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes text-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Enhanced Call To Action section entrance */
+#call-to-action {
+  position: relative;
+  overflow: hidden;
+}
+
+#call-to-action::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: sweep 3s ease-in-out 1s;
+}
+
+@keyframes sweep {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+
+
+/* Scroll animation with slight 3D rotation */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%) rotateY(45deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(90%) rotateY(0deg);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(-90%) rotateY(0deg);
+  }
+  100% {
+    transform: translateX(-100%) rotateY(-45deg);
+    opacity: 0;
+  }
+}
+
+/* Animate buttons container */
+.to {
+  animation: slideInRight 1s ease 0.6s both;
+}
+
+
+.take:nth-child(1) {
+  animation: slideInLeft 0.8s ease 0.8s both, pulse-glow 2s ease-in-out infinite 2s;
+}
+
+.take:nth-child(2) {
+  animation: slideInRight 0.8s ease 1s both, pulse-glow 2s ease-in-out infinite 2.5s;
+}
+
+/* Enhanced button hover effects */
+.take {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.take::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.take:hover::before {
+  left: 100%;
+}
+
+.take:hover {
+  background-color: white;
+  border: 4px solid #173f83;
+  transform: translateY(-5px) scale(1.05);
+  animation: button-bounce 0.6s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.take a {
+  position: relative;
+  z-index: 2;
+}
+
+.take:hover a {
+  color: rgb(0, 0, 255);
+  font-weight: 900;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.take {
+  position: relative;
+  overflow: hidden;
+}
+
+.take::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.take:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Enhanced section entrance animation */
+.section {
+  opacity: 0;
+  transform: translateY(80px) scale(0.95);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Add floating animation for buttons when idle */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.take {
+  animation: float 3s ease-in-out infinite;
+}
+
+.take:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.take:nth-child(2) {
+  animation-delay: 1.5s;
+}
+
+/* Pause float animation on hover */
+.take:hover {
+  animation-play-state: paused;
+}
+
+/* Mobile optimizations */
+@media screen and (max-width: 768px) {
+  @keyframes scroll-left-mobile {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }
+  
+  .call p {
+    animation-name: scroll-left-mobile;
+  }
+  
+  .take:hover {
+    transform: translateY(-3px) scale(1.02);
+  }
+  
+  #call-to-action h3 {
+    animation-duration: 0.6s;
+  }
+  
+  .call {
+    animation-duration: 0.8s;
+  }
+  
+  .to {
+    animation-duration: 0.8s;
+    animation-delay: 0.4s;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  #call-to-action h3,
+  .call,
+  .to,
+  .take {
+    animation: none;
+  }
+  
+  .call p {
+    animation: scroll-left-simple 15s linear infinite;
+  }
+  
+  @keyframes scroll-left-simple {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  
+  .take:hover {
+    transform: translateY(-2px);
+  }
+  
+  #call-to-action::before {
+    display: none;
+  }
+}

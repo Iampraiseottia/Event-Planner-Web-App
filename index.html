@@ -33,7 +33,7 @@
             <nav class="nav">
                 <ul>
                     <li class="current"><a href="#">Home</a></li>
-                    <li><a href="#About">About</a></li>
+                    <li><a href="#about-scroll">About</a></li>
                     <li><a href="#service-scroll">Service</a></li>
                     <li><a href="#our-team">Team</a></li>
                     <div class="dropdown">
@@ -70,6 +70,9 @@
 
 
     <!-- ABOUT US -->
+
+    <p id="about-scroll"></p>
+
 
     <section id="About" class="pt-5 section">
         <div class="about-heading">
@@ -119,7 +122,48 @@
 
     <p id="service-scroll"></p>
 
-    <section id="services" class="serviceSection">
+   <!-- SERVICES - Desktop Version (1200px+) -->
+    <section id="services-desktop" class="serviceSection services-desktop-only">
+        <div class="service-head">
+            <div class="service-title">
+                <h3>S</h3>
+                <h3>E</h3>
+                <h3>R</h3>
+                <h3>V</h3>
+                <h3>I</h3>
+                <h3>C</h3>
+                <h3>E</h3>
+            </div>
+            <p class="catch"><i><b>EVENTIFY</b></i> offers amazing and outstanding services in which you can't miss these chance to enjoy such fantabulous services.</p>
+        </div>
+        <div class="service-body">
+            <div class="service-body-desktop">
+                <div class="service-card">
+                    <a href="./img/service1.jpg"><img src="img/service1.jpg" class="service-img"></a>
+                    <h3 class="pt-3"><a href="index.html">Weddings Celebrations</a></h3>
+                    <p>We help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
+                </div>
+                <div class="service-card">
+                    <a href="./img/service2.jpg"><img src="img/service2.jpg" class="service-img"></a>
+                    <h3 class="pt-3"><a href="index.html">Funeral / Memorials</a></h3>
+                    <p>At Eventify, we help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
+                </div>
+                <div class="service-card">
+                    <a href="./img/service3.jpg"><img src="img/service3.jpg" class="service-img"></a>
+                    <h3 class="pt-3"><a href="index.html">Birthday Celebrations</a></h3>
+                    <p>Whether it's a magical kids' party or a sophisticated adult gathering, Eventify has your birthday celebration fully sorted. We handle every detail, ensuring a joyous, memorable, and stress-free experience for everyone.</p>
+                </div>
+                <div class="service-card">
+                    <a href="img/service4.jpg"><img src="img/service4.jpg" class="service-img"></a>
+                    <h3 class="pt-3"><a href="index.html">Anniversary Celebrations</a></h3>
+                    <p>We crafts unforgettable anniversary celebrations, whether it's your first date, a milestone dating anniversary, or your cherished wedding anniversary. We handle all management, organizing, and execution, ensuring your day is filled with joy, comfort, and peace.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES - Mobile/Tablet Version (below 1200px) -->
+    <section id="services" class="serviceSection services-mobile-tablet">
         <div class="service-head">
             <div class="service-title">
                 <h3>S</h3>
@@ -138,28 +182,27 @@
                     <div class="mbappe">
                         <a href="./img/service1.jpg"><img src="img/service1.jpg" class="service-img"></a>
                         <h3 class="pt-3"><a href="index.html">Weddings Celebrations</a></h3>
-                        <p>Just enjoy your wedding and let EVENTIFY worry about every aspect</p>
+                        <p>We help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
                     </div>
                     <div class="praise">
                         <a href="./img/service2.jpg"><img src="img/service2.jpg" class="service-img"></a>
                         <h3 class="pt-3"><a href="index.html">Funeral / Memorials</a></h3>
-                        <p>Morn and Recall all the amazing moments you had with your loved one </p>
+                        <p>At Eventify, we help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
                     </div>
                 </div>
 
                 <div class="service-body-top-one">
-                        <div class="mbappe">
-                            <a href="./img/service3.jpg"><img src="img/service3.jpg" class="service-img"></a>
-                            <h3 class="pt-3"><a href="index.html">Birthday Celebrations</a></h3>
-                            <p>Both Adult and Kids birthday Celebrations are fully sorted out .</p>
-                        </div>
-                        <div class="praise">
-                            <a href="img/service4.jpg"><img src="img/service4.jpg" class="service-img"></a>
-                            <h3 class="pt-3"><a href="index.html">Anniversary Celebrations</a></h3>
-                            <p>Your wedding Anniversaries, dating Anniversaries, etc would be beautiful.</p>
-                        </div>
+                    <div class="mbappe">
+                        <a href="./img/service3.jpg"><img src="img/service3.jpg" class="service-img"></a>
+                        <h3 class="pt-3"><a href="index.html">Birthday Celebrations</a></h3>
+                        <p>Whether it's a magical kids' party or a sophisticated adult gathering, Eventify has your birthday celebration fully sorted. We handle every detail, ensuring a joyous, memorable, and stress-free experience for everyone.</p>
+                    </div>
+                    <div class="praise">
+                        <a href="img/service4.jpg"><img src="img/service4.jpg" class="service-img"></a>
+                        <h3 class="pt-3"><a href="index.html">Anniversary Celebrations</a></h3>
+                        <p>We crafts unforgettable anniversary celebrations, whether it's your first date, a milestone dating anniversary, or your cherished wedding anniversary. We handle all management, organizing, and execution, ensuring your day is filled with joy, comfort, and peace.</p>
+                    </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -171,7 +214,7 @@
     <p id="our-team"></p>
 
     <section id="team" class="teamSection">
-        <div class="about-heading" style="padding-top: 20px;">
+        <div class="about-heading" style="padding-top: 100px;">
             <h2 style="text-align: center; letter-spacing: 5px; font-size: 60px;">TEAM</h2>
             <div class="line">
                 <hr class="line1">
@@ -179,20 +222,18 @@
                 <hr class="line3">
             </div>
         </div>
-        <p class="team-para">
-            <i><b>EVENTIFY</b> has a very dedicated, hard working, reliable, efficient, outstanding and brilliant team with exceptional management and communication skills, who sacrifies their time, energy and resources to ensure the altimate satisfaction of every single user. </i>
-        </p>
+      
         <div class="team-main">
-            <div class="team1 team3">
+            <div class="team1">
                 <div class="team-img">
                     <a href="./img/team1.jpg"><img src="./img/team1.jpg" class="our-team-img"></a>
                 </div>
                 <div class="team-body">
                     <h3>Ottia Praise Beteck</h3>
-                    <p  style="font-size: 16.5px; margin-bottom: 4px;"> Chief Developer</p>
+                    <p style="font-size: 16.5px; margin-bottom: 4px; font-weight: 600; color: #37517e;">CEO</p>
                     <hr class="team-hr">
                     <p style="font-size: 14.5px; margin-top: 10px;">
-                        Build & Develop the UI/UX and Manage the entire platform.
+                        Leads the company vision and oversees all strategic operations to deliver exceptional event experiences.
                     </p>
                     <div class="social-media">
                         <a href="#" class="social-media-img">
@@ -210,17 +251,48 @@
                     </div>
                 </div>
             </div>
-            <div class="team1 team2">
+            
+            <div class="team1">
                 <div class="team-img">
-                    <a href="img/team-2.jpg">
-                        <img src="img/team-2.jpg" class="our-team-img">
+                    <a href="img/team-6.png">
+                        <img src="img/team-6.png" class="our-team-img">
                     </a>
                 </div>
                 <div class="team-body">
-                    <h3>Uttia Sharon Besem</h3>
-                    <p  style="margin-bottom: 4px; font-size: 16.5px;">Project Supervisor</p>
-                    <hr class="team-hr" style="margin-bottom: 10px;">
-                    <p style="font-size: 14.5px;">Supervises the project from the conception phase to the final stage.</p>
+                    <h3>Mbonge Nina Awung</h3>
+                    <p style="margin-bottom: 4px; font-size: 16.5px; font-weight: 600; color: #37517e;">Event Manager</p>
+                    <hr class="team-hr">
+                    <p style="font-size: 14.5px; margin-top: 10px;">
+                        Coordinates and manages all event logistics, ensuring seamless execution from planning to completion.
+                    </p>
+                    <div class="social-media">
+                        <a href="#" class="social-media-img">
+                            <img src="./img/whatsapp.png" class="social-media-img-pic">
+                        </a>
+                        <a href="#" class="social-media-img">
+                            <img src="./img/facebook.jpeg" class="social-media-img-pic">
+                        </a>
+                        <a href="#" class="social-media-img">
+                            <img src="./img/ig.jpeg" class="social-media-img-pic">
+                        </a>
+                        <a href="#" class="social-media-img">
+                            <img src="./img/email.png" class="social-media-img-pic">
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="team1">
+                <div class="team-img">
+                    <a href="./img/team-2.jpg"><img src="./img/team-2.jpg" class="our-team-img"></a>
+                </div>
+                <div class="team-body">
+                    <h3>Serena Micheale</h3>
+                    <p style="font-size: 16.5px; margin-bottom: 4px; font-weight: 600; color: #37517e;">Chief Designer/Developer</p>
+                    <hr class="team-hr">
+                    <p style="font-size: 14.5px; margin-top: 10px;">
+                        Designs stunning event concepts and develops innovative solutions to create memorable experiences.
+                    </p>
                     <div class="social-media">
                         <a href="#" class="social-media-img">
                             <img src="./img/whatsapp.png" class="social-media-img-pic">
@@ -238,7 +310,6 @@
                 </div>
             </div>
         </div>
-       
     </section>
 
     <!-- TESTIMONY SECTION  -->
