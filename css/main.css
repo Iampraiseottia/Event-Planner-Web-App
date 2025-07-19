@@ -1,28 +1,37 @@
+
 #home-content {
   height: 100%;
   align-items: center;
   padding-bottom: 120px;
-  background: url("../img/planner5.jpg"), no-repeat;
+  background: url("../img/planner5.jpg") no-repeat center center;
+  background-size: cover;
   width: 100%;
-  background-color: gray;
+  background-color: rgb(77, 77, 77);
   background-blend-mode: multiply;
   text-align: center;
   padding-top: 80px;
+  min-height: 50vh;
+  margin-top: -10px;
 }
 
 .Organize {
   font-weight: bold;
   color: white;
-  font-size: 42px;
+  font-size: clamp(28px, 5vw, 42px);
   margin-right: 10px;
   line-height: 1.4;
+  max-width: 90%;
+  margin: 0 auto;
+  padding-top: 60px;
 }
 
 .home-content-left {
   width: 100%;
-  padding-left: 59px;
+  padding: 0 20px;
   justify-content: center;
   text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 span {
@@ -30,14 +39,13 @@ span {
 }
 
 .difference {
-  font-size: 22px;
-  color: snow;
+  font-size: clamp(16px, 3vw, 22px);
+  color: gold;
   line-height: 1.4;
   font-weight: bold;
   opacity: 0.7;
-  padding-right: 80px;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin: 20px auto;
+  max-width: 80%;
 }
 
 .home-nav {
@@ -45,75 +53,141 @@ span {
   text-align: center;
   justify-content: center;
   flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 30px;
 }
 
 .signBTN,
 .logbtn {
   cursor: pointer;
   height: 60px;
-  width: 200px;
-  padding: 12px 20px;
-  font-size: 25px;
+  min-width: 160px;
+  width: auto;
+  padding: 12px 24px;
+  font-size: clamp(18px, 2.5vw, 25px);
   border: 1px solid rgb(10, 185, 253);
   background-color: rgb(10, 185, 253);
   color: white;
   border-radius: 60px;
   transition: 0.15s;
-  margin: 10px;
+  margin: 5px;
 }
 
 .signBTN:hover,
 .logbtn:hover {
   background-color: rgba(0, 183, 255, 0.8);
+  transform: translateY(-2px);
 }
 
 .signBTN a,
 .logbtn a {
   text-decoration: none;
   color: white;
-  font-size: 22px;
+  font-size: inherit;
   font-weight: bold;
+  display: block;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .main-img {
-  width: 470px;
-  height: 370px;
-  padding-right: 30px;
+  width: min(470px, 90vw);
+  height: auto;
+  aspect-ratio: 470/370;
   border-radius: 10px;
-  margin-right: 20px;
+  margin: 20px auto;
+  display: block;
 }
 
-@media screen and (max-width: 768px) {
+/* Small mobile devices */
+@media screen and (max-width: 480px) {
   #home-content {
-    padding-top: 40px;
-    padding-bottom: 80px;
+    padding-top: 30px;
+    padding-bottom: 60px;
+    min-height: 40vh;
+    margin-top: -80px;
   }
 
-  .Organize {
-    font-size: 32px;
+  .home-content-left {
+    padding: 0 15px;
   }
 
   .difference {
-    font-size: 18px;
-    padding-right: 40px;
-  }
-
-  .main-img {
-    width: 300px;
-    height: 240px;
-    padding-right: 0;
-    margin-right: 0;
+    max-width: 85%;
+    margin: 15px;
+    line-height: 1.3;
   }
 
   .home-nav {
     flex-direction: column;
     align-items: center;
+    gap: 15px;
+    margin-top: 25px;
   }
 
   .signBTN,
   .logbtn {
-    width: 160px;
-    font-size: 20px;
-    margin: 10px;
+    width: 220px;
+    max-width: 90vw;
+    height: 50px;
+    margin: 5px 0; 
+  }
+
+  .logbtn{
+    margin-top: -20px;
+    margin-left: -20px;
+  }
+}
+
+/* Medium mobile devices */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  #home-content {
+    padding-top: 40px;
+    padding-bottom: 80px;
+  }
+
+  .difference {
+    max-width: 85%;
+  }
+
+  .home-nav {
+    gap: 15px;
+  }
+
+  .signBTN,
+  .logbtn {
+    width: 200px;
+    margin: 8px;
+  }
+}
+
+/* Tablets */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #home-content {
+    padding-top: 60px;
+    padding-bottom: 100px;
+  }
+
+  .home-content-left {
+    padding: 0 40px;
+  }
+
+  .difference {
+    max-width: 75%;
+  }
+}
+
+/* Large screens */
+@media screen and (min-width: 1200px) {
+  .Organize {
+    font-size: 48px;
+  }
+
+  .difference {
+    font-size: 24px;
+    max-width: 70%;
   }
 }
