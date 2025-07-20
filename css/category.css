@@ -5,69 +5,119 @@ body {
   background-color: rgb(232, 232, 232);
 }
 
-/* HEADER  */
-.back:hover {
-  background-color: #5491fb;
-  color: white;
-  cursor: pointer;
-  border: 1px solid #5491fb;
-}
 
-.back a {
-  text-decoration: none;
-  color: white;
-}
 
-.back {
-  height: 50px;
-  width: 250px;
-  color: white;
-  background-color: #37517e;
-  border: 2px solid #47b2e4;
-  border-radius: 17px;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 7px 12px;
-}
 
+/* HEADER */
 #header {
-  background-color: #37517e;
+  background: rgba(55, 81, 126, 0.95);
+  backdrop-filter: blur(20px);
   color: white;
-  padding: 12px 6px;
+  padding: 1rem 1.5rem;
   position: sticky;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2;
+  z-index: 1000;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-container h1 {
+  user-select: none;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: 1px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  animation: fadeInLeft 1s ease-out 0.3s both;
+}
+
+@keyframes fadeInLeft {
+  from {
+    transform: translateX(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .home-img {
   height: 40px;
   width: 40px;
   border-radius: 50%;
-  vertical-align: top;
+  margin-right: 8px;
+  animation: rotate 2s ease-in-out infinite alternate;
 }
 
-.header-container {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
+@keyframes rotate {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(5deg) scale(1.05);
+  }
 }
 
-@media (max-width: 624px) {
-  .header-container {
-    flex-direction: column;
-  }
+.back {
+  height: 50px;
+  padding: 0 1.5rem;
+  color: white;
+  background: linear-gradient(45deg, #37517e, #47b2e4);
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: fadeInRight 1s ease-out 0.5s both;
+}
 
-  .home-img {
-    margin-bottom: 10px;
+@keyframes fadeInRight {
+  from {
+    transform: translateX(50px);
+    opacity: 0;
   }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
 
-  .back {
-    width: auto;
-    padding: 7px 12px;
-  }
+.back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, #5491fb, #47b2e4);
+}
+
+.back a {
+  text-decoration: none;
+  color: inherit;
 }
 
 marquee {
