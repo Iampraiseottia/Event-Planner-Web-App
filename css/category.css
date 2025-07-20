@@ -5,9 +5,6 @@ body {
   background-color: rgb(232, 232, 232);
 }
 
-
-
-
 /* HEADER */
 #header {
   background: rgba(55, 81, 126, 0.95);
@@ -40,18 +37,20 @@ body {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 1rem;
 }
 
 .header-container h1 {
   user-select: none;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: clamp(1.2rem, 4vw, 2rem);
   letter-spacing: 1px;
   font-weight: bold;
   display: flex;
   align-items: center;
   animation: fadeInLeft 1s ease-out 0.3s both;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 @keyframes fadeInLeft {
@@ -84,18 +83,20 @@ body {
 
 .back {
   height: 50px;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   color: white;
   background: linear-gradient(45deg, #37517e, #47b2e4);
   border: none;
   border-radius: 25px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   animation: fadeInRight 1s ease-out 0.5s both;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 @keyframes fadeInRight {
@@ -126,6 +127,8 @@ marquee {
   white-space: nowrap;
   animation: 0.15s linear infinite;
   margin-bottom: 12px;
+  z-index: 1;
+  position: relative;
 }
 
 marquee span {
@@ -143,9 +146,11 @@ marquee span {
   align-items: center;
   justify-content: center;
   align-items: center;
-  display: flex; 
+  display: flex;
   margin-top: 30px;
   margin-bottom: 30px !important;
+  z-index: 1;
+  position: relative;
 }
 
 .event1-title h1 {
@@ -197,8 +202,6 @@ marquee span {
   border-radius: 50%;
 }
 
-
-
 /* Profile Details Responsive Styles */
 
 .profile-details {
@@ -210,6 +213,8 @@ marquee span {
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
+  z-index: 1;
+  position: relative;
 }
 
 .profile-details img {
@@ -246,10 +251,8 @@ marquee span {
 
 /* Swiper Image Responsive Styles */
 
-
 /* Desktop Styles (1200px and above) */
 @media (min-width: 1200px) {
-  
   .profile-details {
     flex-wrap: nowrap;
     justify-content: space-between;
@@ -257,11 +260,10 @@ marquee span {
     gap: 30px;
     margin-left: 200px !important;
   }
-  
+
   .profile-details > div {
     min-width: 180px;
     text-align: left;
-
   }
 }
 
@@ -279,8 +281,6 @@ marquee span {
     flex: 0 1 calc(50% - 10px);
     text-align: center;
   }
-  
-  
 }
 
 /* Medium Tablet Styles */
@@ -303,7 +303,6 @@ marquee span {
     text-align: center;
     flex: none;
   }
-
 }
 
 /* Small Tablet / Large Mobile Styles */
@@ -334,8 +333,6 @@ marquee span {
   .profile-details .job {
     font-size: 11px;
   }
-  
- 
 }
 
 /* Mobile Styles */
@@ -369,12 +366,12 @@ marquee span {
     line-height: 1.3;
   }
 
-  .showImageSwipe{
+  .showImageSwipe {
     height: 350px !important;
-
+    z-index: 1;
   }
 
-  .swiper-slide{
+  .swiper-slide {
     height: 85vh !important;
   }
 }
@@ -402,8 +399,6 @@ marquee span {
   .profile-details .job {
     font-size: 9px;
   }
-  
- 
 }
 
 /* Swiper Container Responsive Adjustments */
@@ -412,6 +407,8 @@ marquee span {
   height: 100%;
   margin-left: 40px;
   margin-right: 20px;
+  z-index: 1;
+  position: relative;
 }
 
 @media (max-width: 768px) {
@@ -439,6 +436,30 @@ marquee span {
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
+  z-index: 1;
+  position: relative;
+}
+
+/* Swiper Images */
+.swiper-slide img {
+  z-index: 1;
+  position: relative;
+}
+
+/* Swiper Navigation and Pagination */
+.swiper-button-next,
+.swiper-button-prev {
+  z-index: 10;
+}
+
+.swiper-pagination {
+  z-index: 10;
+}
+
+/* Footer */
+.footer-conclude {
+  z-index: 1;
+  position: relative;
 }
 
 /* Remove conflicting inline styles */
@@ -450,4 +471,6 @@ marquee span {
   line-height: 1.2 !important;
 }
 
-
+.showImageSwipe {
+  z-index: -1;
+}
