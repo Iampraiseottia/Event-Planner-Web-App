@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTTIATECH Invoice | Login</title>
+    <title>Login | Eventify</title>
     <link rel="stylesheet" href="../css/register.css">
     <link rel="icon" href="./img/planner1.webp" style="border-radius: 50%;">
 
@@ -27,19 +27,16 @@
             color: #0b52cd;
         }
 
-        .closePlan {
-            display: none;
-        }
-
-        .closeCus {
-            display: none;
-        }
 
     </style>
 </head>
 <body>
 
-    <div class="toggle" style="margin-top: 30px;">
+    <button class="GoBackBtn">
+        <a href="../index.html">Go Back To Home</a>  
+    </button> 
+
+    <div class="toggle" style="margin-top: 40px;">
         <div class="customer" id="regCus" onclick="showCustomerSec()">Login As Customer</div>
         <p class="divide"></p>
         <div class="planner" id="regPlan" onclick="showPlannerSec()">Login As Planner</div>
@@ -134,7 +131,7 @@
             document.getElementById("regPlanner").classList.add("closePlan");
             document.getElementById("regCus").style.color = '#0b52cd';            
             document.getElementById("regCus").style.opacity = '1';            
-            document.getElementById("regPlan").style.color = 'white';            
+            document.getElementById("regPlan").style.color = 'black';            
             document.getElementById("regPlan").style.opacity = '0.4';             
         }
 
@@ -143,7 +140,7 @@
             document.getElementById("regCus").classList.remove("active");
             document.getElementById("regPlanner").classList.remove("closePlan");
             document.getElementById("regCustomer").classList.add("closeCus");
-            document.getElementById("regCus").style.color = 'white';            
+            document.getElementById("regCus").style.color = 'black';            
             document.getElementById("regCus").style.opacity = '0.4';            
             document.getElementById("regPlan").style.color = '#0b52cd';            
             document.getElementById("regPlan").style.opacity = '1';            
