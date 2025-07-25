@@ -1,3 +1,7 @@
+## Hosted Link 
+
+
+## About 
 Event Planner System For both event planners and customers
 
 It provides a means in which customers can ook an event planner based on the type of events

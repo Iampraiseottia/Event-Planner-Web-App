@@ -320,8 +320,7 @@ body {
 .input_box input:focus,
 .planner-name:focus,
 .order:focus {
-  border-color: rgba(71, 178, 228, 0.8);
-  box-shadow: 0 0 20px rgba(71, 178, 228, 0.3);
+  border-color: rgba(12, 122, 255, 0.8);
   transform: translateY(-2px);
 }
 
@@ -511,6 +510,7 @@ body {
   .order {
     padding: 0 2.5rem;
     font-size: 0.9rem;
+    margin: 10px 0 !important;
   }
 
   .input_box label {
@@ -522,6 +522,8 @@ body {
     left: 0.5rem;
     font-size: 1rem;
   }
+
+
 }
 
 @media screen and (max-width: 480px) {
@@ -588,6 +590,14 @@ body {
 
   #book {
     margin: 20px 0 !important;
+  }
+
+  .input_box{
+    width: 90% !important;
+  }
+
+  #Country{
+    width: 110% !important;
   }
 }
 
