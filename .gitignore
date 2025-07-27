@@ -1,40 +1,72 @@
+# Node.js dependencies
+node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Environmental variables
+.env
+.env.local
+.env.*.local
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Runtime files
+*.pid
+*.seed
+*.info
 
-# vercel
-.vercel
+# Directory for compiled output
+/dist
+/build
+/out
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Optional: if you have a 'tmp' directory
+/tmp
+
+# macOS specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+.Spotlight-V100
+.Trashes
+
+# Xcode
+.xcodeproj
+.xcworkspace
+
+# VS Code
+.vscode/
+
+# Editor directories and files
+.idea/
+.project
+.settings/
+.classpath
+.c9/
+*.swp
+*.bak
+*.swo
+*~.nib
+*.sublime-project
+*.sublime-workspace
+.history
+
+# Test coverage
+/coverage
+
+# Next.js specific
+.next/
+
+# Production build output
+/build
+/out
+
+# Misc
+*.pem
