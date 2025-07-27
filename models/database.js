@@ -1,49 +1,58 @@
-const { Pool } = require("pg");
-require("dotenv").config();
+const { Pool } = require('pg');
+require('dotenv').config();
 
-// Create a connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
-});
+// Log the DATABASE_URL to confirm it's being loaded
+const databaseUrl = process.env.DATABASE_URL;
+console.log('DATABASE_URL from .env.local:', databaseUrl);
 
-// Test the database connection
-pool.on("connect", () => {
-  console.log("Connected to PostgreSQL database");
-});
+let connectionConfig = {};
+if (databaseUrl) {
+  try {
+    const url = new URL(databaseUrl);
+    connectionConfig = {
+      user: url.username,
+      password: url.password,
+      host: url.hostname,
+      port: url.port,
+      database: url.pathname.substring(1),
+    };
 
-pool.on("error", (err) => {
-  console.error("Unexpected error on idle client", err);
+    if (process.env.NODE_ENV === 'production' || url.searchParams.get('sslmode') === 'require') {
+      connectionConfig.ssl = {
+        rejectUnauthorized: false 
+      };
+    }
+
+    console.log('Parsed DB Connection Config:', {
+      user: connectionConfig.user ? '***' : 'N/A', 
+      host: connectionConfig.host,
+      port: connectionConfig.port,
+      database: connectionConfig.database,
+      ssl: connectionConfig.ssl ? 'enabled' : 'disabled'
+    });
+
+  } catch (parseError) {
+    console.error('Error parsing DATABASE_URL:', parseError);
+    connectionConfig = { connectionString: databaseUrl };
+  }
+} else {
+  console.error('DATABASE_URL is not defined in .env.local or environment variables.');
+  process.exit(1);
+}
+
+
+// Create a new PostgreSQL connection pool
+const pool = new Pool(connectionConfig);
+
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err);
   process.exit(-1);
 });
 
-// Helper function to execute queries
-const query = async (text, params) => {
-  const start = Date.now();
-  try {
-    const res = await pool.query(text, params);
-    const duration = Date.now() - start;
-    console.log("Executed query", { text, duration, rows: res.rowCount });
-    return res;
-  } catch (error) {
-    console.error("Query error", { text, error: error.message });
-    throw error;
-  }
-};
-
-// Helper function to get a client from the pool
-const getClient = async () => {
-  return await pool.connect();
-};
-
+// Export a query function that uses the pool
 module.exports = {
-  query,
-  getClient,
-  pool,
+  query: (text, params) => {
+    console.log('EXECUTING QUERY:', text, params || '');
+    return pool.query(text, params);
+  },
 };

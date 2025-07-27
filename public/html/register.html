@@ -289,7 +289,7 @@
             formData.get("admin_confirm_password");
 
           if (password !== confirmPassword) {
-            alert("Passwords do not match");
+            console.log("Passwords do not match");
             return;
           }
 
@@ -299,7 +299,7 @@
               headers: {
                 "Content-Type": "application/json",
               },
-              credentials: "include", // Important for session cookies
+              credentials: "include", 
               body: JSON.stringify({
                 full_name: formData.get("full_name"),
                 email: formData.get("email") || formData.get("admin_email"),
@@ -316,13 +316,13 @@
             if (response.ok) {
               // Store user data in localStorage for easy access
               localStorage.setItem("user", JSON.stringify(data.user));
-              alert("Registration successful!");
-              window.location.href = "/";
+              console.log("Registration successful!");
+              window.location.href = "/html/category.html";
             } else {
-              alert(data.error || "Registration failed");
+              console.log(data.error || "Registration failed");
             }
           } catch (error) {
-            alert("Registration failed. Please try again.");
+            console.log("Registration failed. Please try again."); 
             console.error("Registration error:", error);
           }
         }

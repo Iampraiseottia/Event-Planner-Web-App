@@ -152,7 +152,7 @@ router.post("/logout", (req, res) => {
       });
     }
 
-    res.clearCookie("connect.sid"); // Clear session cookie
+    res.clearCookie("connect.sid"); 
     res.json({
       message: "Logout successful",
     });
