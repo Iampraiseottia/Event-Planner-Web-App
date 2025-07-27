@@ -1,144 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Book Event Planners</title>
-    <link rel="stylesheet" href="../css/book.css">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../css/footer.css">
-  <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%;">
+    <link rel="stylesheet" href="../css/book.css" />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+  </head>
+  <body>
+    <!-------------------- Nav Bar ~ Header  ------------------------>
 
-</head>
-<body>
-     <!-------------------- Nav Bar ~ Header  ------------------------>
-
-     <section id="header">
-        <div class="header-container">  
-            <h1 style="user-select: none; font-size: 30px; letter-spacing: 1px; font-weight: bold;">
-                <img src="../img/event3.jpg" class="home-img" style="margin-right: 5px;"> EVENTIFY
-                <i class="fa-solid fa-x" id="close" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: visible;"></i>
-                <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; position: absolute; top: 57px; right: 70px; visibility: hidden;"></i>
-            </h1>
-            <button class="back"><a href="../html/category.html">Back To Categories</a></button>
-        </div>
+    <section id="header">
+      <div class="header-container">
+        <h1
+          style="
+            user-select: none;
+            font-size: 30px;
+            letter-spacing: 1px;
+            font-weight: bold;
+          "
+        >
+          <img
+            src="../img/event3.jpg"
+            class="home-img"
+            style="margin-right: 5px"
+          />
+          EVENTIFY
+          <i
+            class="fa-solid fa-x"
+            id="close"
+            style="
+              cursor: pointer;
+              position: absolute;
+              top: 57px;
+              right: 70px;
+              visibility: visible;
+            "
+          ></i>
+          <i
+            class="fa-solid fa-bars"
+            id="menu"
+            style="
+              cursor: pointer;
+              position: absolute;
+              top: 57px;
+              right: 70px;
+              visibility: hidden;
+            "
+          ></i>
+        </h1>
+        <button class="back">
+          <a href="../html/category.html">Back To Categories</a>
+        </button>
+      </div>
     </section>
 
     <!---------------- BOOK  ------------------------->
-    
+
     <section id="book">
-        <div class="wrapper">
-            <div class="borderline">
-                <h1>Book An Event Planner</h1>
-                <form method="post">
-                    <div class="input_box">
-                        <box-icon name="rename" color="#4c0e2e"></box-icon>
-                        <select id="Country" class="planner-name">
-                            <option value="">Choose An Event Planner</option>
-                             <option value="Deligent Servers" style="font-weight: 600;">Deligent Servers   </option>
-                            <option value="Esther Decor" style="font-weight: 600;">Esther Decor  </option>
-                            <option value="MOther Care" style="font-weight: 600;">MOther Care  </option>
-                            <option value="Ace Events" style="font-weight: 600;">Ace Events  </option>
-                            <option value=" Asong Raphael" style="font-weight: 600;"> Asong Raphael  </option>
-                            <option value="Le Phenix" style="font-weight: 600;">Le Phenix </option>
-                            <option value="Eyamende Raisa" style="font-weight: 600;">Eyamende Raisa </option>
-                            <option value="Nkum Brandon " style="font-weight: 600;">Nkum Brandon   </option>
-                            <option value="Ncha Philip" style="font-weight: 600;">Ncha Philip  </option>
-                           
-                        </select>
-                    </div>
-    
-                   <div class="input_box">
-                        <box-icon type='solid' name='envelope'></box-icon>                
-                        <input name="text" id="name" autocomplete="off" type="text" required>
-                        <label for="text">Your Full Names</label>
-                        <i></i>
-                    </div>
-    
-                    <div class="input_box">
-                        <box-icon type='solid' name='phone-call'></box-icon>                
-                        <input name="phone_number" id="phone_number" autocomplete="off" type="number" required>
-                        <label for="phone_number">Your Phone Number</label>
-                        <i></i>
-                    </div>
-                    
-    
-                   <div class="input_box">
-                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                        <input name="email" id="email" autocomplete="off" type="email" required>
-                        <label for="email">Your Email Address</label>
-                        <i></i>
-                    </div>
-
-                    <div class="input_box">
-                        <box-icon name="rename" color="#4c0e2e"></box-icon>
-                        <select id="Country" class="planner-name">
-                            <option value="" >Choose Event Type</option>
-                            <option value="" style="font-weight: 600;">Wedding Celebrations  </option>
-                            <option value="" style="font-weight: 600;">Funerals / Memorials </option>
-                            <option value="" style="font-weight: 600;">Birthday Celebrations </option>
-                            <option value="" style="font-weight: 600;">Anniversary Celebrations  </option>
-                        </select>
-                    </div>
-
-                    <div class="input_box">
-                        <box-icon name="rename" color="#4c0e2e"></box-icon>
-                        <select id="Country" class="planner-name">
-                            <option value="">Choose Category ~ Pricing</option>
-                            <option value="" style="font-weight: 600;">Platinum ~ 2.5M  </option>
-                            <option value="" style="font-weight: 600;">Diamond ~ 1.5M </option>
-                            <option value="" style="font-weight: 600;">Gold ~ 1.0M </option>
-                            <option value="" style="font-weight: 600;">Bronze ~ 800K  </option>
-                            <option value="" style="font-weight: 600;">Silver ~ 500K  </option>
-                            <option value="" style="font-weight: 600;">High Class ~ 250K  </option>
-                            <option value="" style="font-weight: 600;">Normal Class ~ 120K  </option>
-                            <option value="" style="font-weight: 600;">Lowest Class ~ 80K  </option>
-                        </select>
-                    </div>
-                    
-                    <div class="input_box">
-                        <box-icon type='solid' name='phone-call'></box-icon>                
-                        <input name="location" id="location" autocomplete="off" type="text" required>
-                        <label for="location">Event Location</label>
-                        <i></i>
-                    </div>
-                    
-    
-                   <div class="input_box">
-                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                        <input name="date" id="date" autocomplete="off" type="date" required>
-                        <label for="date" style="margin-top: -12px;">Event Due Date</label>
-                        <i></i>
-                    </div>
-
-                   <div class="input_box">
-                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                        <input name="time" id="time" autocomplete="off" type="time" required >
-                        <label for="time" style="margin-top: -10px;">Event Due Time</label>
-                        <i></i>
-                    </div>       
-                    
-                    <div class="input_box">
-                        <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                        <textarea name="order" id="order" class="order" placeholder="Your Requirements In Specificity e.g 500 Chairs, ... etc"></textarea>
-                    </div> 
-    
-                   <div class="field">
-                        <input type="submit" class="btn" name="submit" value="BOOK NOW!" id="bookNow" required>
-                   </div> 
-    
-                </form>
+      <div class="wrapper">
+        <div class="borderline">
+          <h1>Book An Event Planner</h1>
+          <form id="bookingForm">
+            <div class="input_box">
+              <box-icon name="rename" color="#4c0e2e"></box-icon>
+              <select name="planner_name" class="planner-name" required>
+                <option value="">Choose An Event Planner</option>
+                <option value="Deligent Servers" style="font-weight: 600">
+                  Deligent Servers
+                </option>
+                <option value="Esther Decor" style="font-weight: 600">
+                  Esther Decor
+                </option>
+                <option value="MOther Care" style="font-weight: 600">
+                  MOther Care
+                </option>
+                <option value="Ace Events" style="font-weight: 600">
+                  Ace Events
+                </option>
+                <option value=" Asong Raphael" style="font-weight: 600">
+                  Asong Raphael
+                </option>
+                <option value="Le Phenix" style="font-weight: 600">
+                  Le Phenix
+                </option>
+                <option value="Eyamende Raisa" style="font-weight: 600">
+                  Eyamende Raisa
+                </option>
+                <option value="Nkum Brandon " style="font-weight: 600">
+                  Nkum Brandon
+                </option>
+                <option value="Ncha Philip" style="font-weight: 600">
+                  Ncha Philip
+                </option>
+              </select>
             </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="envelope"></box-icon>
+              <input
+                name="customer_name"
+                id="name"
+                autocomplete="off"
+                type="text"
+                required
+              />
+              <label for="text">Your Full Names</label>
+              <i></i>
+            </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="phone-call"></box-icon>
+              <input
+                name="phone_number"
+                id="phone_number"
+                autocomplete="off"
+                type="number"
+                required
+              />
+              <label for="phone_number">Your Phone Number</label>
+              <i></i>
+            </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+              <input
+                name="email"
+                id="email"
+                autocomplete="off"
+                type="email"
+                required
+              />
+              <label for="email">Your Email Address</label>
+              <i></i>
+            </div>
+
+            <div class="input_box">
+              <box-icon name="rename" color="#4c0e2e"></box-icon>
+              <select name="event_type" class="planner-name" required>
+                <option value="">Choose Event Type</option>
+                <option value="Wedding Celebrations" style="font-weight: 600">
+                  Wedding Celebrations
+                </option>
+                <option value="Funerals / Memorials" style="font-weight: 600">
+                  Funerals / Memorials
+                </option>
+                <option value="Birthday Celebrations" style="font-weight: 600">
+                  Birthday Celebrations
+                </option>
+                <option
+                  value="Anniversary Celebrations"
+                  style="font-weight: 600"
+                >
+                  Anniversary Celebrations
+                </option>
+              </select>
+            </div>
+
+            <div class="input_box">
+              <box-icon name="rename" color="#4c0e2e"></box-icon>
+              <select name="category" class="planner-name" required>
+                <option value="">Choose Category ~ Pricing</option>
+                <option value="Platinum ~ 2.5M" style="font-weight: 600">
+                  Platinum ~ 2.5M
+                </option>
+                <option value="Diamond ~ 1.5M" style="font-weight: 600">
+                  Diamond ~ 1.5M
+                </option>
+                <option value="Gold ~ 1.0M" style="font-weight: 600">
+                  Gold ~ 1.0M
+                </option>
+                <option value="Bronze ~ 800K" style="font-weight: 600">
+                  Bronze ~ 800K
+                </option>
+                <option value="Silver ~ 500K" style="font-weight: 600">
+                  Silver ~ 500K
+                </option>
+                <option value="High Class ~ 250K" style="font-weight: 600">
+                  High Class ~ 250K
+                </option>
+                <option value="Normal Class ~ 120K" style="font-weight: 600">
+                  Normal Class ~ 120K
+                </option>
+                <option value="Lowest Class ~ 80K" style="font-weight: 600">
+                  Lowest Class ~ 80K
+                </option>
+              </select>
+            </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="phone-call"></box-icon>
+              <input
+                name="location"
+                id="location"
+                autocomplete="off"
+                type="text"
+                required
+              />
+              <label for="location">Event Location</label>
+              <i></i>
+            </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+              <input
+                name="event_date"
+                id="date"
+                autocomplete="off"
+                type="date"
+                required
+              />
+              <label for="date" style="margin-top: -12px">Event Due Date</label>
+              <i></i>
+            </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+              <input
+                name="event_time"
+                id="time"
+                autocomplete="off"
+                type="time"
+                required
+              />
+              <label for="time" style="margin-top: -10px">Event Due Time</label>
+              <i></i>
+            </div>
+
+            <div class="input_box">
+              <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+              <textarea
+                name="requirements"
+                id="order"
+                class="order"
+                placeholder="Your Requirements In Specificity e.g 500 Chairs, ... etc"
+              ></textarea>
+            </div>
+
+            <div class="field">
+              <input
+                type="submit"
+                class="btn"
+                name="submit"
+                value="BOOK NOW!"
+                id="bookNow"
+                required
+              />
+            </div>
+          </form>
         </div>
+      </div>
     </section>
 
-    <div style="margin-top: 50px;" class="footer-conclude">
-        <p>@Copyright EVENTIFY, All Rights Reserved</p>
-        <p><em style="color: rgb(248, 233, 201);">Designed by:</em> <strong>Ottia Praise Beteck</strong></p>
+    <div style="margin-top: 50px" class="footer-conclude">
+      <p>@Copyright EVENTIFY, All Rights Reserved</p>
+      <p>
+        <em style="color: rgb(248, 233, 201)">Designed by:</em>
+        <strong>Ottia Praise Beteck</strong>
+      </p>
     </div>
-    
-    
-    <script src="../js/main.js"></script>
-</body>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const bookingForm = document.getElementById("bookingForm");
+
+        // Check authentication status
+        checkAuthStatus();
+
+        async function checkAuthStatus() {
+          try {
+            const response = await fetch("/api/auth/status", {
+              credentials: "include",
+            });
+            const data = await response.json();
+
+            if (!data.authenticated) {
+              alert("Please login first to book an event planner");
+              window.location.href = "/login";
+              return;
+            }
+
+            // Pre-fill user information if available
+            const user = data.user;
+            if (user.full_name) {
+              document.getElementById("name").value = user.full_name;
+            }
+            if (user.email) {
+              document.getElementById("email").value = user.email;
+            }
+            if (user.phone_number) {
+              document.getElementById("phone_number").value = user.phone_number;
+            }
+
+            // Store user data in localStorage for consistency
+            localStorage.setItem("user", JSON.stringify(user));
+          } catch (error) {
+            console.error("Auth check error:", error);
+            alert("Please login first to book an event planner");
+            window.location.href = "/login";
+          }
+        }
+
+        bookingForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(bookingForm);
+          const bookingData = {
+            planner_name: formData.get("planner_name"),
+            customer_name: formData.get("customer_name"),
+            phone_number: formData.get("phone_number"),
+            email: formData.get("email"),
+            event_type: formData.get("event_type"),
+            category: formData.get("category"),
+            location: formData.get("location"),
+            event_date: formData.get("event_date"),
+            event_time: formData.get("event_time"),
+            requirements: formData.get("requirements"),
+          };
+
+          try {
+            const response = await fetch("/api/bookings", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // Important for session cookies
+              body: JSON.stringify(bookingData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              alert("Booking created successfully! We will contact you soon.");
+              bookingForm.reset();
+              // Redirect to home or bookings page
+              window.location.href = "/";
+            } else {
+              alert(data.error || "Booking failed. Please try again.");
+            }
+          } catch (error) {
+            alert(
+              "Booking failed. Please check your connection and try again."
+            );
+            console.error("Booking error:", error);
+          }
+        });
+      });
+    </script>
+
+    <script src="../js/main.js"></script>
+  </body>
 </html>

@@ -1,201 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register | Eventify</title>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
-    <link rel="stylesheet" href="../css/register.css">
-    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%;">
-    
+    <link rel="stylesheet" href="../css/register.css" />
+    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
 
     <style>
-        body{
-            display: flex;
-            margin-top: 33px;
-            justify-content: center;
-            align-items: center;
-            width: 95%;
-            height: fit-content;
-            background: url(../img/planner6.jpg) no-repeat;
-            background-size: cover;
-            background-position: center;
-            flex-direction: column;
-        }
+      body {
+        display: flex;
+        margin-top: 33px;
+        justify-content: center;
+        align-items: center;
+        width: 95%;
+        height: fit-content;
+        background: url(../img/planner6.jpg) no-repeat;
+        background-size: cover;
+        background-position: center;
+        flex-direction: column;
+      }
 
-        .active {
-            background-color: transparent;
-            color: #0b52cd;
-        }
+      .active {
+        background-color: transparent;
+        color: #0b52cd;
+      }
 
-        .closePlan {
-            display: none;
-        }
+      .closePlan {
+        display: none;
+      }
 
-        .closeCus {
-            display: none;
-        }
-
+      .closeCus {
+        display: none;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <button class="GoBackBtn">
-        <a href="../index.html">Go Back To Home</a>  
-    </button> 
+      <a href="../index.html">Go Back To Home</a>
+    </button>
 
-    <div class="toggle" style="margin-top: 30px;">
-        <div class="customer" id="regCus" onclick="showCustomerSec()">Register As Customer</div>
-        <p class="divide"></p>
-        <div class="planner" id="regPlan" onclick="showPlannerSec()">Register As Planner</div>
+    <div class="toggle" style="margin-top: 30px">
+      <div class="customer" id="regCus" onclick="showCustomerSec()">
+        Register As Customer
+      </div>
+      <p class="divide"></p>
+      <div class="planner" id="regPlan" onclick="showPlannerSec()">
+        Register As Planner
+      </div>
     </div>
 
-    <div class="wrapper" style="margin-bottom: 90px;" id="regCustomer">
-        <div class="borderline">
-            <h1>Sign Up As Customer</h1>
-            <form method="post" action="../php/signup.php">
-                <div class="input_box">
-                    <box-icon name="rename" color="#4c0e2e"></box-icon>
-                    <input type="text" id="title" minlength="2" maxlength="30" name="full_name" autocomplete="off" required>
-                    <label for="title">Full Name</label>
-                    <i></i>
-                    <small id="titleerror">error message</small>
-                </div>
+    <div class="wrapper" style="margin-bottom: 90px" id="regCustomer">
+      <div class="borderline">
+        <h1>Sign Up As Customer</h1>
+        <form id="customerRegisterForm">
+          <div class="input_box">
+            <box-icon name="rename" color="#4c0e2e"></box-icon>
+            <input
+              type="text"
+              id="title"
+              minlength="2"
+              maxlength="30"
+              name="full_name"
+              autocomplete="off"
+              required
+            />
+            <label for="title">Full Name</label>
+            <i></i>
+            <small id="titleerror">error message</small>
+          </div>
 
-               <div class="input_box">
-                    <box-icon type='solid' name='envelope'></box-icon>                
-                    <input name="email" id="email" autocomplete="off" type="email" required>
-                    <label for="email">Email Address</label>
-                    <i></i>
-                    <small>error message</small>        
-                </div>
+          <div class="input_box">
+            <box-icon type="solid" name="envelope"></box-icon>
+            <input
+              name="email"
+              id="email"
+              autocomplete="off"
+              type="email"
+              required
+            />
+            <label for="email">Email Address</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-                <div class="input_box">
-                    <box-icon type='solid' name='phone-call'></box-icon>                
-                    <input name="phone_number" id="phone_number" autocomplete="off" type="number" required>
-                    <label for="phone_number">Phone Number</label>
-                    <i></i>
-                    <small>error message</small>        
-                </div>
-                
+          <div class="input_box">
+            <box-icon type="solid" name="phone-call"></box-icon>
+            <input
+              name="phone_number"
+              id="phone_number"
+              autocomplete="off"
+              type="number"
+              required
+            />
+            <label for="phone_number">Phone Number</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-               <div class="input_box">
-                    <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                    <input name="password" id="password" autocomplete="off" type="password" required>
-                    <label for="password">Password</label>
-                    <i></i>
-                    <small>error message</small>   
-                </div>
+          <div class="input_box">
+            <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+            <input
+              name="password"
+              id="password"
+              autocomplete="off"
+              type="password"
+              required
+            />
+            <label for="password">Password</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-               <div class="input_box">
-                    <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                    <input name="confirm_password" id="confirm_password" autocomplete="off" type="password" required >
-                    <label for="confirm_password">Confirm Password</label>
-                    <i></i>
-                    <small>error message</small>        
-                </div>
+          <div class="input_box">
+            <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+            <input
+              name="confirm_password"
+              id="confirm_password"
+              autocomplete="off"
+              type="password"
+              required
+            />
+            <label for="confirm_password">Confirm Password</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-                <div class="terms">
-                    <input type="checkbox">
-                    <p style="margin-left: 10px;">Agree to <span>Terms</span> and <span>Condition</span></p>
-                </div>
+          <div class="terms">
+            <input type="checkbox" required />
+            <p style="margin-left: 10px">
+              Agree to <span>Terms</span> and <span>Condition</span>
+            </p>
+          </div>
 
-               <div class="field">
-                    <input style="color: white; font-size: 18px;" type="submit" class="btn" name="submit" value="Register As Customer" required>
-               </div> 
+          <div class="field">
+            <input
+              style="color: white; font-size: 18px"
+              type="submit"
+              class="btn"
+              name="submit"
+              value="Register As Customer"
+              required
+            />
+          </div>
 
-               <div class="kudi" >
-                Already a member? <a href="../html/login.html">Sign In</a>
-               </div>
-            </form>
-        </div>
+          <div class="kudi">
+            Already a member? <a href="../html/login.html">Sign In</a>
+          </div>
+        </form>
+      </div>
     </div>
 
+    <div class="wrapper closePlan" style="margin-bottom: 50px" id="regPlanner">
+      <div class="borderline">
+        <h1>Sign Up As Planner</h1>
+        <form id="plannerRegisterForm">
+          <div class="input_box">
+            <box-icon name="rename" color="#4c0e2e"></box-icon>
+            <input
+              type="text"
+              id="planner_title"
+              minlength="2"
+              maxlength="30"
+              name="full_name"
+              autocomplete="off"
+              required
+            />
+            <label for="title">Full Name</label>
+            <i></i>
+            <small id="titleerror">error message</small>
+          </div>
 
-    <div class="wrapper closePlan" style="margin-bottom: 50px; " id="regPlanner">
-        <div class="borderline">
-            <h1>Sign Up As Planner</h1>
-            <form method="post" action="../php/admin_reg.php">
-                <div class="input_box">
-                    <box-icon name="rename" color="#4c0e2e"></box-icon>
-                    <input type="text" id="title" minlength="2" maxlength="30" name="full_name" autocomplete="off" required>
-                    <label for="title">Full Name</label>
-                    <i></i>
-                    <small id="titleerror">error message</small>
-                </div>
+          <div class="input_box">
+            <box-icon type="solid" name="envelope"></box-icon>
+            <input
+              name="admin_email"
+              id="admin_email"
+              autocomplete="off"
+              type="email"
+              required
+            />
+            <label for="admin_email">Email Address</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-               <div class="input_box">
-                    <box-icon type='solid' name='envelope'></box-icon>                
-                    <input name="admin_email" id="admin_email" autocomplete="off" type="email" required>
-                    <label for="admin_email">Email Address</label>
-                    <i></i>
-                    <small>error message</small>        
-                </div>
+          <div class="input_box">
+            <box-icon type="solid" name="phone-call"></box-icon>
+            <input
+              name="admin_phone_number"
+              id="admin_phone_number"
+              autocomplete="off"
+              type="number"
+              required
+            />
+            <label for="admin_phone_number">Phone Number</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-                <div class="input_box">
-                    <box-icon type='solid' name='phone-call'></box-icon>                
-                    <input name="admin_phone_number" id="admin_phone_number" autocomplete="off" type="number" required>
-                    <label for="admin_phone_number">Phone Number</label>
-                    <i></i>
-                    <small>error message</small>        
-                </div>
-                
+          <div class="input_box">
+            <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+            <input
+              name="admin_password"
+              id="admin_password"
+              autocomplete="off"
+              type="password"
+              required
+            />
+            <label for="admin_password">Password</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-               <div class="input_box">
-                    <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                    <input name="admin_password" id="admin_password" autocomplete="off" type="password" required>
-                    <label for="admin_password">Password</label>
-                    <i></i>
-                    <small>error message</small>   
-                </div>
+          <div class="input_box">
+            <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
+            <input
+              name="admin_confirm_password"
+              id="admin_confirm_password"
+              autocomplete="off"
+              type="password"
+              required
+            />
+            <label for="admin_confirm_password">Confirm Password</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-               <div class="input_box">
-                    <box-icon type='solid' name='timer' color="#4c0e2e"></box-icon>
-                    <input name="admin_confirm_password" id="admin_confirm_password" autocomplete="off" type="password" required >
-                    <label for="admin_confirm_password">Confirm Password</label>
-                    <i></i>
-                    <small>error message</small>        
-                </div>
+          <div class="terms">
+            <input type="checkbox" required />
+            <p style="margin-left: 10px">
+              Agree to <span>Terms</span> and <span>Condition</span>
+            </p>
+          </div>
 
-                <div class="terms">
-                    <input type="checkbox"><p style="margin-left: 10px;">Agree to <span>Terms</span> and <span>Condition</span></p>
-                </div>
+          <div class="field">
+            <input
+              type="submit"
+              style="color: white; font-size: 17px"
+              class="btn"
+              name="submit"
+              value="Register As Event Planner"
+              required
+            />
+          </div>
 
-               <div class="field">
-                    <input type="submit" style="color: white; font-size: 17px;" class="btn" name="submit" value="Register As Event Planner" required>
-               </div> 
-
-               <div class="kudi" >
-                Already a member? <a href="../html/login.html">Sign In</a>
-               </div>
-            </form>
-        </div>
+          <div class="kudi">
+            Already a member? <a href="../html/login.html">Sign In</a>
+          </div>
+        </form>
+      </div>
     </div>
-
 
     <script>
-        function showCustomerSec() {
-            document.getElementById("regCus").classList.add("active");
-            document.getElementById("regPlan").classList.remove("active");
-            document.getElementById("regCustomer").classList.remove("closeCus");
-            document.getElementById("regPlanner").classList.add("closePlan");
-            document.getElementById("regCus").style.color = '#0b52cd';            
-            document.getElementById("regCus").style.opacity = '1';            
-            document.getElementById("regPlan").style.color = 'white';            
-            document.getElementById("regPlan").style.opacity = '0.4';             
+      function showCustomerSec() {
+        document.getElementById("regCus").classList.add("active");
+        document.getElementById("regPlan").classList.remove("active");
+        document.getElementById("regCustomer").classList.remove("closeCus");
+        document.getElementById("regPlanner").classList.add("closePlan");
+        document.getElementById("regCus").style.color = "#0b52cd";
+        document.getElementById("regCus").style.opacity = "1";
+        document.getElementById("regPlan").style.color = "white";
+        document.getElementById("regPlan").style.opacity = "0.4";
+      }
+
+      function showPlannerSec() {
+        document.getElementById("regPlan").classList.add("active");
+        document.getElementById("regCus").classList.remove("active");
+        document.getElementById("regPlanner").classList.remove("closePlan");
+        document.getElementById("regCustomer").classList.add("closeCus");
+        document.getElementById("regCus").style.color = "white";
+        document.getElementById("regCus").style.opacity = "0.4";
+        document.getElementById("regPlan").style.color = "#0b52cd";
+        document.getElementById("regPlan").style.opacity = "1";
+      }
+
+      // Registration functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const customerForm = document.getElementById("customerRegisterForm");
+        const plannerForm = document.getElementById("plannerRegisterForm");
+
+        async function handleRegistration(formData, userType) {
+          const password =
+            formData.get("password") || formData.get("admin_password");
+          const confirmPassword =
+            formData.get("confirm_password") ||
+            formData.get("admin_confirm_password");
+
+          if (password !== confirmPassword) {
+            alert("Passwords do not match");
+            return;
+          }
+
+          try {
+            const response = await fetch("/api/auth/register", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // Important for session cookies
+              body: JSON.stringify({
+                full_name: formData.get("full_name"),
+                email: formData.get("email") || formData.get("admin_email"),
+                phone_number:
+                  formData.get("phone_number") ||
+                  formData.get("admin_phone_number"),
+                password: password,
+                user_type: userType,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              // Store user data in localStorage for easy access
+              localStorage.setItem("user", JSON.stringify(data.user));
+              alert("Registration successful!");
+              window.location.href = "/";
+            } else {
+              alert(data.error || "Registration failed");
+            }
+          } catch (error) {
+            alert("Registration failed. Please try again.");
+            console.error("Registration error:", error);
+          }
         }
 
-        function showPlannerSec() {
-            document.getElementById("regPlan").classList.add("active");
-            document.getElementById("regCus").classList.remove("active");
-            document.getElementById("regPlanner").classList.remove("closePlan");
-            document.getElementById("regCustomer").classList.add("closeCus");
-            document.getElementById("regCus").style.color = 'white';            
-            document.getElementById("regCus").style.opacity = '0.4';            
-            document.getElementById("regPlan").style.color = '#0b52cd';            
-            document.getElementById("regPlan").style.opacity = '1';            
-        }
+        customerForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(customerForm);
+          await handleRegistration(formData, "customer");
+        });
+
+        plannerForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(plannerForm);
+          await handleRegistration(formData, "planner");
+        });
+      });
     </script>
-
-</body>
+  </body>
 </html>

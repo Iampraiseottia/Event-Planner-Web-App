@@ -211,6 +211,7 @@
 
 .input_box input:focus {
   transform: scale(1.02);
+  padding-left: 50px;
 }
 
 .input_box label {

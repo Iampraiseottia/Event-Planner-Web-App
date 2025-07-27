@@ -1,153 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login | Eventify</title>
-    <link rel="stylesheet" href="../css/register.css">
-    <link rel="icon" href="./img/planner1.webp" style="border-radius: 50%;">
-
-    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%;">
-
+    <link rel="stylesheet" href="../css/register.css" />
+    <link rel="icon" href="./img/planner1.webp" style="border-radius: 50%" />
+    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <style>
-        body{
-            display: flex;
-            margin-top: 33px;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: fit-content;
-            background: url(../img/planner7.jpg) no-repeat;
-            background-size: cover;
-            background-position: center;
-            flex-direction: column;
-        }
+      body {
+        display: flex;
+        margin-top: 33px;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: fit-content;
+        background: url(../img/planner7.jpg) no-repeat;
+        background-size: cover;
+        background-position: center;
+        flex-direction: column;
+      }
 
-        .active {
-            background-color: transparent;
-            color: #0b52cd;
-        }
-
-
+      .active {
+        background-color: transparent;
+        color: #0b52cd;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <button class="GoBackBtn">
-        <a href="../index.html">Go Back To Home</a>  
-    </button> 
+      <a href="../index.html">Go Back To Home</a>
+    </button>
 
-    <div class="toggle" style="margin-top: 40px;">
-        <div class="customer" id="regCus" onclick="showCustomerSec()">Login As Customer</div>
-        <p class="divide"></p>
-        <div class="planner" id="regPlan" onclick="showPlannerSec()">Login As Planner</div>
+    <div class="toggle" style="margin-top: 40px">
+      <div class="customer" id="regCus" onclick="showCustomerSec()">
+        Login As Customer
+      </div>
+      <p class="divide"></p>
+      <div class="planner" id="regPlan" onclick="showPlannerSec()">
+        Login As Planner
+      </div>
     </div>
 
-    <section class="wrapper" style="margin-bottom: 30px;" id="regCustomer">
-        <div class="borderline">
-        <form method="POST" action="../php/login.php">
-            <h1>Sign In As Customer</h1>
-            <div class="input_box">
-                <box-icon name="rename" color="#4c0e2e"></box-icon>
-                <input type="text" name="full_name" id="full_name" minlength="2" maxlength="30" required>
-                <label for="username">Full Name</label>
-                <i></i>
-                <small id="titleerror">error message</small>
-            </div>
+    <section class="wrapper" style="margin-bottom: 30px" id="regCustomer">
+      <div class="borderline">
+        <form id="customerLoginForm">
+          <h1>Sign In As Customer</h1>
+          <div class="input_box">
+            <box-icon name="rename" color="#4c0e2e"></box-icon>
+            <input
+              type="text"
+              name="full_name"
+              id="full_name"
+              minlength="2"
+              maxlength="30"
+              required
+            />
+            <label for="username">Full Name</label>
+            <i></i>
+            <small id="titleerror">error message</small>
+          </div>
 
-            <div class="input_box">
-                <box-icon type='solid' name='email' color="#4c0e2e"></box-icon>
-                <input name="email" id="email" type="email" required>
-                <label for="email">Email Address</label>
-                <i></i>
-                <small>error message</small>        
-            </div>
+          <div class="input_box">
+            <box-icon type="solid" name="email" color="#4c0e2e"></box-icon>
+            <input name="email" id="email" type="email" required />
+            <label for="email">Email Address</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-            <div class="input_box">
-                <box-icon type='solid' name='password' color="#4c0e2e"></box-icon>
-                <input name="password" id="password" type="password" required>
-                <label for="password">Password</label>
-                <i></i>
-                <small>error message</small>        
-            </div>
+          <div class="input_box">
+            <box-icon type="solid" name="password" color="#4c0e2e"></box-icon>
+            <input name="password" id="password" type="password" required />
+            <label for="password">Password</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-            <div class="field">
-                <input type="submit" class="btn" name="submit" value="Login As Customer" required 
-                style="color:  white; font-size: 18px;">
-            </div>
+          <div class="field">
+            <input
+              type="submit"
+              class="btn"
+              name="submit"
+              value="Login As Customer"
+              required
+              style="color: white; font-size: 18px"
+            />
+          </div>
 
-            <p class="kudi">
-               Don't Already have an account? <a href="../html/register.html">Register</a>
-            </p>
+          <p class="kudi">
+            Don't Already have an account?
+            <a href="../html/register.html">Register</a>
+          </p>
         </form>
-        </div>
+      </div>
     </section>
 
-    <section class="wrapper closePlan" style="margin-bottom: 30px;" id="regPlanner" >
-        <div class="borderline">
-        <form method="POST" action="../php/login.php">
-            <h1>Sign In As Planer</h1>
-            <div class="input_box">
-                <box-icon name="rename" color="#4c0e2e"></box-icon>
-                <input type="text" name="full_name" id="full_name" minlength="2" maxlength="30" required>
-                <label for="username">Full Name</label>
-                <i></i>
-                <small id="titleerror">error message</small>
-            </div>
+    <section
+      class="wrapper closePlan"
+      style="margin-bottom: 30px"
+      id="regPlanner"
+    >
+      <div class="borderline">
+        <form id="plannerLoginForm">
+          <h1>Sign In As Planer</h1>
+          <div class="input_box">
+            <box-icon name="rename" color="#4c0e2e"></box-icon>
+            <input
+              type="text"
+              name="full_name"
+              id="planner_full_name"
+              minlength="2"
+              maxlength="30"
+              required
+            />
+            <label for="username">Full Name</label>
+            <i></i>
+            <small id="titleerror">error message</small>
+          </div>
 
-            <div class="input_box">
-                <box-icon type='solid' name='email' color="#4c0e2e"></box-icon>
-                <input name="email" id="email" type="email" required>
-                <label for="email">Email Address</label>
-                <i></i>
-                <small>error message</small>        
-            </div>
+          <div class="input_box">
+            <box-icon type="solid" name="email" color="#4c0e2e"></box-icon>
+            <input name="email" id="planner_email" type="email" required />
+            <label for="email">Email Address</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-            <div class="input_box">
-                <box-icon type='solid' name='password' color="#4c0e2e"></box-icon>
-                <input name="password" id="password" type="password" required>
-                <label for="password">Password</label>
-                <i></i>
-                <small>error message</small>        
-            </div>
+          <div class="input_box">
+            <box-icon type="solid" name="password" color="#4c0e2e"></box-icon>
+            <input
+              name="password"
+              id="planner_password"
+              type="password"
+              required
+            />
+            <label for="password">Password</label>
+            <i></i>
+            <small>error message</small>
+          </div>
 
-            <div class="field">
-                <input type="submit" class="btn" name="submit" value="Login As Planner" required 
-                style="color:  white; font-size: 18px;">
-            </div>
+          <div class="field">
+            <input
+              type="submit"
+              class="btn"
+              name="submit"
+              value="Login As Planner"
+              required
+              style="color: white; font-size: 18px"
+            />
+          </div>
 
-            <p class="kudi">
-               Don't Already have an account? <a href="../html/register.html">Register</a>
-            </p>
+          <p class="kudi">
+            Don't Already have an account?
+            <a href="../html/register.html">Register</a>
+          </p>
         </form>
-        </div>
+      </div>
     </section>
-
 
     <script>
-        function showCustomerSec() {
-            document.getElementById("regCus").classList.add("active");
-            document.getElementById("regPlan").classList.remove("active");
-            document.getElementById("regCustomer").classList.remove("closeCus");
-            document.getElementById("regPlanner").classList.add("closePlan");
-            document.getElementById("regCus").style.color = '#0b52cd';            
-            document.getElementById("regCus").style.opacity = '1';            
-            document.getElementById("regPlan").style.color = 'black';            
-            document.getElementById("regPlan").style.opacity = '0.4';             
+      function showCustomerSec() {
+        document.getElementById("regCus").classList.add("active");
+        document.getElementById("regPlan").classList.remove("active");
+        document.getElementById("regCustomer").classList.remove("closeCus");
+        document.getElementById("regPlanner").classList.add("closePlan");
+        document.getElementById("regCus").style.color = "#0b52cd";
+        document.getElementById("regCus").style.opacity = "1";
+        document.getElementById("regPlan").style.color = "black";
+        document.getElementById("regPlan").style.opacity = "0.4";
+      }
+
+      function showPlannerSec() {
+        document.getElementById("regPlan").classList.add("active");
+        document.getElementById("regCus").classList.remove("active");
+        document.getElementById("regPlanner").classList.remove("closePlan");
+        document.getElementById("regCustomer").classList.add("closeCus");
+        document.getElementById("regCus").style.color = "black";
+        document.getElementById("regCus").style.opacity = "0.4";
+        document.getElementById("regPlan").style.color = "#0b52cd";
+        document.getElementById("regPlan").style.opacity = "1";
+      }
+
+      // Login functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const customerForm = document.getElementById("customerLoginForm");
+        const plannerForm = document.getElementById("plannerLoginForm");
+
+        async function handleLogin(formData, userType) {
+          try {
+            const response = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // Important for session cookies
+              body: JSON.stringify({
+                email: formData.get("email"),
+                password: formData.get("password"),
+                full_name: formData.get("full_name"),
+              }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.user.user_type === userType) {
+              // Store user data in localStorage for easy access
+              localStorage.setItem("user", JSON.stringify(data.user));
+              alert("Login successful!");
+              window.location.href = "/";
+            } else if (response.ok && data.user.user_type !== userType) {
+              alert(`Please use the ${data.user.user_type} login form`);
+            } else {
+              alert(data.error || "Login failed");
+            }
+          } catch (error) {
+            alert("Login failed. Please try again.");
+            console.error("Login error:", error);
+          }
         }
 
-        function showPlannerSec() {
-            document.getElementById("regPlan").classList.add("active");
-            document.getElementById("regCus").classList.remove("active");
-            document.getElementById("regPlanner").classList.remove("closePlan");
-            document.getElementById("regCustomer").classList.add("closeCus");
-            document.getElementById("regCus").style.color = 'black';            
-            document.getElementById("regCus").style.opacity = '0.4';            
-            document.getElementById("regPlan").style.color = '#0b52cd';            
-            document.getElementById("regPlan").style.opacity = '1';            
-        }
+        customerForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(customerForm);
+          await handleLogin(formData, "customer");
+        });
+
+        plannerForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(plannerForm);
+          await handleLogin(formData, "planner");
+        });
+      });
     </script>
-
-</body>
+  </body>
 </html>
