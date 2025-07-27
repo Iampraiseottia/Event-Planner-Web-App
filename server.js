@@ -44,30 +44,29 @@ app.use(
   })
 );
 
-// Serve static files directly from the current directory (project root)
-// This means CSS, JS, img, and html folders should be in the project root.
-app.use(express.static(__dirname)); // Changed this line
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, "public"))); // Reverted to public folder
 
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-// Serve index.html directly from the project root (already correct)
+// Serve HTML files from public/
+// index.html is now inside the public folder
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html")); // Path updated
 });
 
-// Serve other HTML files from the 'html' directory in the project root
 app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "html", "login.html")); // Changed this line
+  res.sendFile(path.join(__dirname, "public", "html", "login.html")); // Path updated
 });
 
 app.get("/register", (req, res) => {
-  res.sendFile(path.join(__dirname, "html", "register.html")); // Changed this line
+  res.sendFile(path.join(__dirname, "public", "html", "register.html")); // Path updated
 });
 
 app.get("/book", (req, res) => {
-  res.sendFile(path.join(__dirname, "html", "book.html")); // Changed this line
+  res.sendFile(path.join(__dirname, "public", "html", "book.html")); // Path updated
 });
 
 // Error handling middleware
