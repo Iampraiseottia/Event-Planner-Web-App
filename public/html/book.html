@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="../css/footer.css" />
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+
+
+
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    
   </head>
   <body>
     <!-------------------- Nav Bar ~ Header  ------------------------>
@@ -327,7 +336,7 @@
               headers: {
                 "Content-Type": "application/json",
               },
-              credentials: "include", // Important for session cookies
+              credentials: "include",
               body: JSON.stringify(bookingData),
             });
 
@@ -336,7 +345,6 @@
             if (response.ok) {
               alert("Booking created successfully! We will contact you soon.");
               bookingForm.reset();
-              // Redirect to home or bookings page
               window.location.href = "/";
             } else {
               alert(data.error || "Booking failed. Please try again.");
@@ -350,7 +358,7 @@
         });
       });
     </script>
-
+ 
     <script src="../js/main.js"></script>
   </body>
 </html>

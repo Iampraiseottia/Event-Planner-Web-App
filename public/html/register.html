@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="../css/register.css" />
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
 
+
+
+     <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
     <style>
       body {
         display: flex;
@@ -35,6 +43,13 @@
         display: none;
       }
     </style>
+
+
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+    </script>
+    <script src="/_vercel/insights/script.js"></script>
   </head>
   <body>
     <button class="GoBackBtn">
@@ -289,7 +304,7 @@
             formData.get("admin_confirm_password");
 
           if (password !== confirmPassword) {
-            console.log("Passwords do not match");
+            alert("Passwords do not match");
             return;
           }
 
@@ -313,16 +328,31 @@
 
             const data = await response.json();
 
+
             if (response.ok) {
               // Store user data in localStorage for easy access
               localStorage.setItem("user", JSON.stringify(data.user));
-              console.log("Registration successful!");
-              window.location.href = "/html/category.html";
+              alert("Registration successful!"); 
+
+              if (typeof window.va === 'function') {
+                  window.va('track', 'registration_success', {
+                      user_type: userType,
+                      email_domain: (formData.get("email") || formData.get("admin_email")).split('@')[1]
+                  });
+              }
+
+              if (data.user.user_type === 'customer') {
+                window.location.href = "/html/customer-dashboard.html";
+              } else if (data.user.user_type === 'planner') {
+                window.location.href = "/html/planner-dashboard.html";
+              } else {
+                window.location.href = "/"; 
+              }
             } else {
-              console.log(data.error || "Registration failed");
+              alert(data.error || "Registration failed"); 
             }
           } catch (error) {
-            console.log("Registration failed. Please try again."); 
+            alert("Registration failed. Please try again."); 
             console.error("Registration error:", error);
           }
         }

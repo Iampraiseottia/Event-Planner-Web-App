@@ -45,7 +45,7 @@
   cursor: pointer;
   padding: 10px 20px;
   border-radius: 10px;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease; 
   user-select: none;
 }
 
@@ -225,7 +225,7 @@
 
 .input_box input:valid ~ label,
 .input_box input:focus ~ label {
-  color: #3b79e5;
+  color: purple;
   font-size: 16px;
   transform: translateY(-25px);
   font-size: 19px;

@@ -8,6 +8,15 @@
     <link rel="icon" href="./img/planner1.webp" style="border-radius: 50%" />
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+
+
+     <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
+
     <style>
       body {
         display: flex;
@@ -27,6 +36,18 @@
         color: #0b52cd;
       }
     </style>
+
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va =
+        window.va ||
+        function () {
+          (window.va.q = window.va.q || []).push(arguments);
+        };
+    </script>
+    <script src="/_vercel/insights/script.js"></script>
+
+    
   </head>
   <body>
     <button class="GoBackBtn">
@@ -63,7 +84,7 @@
           </div>
 
           <div class="input_box">
-            <box-icon type="solid" name="email" color="#4c0e2e"></box-icon>
+            <box-icon type="solid" name="envelope"></box-icon>
             <input name="email" id="email" type="email" required />
             <label for="email">Email Address</label>
             <i></i>
@@ -71,7 +92,7 @@
           </div>
 
           <div class="input_box">
-            <box-icon type="solid" name="password" color="#4c0e2e"></box-icon>
+            <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
             <input name="password" id="password" type="password" required />
             <label for="password">Password</label>
             <i></i>
@@ -121,7 +142,7 @@
           </div>
 
           <div class="input_box">
-            <box-icon type="solid" name="email" color="#4c0e2e"></box-icon>
+            <box-icon type="solid" name="envelope" color="#4c0e2e"></box-icon>
             <input name="email" id="planner_email" type="email" required />
             <label for="email">Email Address</label>
             <i></i>
@@ -129,7 +150,7 @@
           </div>
 
           <div class="input_box">
-            <box-icon type="solid" name="password" color="#4c0e2e"></box-icon>
+            <box-icon type="solid" name="timer" color="#4c0e2e"></box-icon>
             <input
               name="password"
               id="planner_password"
@@ -195,7 +216,7 @@
               headers: {
                 "Content-Type": "application/json",
               },
-              credentials: "include", 
+              credentials: "include",
               body: JSON.stringify({
                 email: formData.get("email"),
                 password: formData.get("password"),
@@ -205,13 +226,23 @@
 
             const data = await response.json();
 
-            if (response.ok && data.user.user_type === userType) {
-              // Store user data in localStorage for easy access
+            if (response.ok && data.user) {
               localStorage.setItem("user", JSON.stringify(data.user));
               console.log("Login successful!");
-              window.location.href = "/html/category.html";
-            } else if (response.ok && data.user.user_type !== userType) {
-              console.log(`Please use the ${data.user.user_type} login form`);
+
+              // Redirect based on user_type
+              if (data.user.user_type === "customer") {
+                window.location.href = "/html/customer-dashboard.html";
+              } else if (data.user.user_type === "planner") {
+                window.location.href = "/html/planner-dashboard.html";
+              } else {
+                window.location.href = "/";
+              }
+            } else if (response.ok && !data.user) {
+              console.log(
+                "Login successful, but user data missing from response."
+              );
+              console.log(data.error || "Login failed");
             } else {
               console.log(data.error || "Login failed");
             }
