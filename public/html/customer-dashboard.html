@@ -3,9 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard</title>
+    <title>Customer Dashboard - EVENTIFY</title>
+    <link rel="stylesheet" href="../css/customer-dashboard.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%;">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
-    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../img/event3.jpg" alt="EVENTIFY">
+                <span>EVENTIFY</span>
+            </div>
+            <div class="nav-menu">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="../html/category.html" class="nav-link">
+                    <i class="fas fa-calendar"></i> Book Event
+                </a>
+                <button id="logoutBtn" class="nav-link logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <button class="menu-item active" data-section="overview">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Overview</span>
+                </button>
+                <button class="menu-item" data-section="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </button>
+                <button class="menu-item" data-section="bookings">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>My Bookings</span>
+                </button>
+                <button class="menu-item" data-section="upcoming">
+                    <i class="fas fa-clock"></i>
+                    <span>Upcoming Events</span>
+                </button>
+                <button class="menu-item" data-section="history">
+                    <i class="fas fa-history"></i>
+                    <span>Event History</span>
+                </button>
+                <button class="menu-item" data-section="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <button class="menu-item" data-section="support">
+                    <i class="fas fa-headset"></i>
+                    <span>Support</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section id="overview" class="content-section active">
+                <div class="section-header">
+                    <h1>Welcome back, <span id="customerName">Customer</span>!</h1>
+                    <p>Here's Your Event Planning Overview</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalBookings">0</h3>
+                            <p>Total Bookings</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="upcomingEvents">0</h3>
+                            <p>Upcoming Booked Events</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="completedEvents">0</h3>
+                            <p>Completed Events</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalSpent">0 <span>Francs</span></h3>
+                            <p>Total Spent</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h2>Quick Actions</h2>
+                    <div class="action-buttons">
+                        <a href="../html/category.html" class="action-btn primary">
+                            <i class="fas fa-plus"></i>
+                            Book New Event
+                        </a>
+                        <button class="action-btn secondary" onclick="showSection('upcoming')">
+                            <i class="fas fa-calendar"></i>
+                            View Upcoming
+                        </button>
+                        <button class="action-btn secondary" onclick="showSection('support')">
+                            <i class="fas fa-headset"></i>
+                            Get Support
+                        </button>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h2>Recent Activity</h2>
+                    <div id="recentActivityList" class="activity-list">
+                        <!-- Recent activities space to contain loaded items from database -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile" class="content-section">
+                <div class="section-header " style="text-align: center !important;">
+                    <h1>My Profile</h1>
+                    <p>Manage Your Account Information</p>
+                </div>
+
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-image-section">
+                            <div class="profile-image">
+                                <img id="profileImage" src="../img/team-1.jpg" alt="Profile">
+                                <div class="image-overlay">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            <input type="file" id="profileImageInput" accept="image/*" hidden>
+                        </div>
+
+                        <form id="profileForm" class="profile-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="fullName">Full Name*</label>
+                                    <input type="text" id="fullName" placeholder="Full Name" name="fullName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email Address*</label>
+                                    <input type="email" placeholder="Email Address" id="email" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone Number*</label>
+                                    <input type="tel" placeholder="Phone Number" id="phone" name="phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="location">Location*</label>
+                                    <input type="text" id="location"  placeholder="Location" name="location">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dateOfBirth">Date of Birth</label>
+                                    <input type="date" id="dateOfBirth" name="dateOfBirth">
+                                </div>
+                                <div class="form-group">
+                                    <label for="preferences">Event Preferences</label>
+                                    <select id="preferences" name="preferences" multiple>
+                                        <option value="wedding">Wedding Celebrations</option>
+                                        <option value="birthday">Birthday Celebrations</option>
+                                        <option value="anniversary">Anniversary Celebrations</option>
+                                        <option value="funeral">Funerals / Memorials</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Update Profile</button>
+                                <button type="button" class="btn-secondary" onclick="resetForm()">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bookings Section -->
+            <section id="bookings" class="content-section">
+                <div class="section-header">
+                    <h1>My Bookings</h1>
+                    <p>All your event bookings in one place</p>
+                </div>
+
+                <div class="booking-filters">
+                    <div class="filter-group">
+                        <label for="statusFilter">Filter by Status:</label>
+                        <select id="statusFilter">
+                            <option value="all">All Bookings</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">Filter by Date:</label>
+                        <input type="month" id="dateFilter">
+                    </div>
+                    <div class="search-group">
+                        <input type="text" id="bookingSearch" placeholder="Search bookings...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+
+                <div id="bookingsList" class="bookings-grid">
+                    <!-- Bookings space to contain loaded items from database -->
+                </div>
+            </section>
+
+            <!-- Upcoming Events Section -->
+            <section id="upcoming" class="content-section">
+                <div class="section-header">
+                    <h1>Upcoming Events</h1>
+                    <p>Your scheduled events for the coming weeks</p>
+                </div>
+
+                <div class="timeline-container">
+                    <div id="upcomingEventsList" class="timeline">
+                        <!-- Upcoming events space to contain loaded items from database -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Event History Section -->
+            <section id="history" class="content-section">
+                <div class="section-header">
+                    <h1>Event History</h1>
+                    <p>Your past events and experiences</p>
+                </div>
+
+                <div class="history-container">
+                    <div id="eventHistoryList" class="history-grid">
+                        <!-- Event history space to contain loaded items from database -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section id="notifications" class="content-section">
+                <div class="section-header">
+                    <h1>Notifications</h1>
+                    <p>Stay updated with your event planning activities</p>
+                </div>
+
+                <div class="notification-controls">
+                    <button id="markAllRead" class="btn-secondary">Mark All as Read</button>
+                    <button id="clearNotifications" class="btn-outline">Clear All</button>
+                </div>
+
+                <div id="notificationsList" class="notifications-container">
+                    <!-- Notifications space to contain loaded items from database -->
+                </div>
+            </section>
+
+            <!-- Support Section -->
+            <section id="support" class="content-section">
+                <div class="section-header">
+                    <h1>Support Center</h1>
+                    <p>Get help with your event planning needs</p>
+                </div>
+
+                <div class="support-container">
+                    <div class="support-options">
+                        <div class="support-option">
+                            <i class="fas fa-comments"></i>
+                            <h3>Live Chat</h3>
+                            <p>Chat with our support team in real-time</p>
+                            <button class="btn-primary">Start Chat</button>
+                        </div>
+                        <div class="support-option">
+                            <i class="fas fa-envelope"></i>
+                            <h3>Email Support</h3>
+                            <p>Send us an email and we'll respond within 24 hours</p>
+                            <button class="btn-secondary">Send Email</button>
+                        </div>
+                        <div class="support-option">
+                            <i class="fas fa-phone"></i>
+                            <h3>Phone Support</h3>
+                            <p>Call us directly for immediate assistance</p>
+                            <button class="btn-secondary">Call Now</button>
+                        </div>
+                    </div>
+
+                    <div class="faq-section">
+                        <h2>Frequently Asked Questions</h2>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>How do I book an event planner?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>You can book an event planner by visiting our "Book Event" section, selecting your preferred planner, and filling out the booking form with your event details.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>Can I modify my booking after confirmation?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes, you can modify your booking details up to 48 hours before the event date. Contact your assigned planner or our support team for assistance.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h4>What payment methods do you accept?</h4>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>We accept all major credit cards, bank transfers, and mobile money payments. Payment details will be provided during the booking process.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Booking Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="bookingModalBody">
+                <!-- Booking details space to contain loaded items from database -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn-primary" id="contactPlannerBtn">Contact Planner</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script src="../js/customer-dashboard.js"></script>
 </body>
 </html>

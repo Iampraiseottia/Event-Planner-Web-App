@@ -1,11 +1,849 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Planner Dashboard</title>
-</head>
-<body>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Planner Dashboard - EVENTIFY</title>
+    <link rel="stylesheet" href="../css/planner-dashboard.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script>
+      window.va =
+        window.va ||
+        function () {
+          (window.va.q = window.va.q || []).push(arguments);
+        };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <img src="../img/event3.jpg" alt="EVENTIFY" />
+          <span>EVENTIFY</span>
+          <span class="planner-badge">PLANNER</span>
+        </div>
+        <div class="nav-menu">
+          <a href="../index.html" class="nav-link">
+            <i class="fas fa-home"></i> Home
+          </a>
+          <div class="nav-notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notification-count" id="navNotificationCount">0</span>
+          </div>
+          <button id="logoutBtn" class="nav-link logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-menu">
+          <button class="menu-item active" data-section="overview">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="menu-item" data-section="profile">
+            <i class="fas fa-user-tie"></i>
+            <span>My Profile</span>
+          </button>
+          <button class="menu-item" data-section="bookings">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Event Bookings</span>
+            <span class="badge" id="pendingBookingsBadge">0</span>
+          </button>
+          <button class="menu-item" data-section="schedule">
+            <i class="fas fa-calendar-week"></i>
+            <span>My Schedule</span>
+          </button>
+          <button class="menu-item" data-section="clients">
+            <i class="fas fa-users"></i>
+            <span>My Clients</span>
+          </button>
+          <button class="menu-item" data-section="portfolio">
+            <i class="fas fa-images"></i>
+            <span>Portfolio</span>
+          </button>
+          <button class="menu-item" data-section="earnings">
+            <i class="fas fa-dollar-sign"></i>
+            <span>Earnings</span>
+          </button>
+          <button class="menu-item" data-section="reviews">
+            <i class="fas fa-star"></i>
+            <span>Reviews</span>
+          </button>
+          <button class="menu-item" data-section="availability">
+            <i class="fas fa-clock"></i>
+            <span>Availability</span>
+          </button>
+          <button class="menu-item" data-section="analytics">
+            <i class="fas fa-chart-bar"></i>
+            <span>Analytics</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Overview Section -->
+        <section id="overview" class="content-section active">
+          <div class="section-header">
+            <h1>Welcome, <span id="plannerName">Event Planner</span>!</h1>
+            <p>Manage your event planning business efficiently</p>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card primary">
+              <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="totalEvents">0</h3>
+                <p>Total Events</p>
+                <span class="stat-change positive">+12% this month</span>
+              </div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-icon">
+                <i class="fas fa-hourglass-half"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="pendingEvents">0</h3>
+                <p>Pending Bookings</p>
+                <span class="stat-change">Requires attention</span>
+              </div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="monthlyEarnings">$0</h3>
+                <p>This Month's Earnings</p>
+                <span class="stat-change positive">+8% from last month</span>
+              </div>
+            </div>
+            <div class="stat-card info">
+              <div class="stat-icon">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="averageRating">0.0</h3>
+                <p>Average Rating</p>
+                <span class="stat-change">Based on client reviews</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="quick-actions-card">
+              <h2>Quick Actions</h2>
+              <div class="action-buttons">
+                <button
+                  class="action-btn primary"
+                  onclick="showSection('bookings')"
+                >
+                  <i class="fas fa-plus"></i>
+                  View New Bookings
+                </button>
+                <button
+                  class="action-btn secondary"
+                  onclick="showSection('schedule')"
+                >
+                  <i class="fas fa-calendar"></i>
+                  Check Schedule
+                </button>
+                <button
+                  class="action-btn secondary"
+                  onclick="showSection('availability')"
+                >
+                  <i class="fas fa-clock"></i>
+                  Update Availability
+                </button>
+              </div>
+            </div>
+
+            <div class="upcoming-events-card">
+              <h2>Upcoming Events</h2>
+              <div id="upcomingEventsList" class="upcoming-list">
+                <!-- Upcoming events space to contain loaded items from database -->
+              </div>
+            </div>
+          </div>
+
+          <div class="recent-activity">
+            <h2>Recent Activity</h2>
+            <div id="recentActivityList" class="activity-list">
+              <!-- Recent activities space to contain loaded items from database -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="content-section">
+          <div class="section-header">
+            <h1>Professional Profile</h1>
+            <p>Manage your professional information and services</p>
+          </div>
+
+          <div class="profile-container">
+            <div class="profile-card">
+              <div class="profile-header">
+                <div class="profile-image-section">
+                  <div class="profile-image">
+                    <img
+                      id="profileImage"
+                      src="../img/default-planner.png"
+                      alt="Profile"
+                    />
+                    <div class="image-overlay">
+                      <i class="fas fa-camera"></i>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    id="profileImageInput"
+                    accept="image/*"
+                    hidden
+                  />
+                </div>
+                <div class="profile-status">
+                  <div class="status-indicator online"></div>
+                  <span>Available</span>
+                </div>
+              </div>
+
+              <form id="profileForm" class="profile-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="businessName">Business Name</label>
+                    <input
+                      type="text"
+                      id="businessName"
+                      name="businessName"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="ownerName">Owner/Manager Name</label>
+                    <input
+                      type="text"
+                      id="ownerName"
+                      name="ownerName"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="location">Service Location</label>
+                    <input type="text" id="location" name="location" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="experience">Years of Experience</label>
+                    <input
+                      type="number"
+                      id="experience"
+                      name="experience"
+                      min="0"
+                    />
+                  </div>
+                  <div class="form-group full-width">
+                    <label for="specializations">Specializations</label>
+                    <select
+                      id="specializations"
+                      name="specializations"
+                      multiple
+                    >
+                      <option value="wedding">Wedding Celebrations</option>
+                      <option value="birthday">Birthday Celebrations</option>
+                      <option value="anniversary">
+                        Anniversary Celebrations
+                      </option>
+                      <option value="funeral">Funerals / Memorials</option>
+                      <option value="corporate">Corporate Events</option>
+                      <option value="social">Social Gatherings</option>
+                    </select>
+                  </div>
+                  <div class="form-group full-width">
+                    <label for="bio">Professional Bio</label>
+                    <textarea
+                      id="bio"
+                      name="bio"
+                      rows="4"
+                      placeholder="Tell clients about your experience and expertise..."
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="basePrice">Base Price (CFA)</label>
+                    <input
+                      type="number"
+                      id="basePrice"
+                      name="basePrice"
+                      min="0"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="website">Website</label>
+                    <input
+                      type="url"
+                      id="website"
+                      name="website"
+                      placeholder="https://yourwebsite.com"
+                    />
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary">
+                    Update Profile
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="resetForm()"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Event Bookings Section -->
+        <section id="bookings" class="content-section">
+          <div class="section-header">
+            <h1>Event Bookings</h1>
+            <p>Manage all your client bookings and requests</p>
+          </div>
+
+          <div class="booking-controls">
+            <div class="booking-filters">
+              <select id="statusFilter">
+                <option value="all">All Bookings</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <input type="month" id="dateFilter" />
+              <div class="search-group">
+                <input
+                  type="text"
+                  id="bookingSearch"
+                  placeholder="Search bookings..."
+                />
+                <i class="fas fa-search"></i>
+              </div>
+            </div>
+            <button class="btn-primary" onclick="exportBookings()">
+              <i class="fas fa-download"></i> Export
+            </button>
+          </div>
+
+          <div class="booking-stats">
+            <div class="stat-item">
+              <span class="stat-number" id="pendingCount">0</span>
+              <span class="stat-label">Pending</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="confirmedCount">0</span>
+              <span class="stat-label">Confirmed</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="completedCount">0</span>
+              <span class="stat-label">Completed</span>
+            </div>
+          </div>
+
+          <div id="bookingsList" class="bookings-table-container">
+            <!-- Bookings table space to contain loaded items from database -->
+          </div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section id="schedule" class="content-section">
+          <div class="section-header">
+            <h1>My Schedule</h1>
+            <p>View and manage your event calendar</p>
+          </div>
+
+          <div class="calendar-container">
+            <div class="calendar-header">
+              <button class="calendar-nav" id="prevMonth">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <h2 id="currentMonth">January 2025</h2>
+              <button class="calendar-nav" id="nextMonth">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+            <div id="calendar" class="calendar-grid">
+              <!-- Calendar will be generated here -->
+            </div>
+          </div>
+
+          <div class="schedule-list">
+            <h3>Today's Schedule</h3>
+            <div id="todaySchedule" class="schedule-items">
+              <!-- Today's schedule space to contain loaded items from database -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Clients Section -->
+        <section id="clients" class="content-section">
+          <div class="section-header">
+            <h1>My Clients</h1>
+            <p>Manage your client relationships and communications</p>
+          </div>
+
+          <div class="clients-controls">
+            <div class="search-group">
+              <input
+                type="text"
+                id="clientSearch"
+                placeholder="Search clients..."
+              />
+              <i class="fas fa-search"></i>
+            </div>
+            <button class="btn-primary" onclick="addNewClient()">
+              <i class="fas fa-user-plus"></i> Add Client
+            </button>
+          </div>
+
+          <div id="clientsList" class="clients-grid">
+            <!-- Clients space to contain loaded items from database -->
+          </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="content-section">
+          <div class="section-header">
+            <h1>My Portfolio</h1>
+            <p>Showcase your best work to attract new clients</p>
+          </div>
+
+          <div class="portfolio-controls">
+            <button class="btn-primary" onclick="addPortfolioItem()">
+              <i class="fas fa-plus"></i> Add New Work
+            </button>
+            <div class="portfolio-filters">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="wedding">Weddings</button>
+              <button class="filter-btn" data-filter="birthday">
+                Birthdays
+              </button>
+              <button class="filter-btn" data-filter="anniversary">
+                Anniversaries
+              </button>
+              <button class="filter-btn" data-filter="funeral">
+                Memorials
+              </button>
+            </div>
+          </div>
+
+          <div id="portfolioGrid" class="portfolio-grid">
+            <!-- Portfolio items space to contain loaded items from database -->
+          </div>
+        </section>
+
+        <!-- Earnings Section -->
+        <section id="earnings" class="content-section">
+          <div class="section-header">
+            <h1>Earnings & Financial Overview</h1>
+            <p>Track your income and financial performance</p>
+          </div>
+
+          <div class="earnings-stats">
+            <div class="earnings-card">
+              <h3>Total Earnings</h3>
+              <div class="amount" id="totalEarnings">CFA 0</div>
+              <span class="period">All time</span>
+            </div>
+            <div class="earnings-card">
+              <h3>This Month</h3>
+              <div class="amount" id="monthlyEarnings2">CFA 0</div>
+              <span class="change positive">+15% from last month</span>
+            </div>
+            <div class="earnings-card">
+              <h3>Pending Payments</h3>
+              <div class="amount" id="pendingPayments">CFA 0</div>
+              <span class="period">Awaiting payment</span>
+            </div>
+          </div>
+
+          <div class="earnings-chart">
+            <h3>Monthly Earnings Trend</h3>
+            <canvas id="earningsChart" width="400" height="200"></canvas>
+          </div>
+
+          <div class="transactions-list">
+            <h3>Recent Transactions</h3>
+            <div id="transactionsList" class="transactions-table">
+              <!-- Transactions space to contain loaded items from database -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section id="reviews" class="content-section">
+          <div class="section-header">
+            <h1>Client Reviews & Ratings</h1>
+            <p>See what your clients say about your services</p>
+          </div>
+
+          <div class="reviews-summary">
+            <div class="rating-overview">
+              <div class="overall-rating">
+                <span class="rating-number" id="overallRating">4.8</span>
+                <div class="stars" id="overallStars">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                </div>
+                <span class="total-reviews" id="totalReviews">0 reviews</span>
+              </div>
+              <div class="rating-breakdown">
+                <div class="rating-bar">
+                  <span>5 stars</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 75%"></div>
+                  </div>
+                  <span id="five-star-count">0</span>
+                </div>
+                <div class="rating-bar">
+                  <span>4 stars</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 20%"></div>
+                  </div>
+                  <span id="four-star-count">0</span>
+                </div>
+                <div class="rating-bar">
+                  <span>3 stars</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 3%"></div>
+                  </div>
+                  <span id="three-star-count">0</span>
+                </div>
+                <div class="rating-bar">
+                  <span>2 stars</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 1%"></div>
+                  </div>
+                  <span id="two-star-count">0</span>
+                </div>
+                <div class="rating-bar">
+                  <span>1 star</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 1%"></div>
+                  </div>
+                  <span id="one-star-count">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="reviewsList" class="reviews-list">
+            <!-- Reviews space to contain loaded items from database -->
+          </div>
+        </section>
+
+        <!-- Availability Section -->
+        <section id="availability" class="content-section">
+          <div class="section-header">
+            <h1>Availability Management</h1>
+            <p>Set your working hours and availability calendar</p>
+          </div>
+
+          <div class="availability-container">
+            <div class="working-hours">
+              <h3>Working Hours</h3>
+              <form id="workingHoursForm">
+                <div class="days-grid">
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="monday" checked />
+                      Monday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="monday-start" value="08:00" />
+                      <span>to</span>
+                      <input type="time" name="monday-end" value="18:00" />
+                    </div>
+                  </div>
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="tuesday" checked />
+                      Tuesday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="tuesday-start" value="08:00" />
+                      <span>to</span>
+                      <input type="time" name="tuesday-end" value="18:00" />
+                    </div>
+                  </div>
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="wednesday" checked />
+                      Wednesday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="wednesday-start" value="08:00" />
+                      <span>to</span>
+                      <input type="time" name="wednesday-end" value="18:00" />
+                    </div>
+                  </div>
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="thursday" checked />
+                      Thursday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="thursday-start" value="08:00" />
+                      <span>to</span>
+                      <input type="time" name="thursday-end" value="18:00" />
+                    </div>
+                  </div>
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="friday" checked />
+                      Friday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="friday-start" value="08:00" />
+                      <span>to</span>
+                      <input type="time" name="friday-end" value="18:00" />
+                    </div>
+                  </div>
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="saturday" />
+                      Saturday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="saturday-start" value="09:00" />
+                      <span>to</span>
+                      <input type="time" name="saturday-end" value="17:00" />
+                    </div>
+                  </div>
+                  <div class="day-item">
+                    <label>
+                      <input type="checkbox" name="sunday" />
+                      Sunday
+                    </label>
+                    <div class="time-inputs">
+                      <input type="time" name="sunday-start" value="09:00" />
+                      <span>to</span>
+                      <input type="time" name="sunday-end" value="17:00" />
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">
+                  Save Working Hours
+                </button>
+              </form>
+            </div>
+
+            <div class="blocked-dates">
+              <h3>Blocked Dates</h3>
+              <div class="blocked-dates-controls">
+                <input type="date" id="blockDate" />
+                <input
+                  type="text"
+                  id="blockReason"
+                  placeholder="Reason (optional)"
+                />
+                <button class="btn-secondary" onclick="blockDate()">
+                  Block Date
+                </button>
+              </div>
+              <div id="blockedDatesList" class="blocked-dates-list">
+                <!-- Blocked dates will be shown here -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+          <div class="section-header">
+            <h1>Business Analytics</h1>
+            <p>Insights into your business performance and growth</p>
+          </div>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>Booking Trends</h3>
+              <canvas id="bookingTrendsChart" width="300" height="200"></canvas>
+            </div>
+            <div class="analytics-card">
+              <h3>Event Types Distribution</h3>
+              <canvas id="eventTypesChart" width="300" height="200"></canvas>
+            </div>
+            <div class="analytics-card">
+              <h3>Client Satisfaction</h3>
+              <div class="satisfaction-metrics">
+                <div class="metric">
+                  <span class="metric-value">95%</span>
+                  <span class="metric-label">Satisfaction Rate</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">4.8/5</span>
+                  <span class="metric-label">Average Rating</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">87%</span>
+                  <span class="metric-label">Repeat Clients</span>
+                </div>
+              </div>
+            </div>
+            <div class="analytics-card">
+              <h3>Revenue Growth</h3>
+              <canvas id="revenueGrowthChart" width="300" height="200"></canvas>
+            </div>
+          </div>
+
+          <div class="performance-insights">
+            <h3>Performance Insights</h3>
+            <div class="insights-list">
+              <div class="insight-item positive">
+                <i class="fas fa-trend-up"></i>
+                <div>
+                  <h4>Booking Increase</h4>
+                  <p>Your bookings increased by 23% compared to last month</p>
+                </div>
+              </div>
+              <div class="insight-item info">
+                <i class="fas fa-star"></i>
+                <div>
+                  <h4>Rating Improvement</h4>
+                  <p>Your average rating improved to 4.8 stars this month</p>
+                </div>
+              </div>
+              <div class="insight-item warning">
+                <i class="fas fa-clock"></i>
+                <div>
+                  <h4>Response Time</h4>
+                  <p>Consider improving response time to booking inquiries</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Booking Details</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body" id="bookingModalBody">
+          <!-- Booking details space to contain loaded items from database -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn-outline" onclick="closeModal()">Close</button>
+          <button class="btn-danger" onclick="rejectBooking()">Reject</button>
+          <button class="btn-primary" onclick="acceptBooking()">Accept</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Client Modal -->
+    <div id="clientModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Client Details</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body" id="clientModalBody">
+          <!-- Client details space to contain loaded items from database -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal()">Close</button>
+          <button class="btn-primary" onclick="contactClient()">
+            Contact Client
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio Modal -->
+    <div id="portfolioModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add Portfolio Item</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="portfolioForm">
+            <div class="form-group">
+              <label for="portfolioTitle">Title</label>
+              <input type="text" id="portfolioTitle" required />
+            </div>
+            <div class="form-group">
+              <label for="portfolioCategory">Category</label>
+              <select id="portfolioCategory" required>
+                <option value="">Select Category</option>
+                <option value="wedding">Wedding</option>
+                <option value="birthday">Birthday</option>
+                <option value="anniversary">Anniversary</option>
+                <option value="funeral">Memorial</option>
+                <option value="corporate">Corporate</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="portfolioDescription">Description</label>
+              <textarea id="portfolioDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="portfolioImages">Images</label>
+              <input
+                type="file"
+                id="portfolioImages"
+                multiple
+                accept="image/*"
+              />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn-primary" onclick="savePortfolioItem()">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <script src="../js/planner-dashboard.js"></script>
+  </body>
 </html>

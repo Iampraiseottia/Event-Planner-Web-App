@@ -225,7 +225,7 @@
 
 .input_box input:valid ~ label,
 .input_box input:focus ~ label {
-  color: purple;
+  color: white;
   font-size: 16px;
   transform: translateY(-25px);
   font-size: 19px;

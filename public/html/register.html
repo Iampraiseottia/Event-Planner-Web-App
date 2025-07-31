@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="../css/register.css" />
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
 
-
-
-     <!-- Vercel Web Analytics -->
+    <!-- Vercel Web Analytics -->
     <script>
-      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+      window.va =
+        window.va ||
+        function () {
+          (window.va.q = window.va.q || []).push(arguments);
+        };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
 
@@ -44,10 +46,13 @@
       }
     </style>
 
-
     <!-- Vercel Web Analytics -->
     <script>
-      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+      window.va =
+        window.va ||
+        function () {
+          (window.va.q = window.va.q || []).push(arguments);
+        };
     </script>
     <script src="/_vercel/insights/script.js"></script>
   </head>
@@ -68,7 +73,7 @@
 
     <div class="wrapper" style="margin-bottom: 90px" id="regCustomer">
       <div class="borderline">
-        <h1>Sign Up As Customer</h1>
+        <h1 style="color: white !important">Sign Up As Customer</h1>
         <form id="customerRegisterForm">
           <div class="input_box">
             <box-icon name="rename" color="#4c0e2e"></box-icon>
@@ -169,7 +174,7 @@
 
     <div class="wrapper closePlan" style="margin-bottom: 50px" id="regPlanner">
       <div class="borderline">
-        <h1>Sign Up As Planner</h1>
+        <h1 style="color: white !important">Sign Up As Planner</h1>
         <form id="plannerRegisterForm">
           <div class="input_box">
             <box-icon name="rename" color="#4c0e2e"></box-icon>
@@ -296,7 +301,11 @@
         const customerForm = document.getElementById("customerRegisterForm");
         const plannerForm = document.getElementById("plannerRegisterForm");
 
-        async function handleRegistration(formData, userType) {
+        // Get the submit buttons
+        const customerSubmitBtn = customerForm.querySelector(".btn");
+        const plannerSubmitBtn = plannerForm.querySelector(".btn");
+
+        async function handleRegistration(formData, userType, submitButton) {
           const password =
             formData.get("password") || formData.get("admin_password");
           const confirmPassword =
@@ -308,13 +317,18 @@
             return;
           }
 
+          // Change button text and disable it on submission
+          const originalText = submitButton.value;
+          submitButton.value = "Registering...";
+          submitButton.disabled = true;
+
           try {
             const response = await fetch("/api/auth/register", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              credentials: "include", 
+              credentials: "include",
               body: JSON.stringify({
                 full_name: formData.get("full_name"),
                 email: formData.get("email") || formData.get("admin_email"),
@@ -328,45 +342,48 @@
 
             const data = await response.json();
 
-
             if (response.ok) {
-              // Store user data in localStorage for easy access
               localStorage.setItem("user", JSON.stringify(data.user));
-              alert("Registration successful!"); 
+              alert("Registration successful!");
 
-              if (typeof window.va === 'function') {
-                  window.va('track', 'registration_success', {
-                      user_type: userType,
-                      email_domain: (formData.get("email") || formData.get("admin_email")).split('@')[1]
-                  });
+              if (typeof window.va === "function") {
+                window.va("track", "registration_success", {
+                  user_type: userType,
+                  email_domain: (
+                    formData.get("email") || formData.get("admin_email")
+                  ).split("@")[1],
+                });
               }
 
-              if (data.user.user_type === 'customer') {
+              if (data.user.user_type === "customer") {
                 window.location.href = "/html/customer-dashboard.html";
-              } else if (data.user.user_type === 'planner') {
+              } else if (data.user.user_type === "planner") {
                 window.location.href = "/html/planner-dashboard.html";
               } else {
-                window.location.href = "/"; 
+                window.location.href = "/";
               }
             } else {
-              alert(data.error || "Registration failed"); 
+              alert(data.error || "Registration failed");
             }
           } catch (error) {
-            alert("Registration failed. Please try again."); 
+            alert("Registration failed. Please try again.");
             console.error("Registration error:", error);
+          } finally {
+            submitButton.value = originalText;
+            submitButton.disabled = false;
           }
         }
 
         customerForm.addEventListener("submit", async function (e) {
           e.preventDefault();
           const formData = new FormData(customerForm);
-          await handleRegistration(formData, "customer");
+          await handleRegistration(formData, "customer", customerSubmitBtn);
         });
 
         plannerForm.addEventListener("submit", async function (e) {
           e.preventDefault();
           const formData = new FormData(plannerForm);
-          await handleRegistration(formData, "planner");
+          await handleRegistration(formData, "planner", plannerSubmitBtn);
         });
       });
     </script>
