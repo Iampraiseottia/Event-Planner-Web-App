@@ -6,7 +6,9 @@
     <title>Register | Eventify</title>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <link rel="stylesheet" href="../css/register.css" />
+    <link rel="stylesheet" href="../css/header.css" />
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Vercel Web Analytics -->
     <script>
@@ -57,9 +59,33 @@
     <script src="/_vercel/insights/script.js"></script>
   </head>
   <body>
-    <button class="GoBackBtn">
-      <a href="../index.html">Go Back To Home</a>
-    </button>
+    <section id="header">
+      <div class="header-container">
+        <h1 style="user-select: none; font-size: 30px; letter-spacing: 1px; font-weight: bold;">
+          <img src="../img/event3.jpg" class="home-img" style="margin-right: 5px;"> EVENTIFY
+          <i class="fa-solid fa-x" id="close" style="cursor: pointer; visibility: hidden; margin-left: 60px;"></i>
+          <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; visibility: visible;"></i>
+        </h1>
+        <nav class="nav">
+          <ul>
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../index.html#about-scroll">About</a></li>
+            <li><a href="../index.html#service-scroll">Service</a></li>
+            <li><a href="../index.html#our-team">Team</a></li>
+            <div class="dropdown">
+              <li><a href="../index.html#testimony-main">Testimony</a></li>
+              <div class="dropdown-content">
+                <a href="../index.html#testimony-main">John Paul</a><br>
+                <a href="../index.html#testimony-main">Ayan Trasy</a><br>
+                <a href="../index.html#testimony-main">Nji Pekins</a>
+              </div>
+            </div>
+            <li class="con"><a href="../index.html#contact-us">Contact</a></li>
+            <button class="signIn"><a href="/html/login.html">Sign In</a></button>
+          </ul>
+        </nav>
+      </div>
+    </section>
 
     <div class="toggle" style="margin-top: 30px">
       <div class="customer" id="regCus" onclick="showCustomerSec()">
@@ -274,6 +300,21 @@
     </div>
 
     <script>
+      // Mobile menu toggle functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const menuBtn = document.getElementById('menu');
+        const closeBtn = document.getElementById('close');
+        const header = document.getElementById('header');
+
+        menuBtn.addEventListener('click', function() {
+          header.classList.add('menu-open');
+        });
+
+        closeBtn.addEventListener('click', function() {
+          header.classList.remove('menu-open');
+        });
+      });
+
       function showCustomerSec() {
         document.getElementById("regCus").classList.add("active");
         document.getElementById("regPlan").classList.remove("active");

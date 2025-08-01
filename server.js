@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(
   helmet({
-    contentSecurityPolicy: false, // Disable for development
+    contentSecurityPolicy: false,
   })
 );
 app.use(
@@ -39,34 +39,21 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, "public"))); // Reverted to public folder
+app.use(express.static(path.join(__dirname, "public")));
 
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-// Serve HTML files from public/
-// index.html is now inside the public folder
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html")); // Path updated
-});
-
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "html", "login.html")); // Path updated
-});
-
-app.get("/register", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "html", "register.html")); // Path updated
-});
-
-app.get("/book", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "html", "book.html")); // Path updated
+// Catch-all route for frontend files
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "html", "index.html"));
 });
 
 // Error handling middleware
