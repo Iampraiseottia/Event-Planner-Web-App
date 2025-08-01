@@ -1,12 +1,9 @@
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize dashboard
+
     initializeDashboard();
     
-    // Event listeners
     setupEventListeners();
     
-    // Load initial data
     loadDashboardData();
 });
 

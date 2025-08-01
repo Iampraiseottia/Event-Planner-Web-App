@@ -1,14 +1,13 @@
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Initialize dashboard
   initializeDashboard();
 
-  // Event listeners
   setupEventListeners();
 
-  // Load initial data
   loadDashboardData();
 });
+
+
 
 // Global variables
 let currentUser = null;
@@ -35,7 +34,7 @@ async function checkAuthStatus() {
     const data = await response.json();
 
     if (!data.authenticated) {
-      window.location.href = "/login";
+      window.location.href = "/html/login.html";
       return;
     }
 
@@ -43,7 +42,7 @@ async function checkAuthStatus() {
     updateUserInterface();
   } catch (error) {
     console.error("Auth check error:", error);
-    window.location.href = "/login";
+    window.location.href = "/html/login.html";
   } finally {
     hideLoading();
   }
@@ -174,18 +173,21 @@ async function loadDashboardData() {
 
 // Load statistics
 async function loadStats() {
-  try {
-    const response = await fetch("/api/customer/stats", {
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      const stats = await response.json();
-      updateStatsDisplay(stats);
+    try {
+        const response = await fetch('/api/customer/stats', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const stats = await response.json();
+            document.getElementById('totalBookings').textContent = stats.totalBookings;
+            document.getElementById('upcomingEvents').textContent = stats.upcomingEvents;
+            document.getElementById('completedEvents').textContent = stats.completedEvents;
+            document.getElementById('totalSpent').textContent = `CFA ${stats.totalSpent}`;
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
     }
-  } catch (error) {
-    console.error("Error loading stats:", error);
-  }
 }
 
 // Update stats display
@@ -1104,10 +1106,10 @@ async function logout() {
     });
 
     if (response.ok) {
-      window.location.href = "/login";
+      window.location.href = "/html/login.html";
     }
   } catch (error) {
-    console.error("Logout error:", error);
-    window.location.href = "/login";
+    console.error("Logout error:", error); 
+    window.location.href = "/html/login.html";
   }
 }

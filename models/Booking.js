@@ -1,222 +1,200 @@
-const { query } = require("./database");
+const pool = require("../config/database");
 
 class Booking {
-  // Create a new booking
   static async create(bookingData) {
     const {
       customer_id,
-      planner_name,
-      customer_name,
-      phone_number,
-      email,
+      planner_id,
       event_type,
-      category,
-      location,
       event_date,
       event_time,
+      location,
+      category,
       requirements,
+      estimated_cost,
     } = bookingData;
 
-    try {
-      const queryText = `
-        INSERT INTO bookings (
-          customer_id, planner_name, customer_name, phone_number,
-          email, event_type, category, location, event_date,
-          event_time, requirements, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        RETURNING *
-      `;
+    const query = `
+            INSERT INTO bookings (customer_id, planner_id, event_type, event_date, event_time, location, category, requirements, estimated_cost)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING *
+        `;
 
-      const values = [
-        customer_id,
-        planner_name,
-        customer_name,
-        phone_number,
-        email,
-        event_type,
-        category,
-        location,
-        event_date,
-        event_time,
-        requirements,
-        "pending",
-      ];
+    const values = [
+      customer_id,
+      planner_id,
+      event_type,
+      event_date,
+      event_time,
+      location,
+      category,
+      requirements,
+      estimated_cost,
+    ];
+    const result = await pool.query(query, values);
 
-      const result = await query(queryText, values);
-      return result.rows[0];
-    } catch (error) {
-      throw error;
-    }
+    // Create notification for planner
+    await this.createNotification(
+      planner_id,
+      "New Booking Request",
+      `New ${event_type} booking request from customer`,
+      "info",
+      result.rows[0].id
+    );
+
+    // Log activity
+    await this.logActivity(
+      customer_id,
+      "booking",
+      "Booking Created",
+      `Created booking for ${event_type}`,
+      result.rows[0].id
+    );
+
+    return result.rows[0];
   }
 
-  // Find bookings by customer ID
-  static async findByCustomerId(customer_id) {
-    try {
-      const queryText = `
-        SELECT * FROM bookings 
-        WHERE customer_id = $1 
-        ORDER BY created_at DESC
-      `;
-      const result = await query(queryText, [customer_id]);
-      return result.rows;
-    } catch (error) {
-      throw error;
-    }
+  static async findByCustomerId(customerId) {
+    const query = `
+            SELECT b.*, 
+                   u.full_name as planner_name, 
+                   u.phone_number as planner_phone,
+                   u.email as planner_email,
+                   uc.full_name as customer_name,
+                   uc.phone_number,
+                   uc.email
+            FROM bookings b
+            JOIN users u ON b.planner_id = u.id
+            JOIN users uc ON b.customer_id = uc.id
+            WHERE b.customer_id = $1
+            ORDER BY b.created_at DESC
+        `;
+
+    const result = await pool.query(query, [customerId]);
+    return result.rows;
   }
 
-  // Find booking by ID
+  static async findByPlannerId(plannerId) {
+    const query = `
+            SELECT b.*, 
+                   u.full_name as customer_name, 
+                   u.phone_number,
+                   u.email
+            FROM bookings b
+            JOIN users u ON b.customer_id = u.id
+            WHERE b.planner_id = $1
+            ORDER BY b.created_at DESC
+        `;
+
+    const result = await pool.query(query, [plannerId]);
+    return result.rows;
+  }
+
   static async findById(id) {
-    try {
-      const queryText = "SELECT * FROM bookings WHERE id = $1";
-      const result = await query(queryText, [id]);
-      return result.rows[0];
-    } catch (error) {
-      throw error;
-    }
+    const query = `
+            SELECT b.*, 
+                   up.full_name as planner_name, 
+                   up.phone_number as planner_phone,
+                   up.email as planner_email,
+                   uc.full_name as customer_name,
+                   uc.phone_number,
+                   uc.email
+            FROM bookings b
+            JOIN users up ON b.planner_id = up.id
+            JOIN users uc ON b.customer_id = uc.id
+            WHERE b.id = $1
+        `;
+
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
   }
 
-  // Get all bookings (for admin/planner view)
-  static async getAll(limit = 50, offset = 0) {
-    try {
-      const queryText = `
-        SELECT b.*, u.full_name as customer_full_name 
-        FROM bookings b
-        LEFT JOIN users u ON b.customer_id = u.id
-        ORDER BY b.created_at DESC
-        LIMIT $1 OFFSET $2
-      `;
-      const result = await query(queryText, [limit, offset]);
-      return result.rows;
-    } catch (error) {
-      throw error;
+  static async updateStatus(id, status, rejectionReason = null) {
+    const query = `
+            UPDATE bookings 
+            SET status = $1, rejection_reason = $2, 
+                confirmed_at = CASE WHEN $1 = 'confirmed' THEN CURRENT_TIMESTAMP ELSE confirmed_at END,
+                completed_at = CASE WHEN $1 = 'completed' THEN CURRENT_TIMESTAMP ELSE completed_at END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+            RETURNING *
+        `;
+
+    const result = await pool.query(query, [status, rejectionReason, id]);
+    const booking = result.rows[0];
+
+    if (booking) {
+      // Create notification for customer
+      const statusMessages = {
+        confirmed: "Your booking has been confirmed!",
+        rejected: `Your booking has been rejected. ${rejectionReason || ""}`,
+        completed: "Your event has been completed!",
+        cancelled: "Your booking has been cancelled.",
+      };
+
+      await this.createNotification(
+        booking.customer_id,
+        "Booking Status Update",
+        statusMessages[status] || `Booking status updated to ${status}`,
+        status === "confirmed"
+          ? "success"
+          : status === "rejected"
+          ? "error"
+          : "info",
+        booking.id
+      );
+
+      // Log activity
+      await this.logActivity(
+        booking.planner_id,
+        "booking",
+        "Booking Status Updated",
+        `Updated booking status to ${status}`,
+        booking.id
+      );
     }
+
+    return booking;
   }
 
-  // Get bookings by planner name
-  static async getByPlannerName(planner_name) {
-    try {
-      const queryText = `
-        SELECT b.*, u.full_name as customer_full_name 
-        FROM bookings b
-        LEFT JOIN users u ON b.customer_id = u.id
-        WHERE b.planner_name = $1
-        ORDER BY b.created_at DESC
-      `;
-      const result = await query(queryText, [planner_name]);
-      return result.rows;
-    } catch (error) {
-      throw error;
-    }
+  static async createNotification(
+    userId,
+    title,
+    message,
+    type,
+    bookingId = null
+  ) {
+    const query = `
+            INSERT INTO notifications (user_id, title, message, type, related_booking_id)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
+
+    const result = await pool.query(query, [
+      userId,
+      title,
+      message,
+      type,
+      bookingId,
+    ]);
+    return result.rows[0];
   }
 
-  // Update booking status
-  static async updateStatus(id, status) {
-    try {
-      const queryText = `
-        UPDATE bookings 
-        SET status = $1, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
-        RETURNING *
-      `;
-      const result = await query(queryText, [status, id]);
-      return result.rows[0];
-    } catch (error) {
-      throw error;
-    }
-  }
+  static async logActivity(userId, type, title, description, bookingId = null) {
+    const query = `
+            INSERT INTO activity_logs (user_id, type, title, description, related_booking_id)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
 
-  // Update booking details
-  static async update(id, bookingData) {
-    const {
-      planner_name,
-      customer_name,
-      phone_number,
-      email,
-      event_type,
-      category,
-      location,
-      event_date,
-      event_time,
-      requirements,
-    } = bookingData;
-
-    try {
-      const queryText = `
-        UPDATE bookings 
-        SET planner_name = $1, customer_name = $2, phone_number = $3,
-            email = $4, event_type = $5, category = $6, location = $7,
-            event_date = $8, event_time = $9, requirements = $10,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = $11
-        RETURNING *
-      `;
-
-      const values = [
-        planner_name,
-        customer_name,
-        phone_number,
-        email,
-        event_type,
-        category,
-        location,
-        event_date,
-        event_time,
-        requirements,
-        id,
-      ];
-
-      const result = await query(queryText, values);
-      return result.rows[0];
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Delete booking
-  static async delete(id) {
-    try {
-      const queryText = "DELETE FROM bookings WHERE id = $1 RETURNING id";
-      const result = await query(queryText, [id]);
-      return result.rows[0];
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Get bookings by date range
-  static async getByDateRange(startDate, endDate) {
-    try {
-      const queryText = `
-        SELECT b.*, u.full_name as customer_full_name 
-        FROM bookings b
-        LEFT JOIN users u ON b.customer_id = u.id
-        WHERE b.event_date BETWEEN $1 AND $2
-        ORDER BY b.event_date ASC
-      `;
-      const result = await query(queryText, [startDate, endDate]);
-      return result.rows;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Get booking statistics
-  static async getStats() {
-    try {
-      const queryText = `
-        SELECT 
-          COUNT(*) as total_bookings,
-          COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_bookings,
-          COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as confirmed_bookings,
-          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_bookings,
-          COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_bookings
-        FROM bookings
-      `;
-      const result = await query(queryText);
-      return result.rows[0];
-    } catch (error) {
-      throw error;
-    }
+    const result = await pool.query(query, [
+      userId,
+      type,
+      title,
+      description,
+      bookingId,
+    ]);
+    return result.rows[0];
   }
 }
 

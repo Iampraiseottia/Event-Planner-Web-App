@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 // Session configuration
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your-secret-key",
+    secret: process.env.SESSION_SECRET || "secret-key",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -50,11 +50,27 @@ app.use(express.static(path.join(__dirname, "public")));
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use('/api/customer', require('./routes/customer'));
+app.use('/api/planner', require('./routes/planner'));
 
 // Catch-all route for frontend files
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "html", "index.html"));
 });
+
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
+});
+
+app.get('/customer-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'customer-dashboard.html'));
+});
+
+app.get('/planner-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'planner-dashboard.html'));
+});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

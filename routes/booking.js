@@ -1,3 +1,4 @@
+// routes/booking.js
 const express = require("express");
 const Booking = require("../models/Booking");
 const {

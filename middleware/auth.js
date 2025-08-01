@@ -39,24 +39,16 @@ const requirePlanner = (req, res, next) => {
   }
 };
 
-// Check if user is authenticated (but allow both types)
+// Check if user is authenticated
 const requireAnyAuth = (req, res, next) => {
   if (req.session && req.session.user) {
-    req.user = req.session.user; // Make user available in req object
+    req.user = req.session.user;
     return next();
   } else {
     return res.status(401).json({
       error: "Authentication required. Please log in.",
     });
   }
-};
-
-// Optional authentication - doesn't require login but adds user if present
-const optionalAuth = (req, res, next) => {
-  if (req.session && req.session.user) {
-    req.user = req.session.user;
-  }
-  return next();
 };
 
 // Check if user owns the resource (for customer bookings)
@@ -76,6 +68,5 @@ module.exports = {
   requireCustomer,
   requirePlanner,
   requireAnyAuth,
-  optionalAuth,
   requireOwnership,
 };

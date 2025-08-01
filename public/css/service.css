@@ -541,3 +541,167 @@
     transform: scale(1.05);
   }
 }
+
+
+
+
+
+
+
+/* Show states when 'serviceShow' class is added */
+#services-desktop.serviceShow .service-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#services-desktop.serviceShow .catch {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#services-desktop.serviceShow .service-card:nth-child(1),
+#services-desktop.serviceShow .service-card:nth-child(2),
+#services-desktop.serviceShow .service-card:nth-child(3),
+#services-desktop.serviceShow .service-card:nth-child(4) {
+  opacity: 1;
+  transform: translateX(0) translateY(0) rotateY(0);
+}
+
+/* Enhanced card hover effects with sliding elements */
+.service-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(13, 99, 246, 0.1), transparent);
+  transition: left 0.6s ease;
+  z-index: 1;
+}
+
+.service-card:hover::before {
+  left: 100%;
+}
+
+.service-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Sliding image effect */
+.service-card .service-img {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.service-card:hover .service-img {
+  transform: scale(1.1) translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Sliding text effect */
+.service-card h3 {
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #0d63f6, #4facfe);
+  transition: left 0.4s ease;
+}
+
+.service-card:hover h3::after {
+  left: 0;
+}
+
+/* Staggered paragraph sliding */
+.service-card p {
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.service-card:hover p {
+  transform: translateY(-5px);
+  color: #333;
+}
+
+/* Individual letter animation for SERVICE title */
+.service-title h3 {
+  opacity: 0;
+  transform: translateY(-30px) rotateX(90deg);
+  animation: letterDrop 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+
+
+
+/* Mobile/Tablet Services Animation (for the mobile version) */
+#services.serviceShow .service-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#services.serviceShow .catch {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mbappe {
+  opacity: 0;
+  transform: translateX(-80px);
+  transition: all 0.8s ease-out 0.5s;
+}
+
+.praise {
+  opacity: 0;
+  transform: translateX(80px);
+  transition: all 0.8s ease-out 0.7s;
+}
+
+#services.serviceShow .mbappe,
+#services.serviceShow .praise {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1199px) {
+  .service-title {
+    opacity: 0;
+    transform: translateY(-30px);
+    transition: all 0.6s ease-out;
+  }
+  
+  .catch {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease-out 0.2s;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .service-card:nth-child(1),
+  .service-card:nth-child(2),
+  .service-card:nth-child(3),
+  .service-card:nth-child(4) {
+    transition-duration: 0.6s;
+  }
+  
+  .mbappe,
+  .praise {
+    transition-duration: 0.6s;
+  }
+}
+

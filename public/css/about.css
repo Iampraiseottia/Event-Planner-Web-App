@@ -538,3 +538,60 @@
     transform: translateX(5px);
   }
 }
+
+
+.about-heading {
+  opacity: 0;
+  transform: translateY(-30px);
+  transition: all 0.8s ease-out;
+}
+
+.why-us {
+  opacity: 0;
+  transform: translateX(-100px);
+  transition: all 1s ease-out 0.2s;
+}
+
+.about-img {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 1s ease-out 0.4s;
+}
+
+/* Show states when 'show' class is added */
+#About.show .about-heading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#About.show .why-us {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#About.show .about-img {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#About.show .why-us li {
+  opacity: 0;
+  animation: slideInList 0.6s ease-out forwards;
+}
+
+#About.show .why-us li:nth-child(1) { animation-delay: 0.6s; }
+#About.show .why-us li:nth-child(2) { animation-delay: 0.7s; }
+#About.show .why-us li:nth-child(3) { animation-delay: 0.8s; }
+#About.show .why-us li:nth-child(4) { animation-delay: 0.9s; }
+#About.show .why-us li:nth-child(5) { animation-delay: 1s; }
+
+@keyframes slideInList {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

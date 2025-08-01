@@ -10,14 +10,54 @@
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
 
+    <link rel="stylesheet" href="../css/header.css" />
 
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
 
     <!-- Vercel Web Analytics -->
     <script>
-      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+      window.va =
+        window.va ||
+        function () {
+          (window.va.q = window.va.q || []).push(arguments);
+        };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
-    
+
+    <style>
+      @media (max-width: 999px) {
+        .header-container {
+          padding-left: 60px !important;
+        }
+
+        .nav {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 20px !important;
+          margin-top: 30px !important;
+        }
+      }
+
+      @media (min-width: 1000px) {
+        .nav {
+          visibility: visible !important;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .weddingCel {
+          margin-top: 180px !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-------------------- Nav Bar ~ Header  ------------------------>
@@ -33,7 +73,7 @@
           "
         >
           <img
-            src="../img/event3.jpg"
+            src="/img/event3.jpg"
             class="home-img"
             style="margin-right: 5px"
           />
@@ -41,29 +81,25 @@
           <i
             class="fa-solid fa-x"
             id="close"
-            style="
-              cursor: pointer;
-              position: absolute;
-              top: 57px;
-              right: 70px;
-              visibility: visible;
-            "
+            style="cursor: pointer; visibility: hidden; margin-left: 60px"
           ></i>
           <i
             class="fa-solid fa-bars"
             id="menu"
-            style="
-              cursor: pointer;
-              position: absolute;
-              top: 57px;
-              right: 70px;
-              visibility: hidden;
-            "
+            style="cursor: pointer; visibility: visible"
           ></i>
         </h1>
-        <button class="back">
-          <a href="../html/category.html">Back To Categories</a>
-        </button>
+        <nav class="nav">
+          <button
+            class="back"
+            style="padding: 5px 50px !important; margin-right: 20px !important"
+          >
+            <a href="../html/customer-dashboard.html">Dashboard</a>
+          </button>
+          <button class="back" style="padding: 5px 50px !important">
+            <a href="../html/category.html">Back To Categories</a>
+          </button>
+        </nav>
       </div>
     </section>
 
@@ -75,7 +111,6 @@
           <h1>Book An Event Planner</h1>
           <form id="bookingForm">
             <div class="input_box">
-              
               <select name="planner_name" class="planner-name" required>
                 <option value="">Choose An Event Planner</option>
                 <option value="Deligent Servers" style="font-weight: 600">
@@ -109,7 +144,6 @@
             </div>
 
             <div class="input_box">
-              
               <input
                 name="customer_name"
                 id="name"
@@ -122,7 +156,6 @@
             </div>
 
             <div class="input_box">
-              
               <input
                 name="phone_number"
                 id="phone_number"
@@ -135,7 +168,6 @@
             </div>
 
             <div class="input_box">
-              
               <input
                 name="email"
                 id="email"
@@ -148,7 +180,6 @@
             </div>
 
             <div class="input_box">
-              
               <select name="event_type" class="planner-name" required>
                 <option value="">Choose Event Type</option>
                 <option value="Wedding Celebrations" style="font-weight: 600">
@@ -170,7 +201,6 @@
             </div>
 
             <div class="input_box">
-              
               <select name="category" class="planner-name" required>
                 <option value="">Choose Category ~ Pricing</option>
                 <option value="Platinum ~ 2.5M" style="font-weight: 600">
@@ -201,7 +231,6 @@
             </div>
 
             <div class="input_box">
-              
               <input
                 name="location"
                 id="location"
@@ -214,7 +243,6 @@
             </div>
 
             <div class="input_box">
-              
               <input
                 name="event_date"
                 id="date"
@@ -227,7 +255,6 @@
             </div>
 
             <div class="input_box">
-              
               <input
                 name="event_time"
                 id="time"
@@ -240,7 +267,6 @@
             </div>
 
             <div class="input_box">
-              
               <textarea
                 name="requirements"
                 id="order"
@@ -358,7 +384,31 @@
         });
       });
     </script>
- 
+
     <script src="../js/main.js"></script>
+
+    <script>
+      const close = document.getElementById("close");
+      const menu = document.getElementById("menu");
+      const navBar = document.querySelector(".nav");
+      const header = document.getElementById("header");
+      const body = document.body;
+
+      menu.addEventListener("click", () => {
+        menu.style.visibility = "hidden";
+        close.style.visibility = "visible";
+        navBar.style.visibility = "visible";
+        header.classList.add("menu-open");
+        body.classList.add("menu-open");
+      });
+
+      close.addEventListener("click", () => {
+        menu.style.visibility = "visible";
+        close.style.visibility = "hidden";
+        navBar.style.visibility = "hidden";
+        header.classList.remove("menu-open");
+        body.classList.remove("menu-open");
+      });
+    </script>
   </body>
 </html>

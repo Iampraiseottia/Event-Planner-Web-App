@@ -510,3 +510,137 @@ p a:hover {
   opacity: 1;
   transform: translateY(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+.contact-main-details {
+  opacity: 0;
+  transform: translateX(-100px);
+  transition: all 1s ease-out 0.2s;
+}
+
+.contact-main-input {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 1s ease-out 0.4s;
+}
+
+.contactSection.contactShow .about-heading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.contactSection.contactShow .contact-main-details {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.contactSection.contactShow .contact-main-input {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.contact-main-details-content {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: all 0.6s ease-out;
+}
+
+.contactSection.contactShow .contact-main-details-content:nth-child(1) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.6s;
+}
+
+.contactSection.contactShow .contact-main-details-content:nth-child(2) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.8s;
+}
+
+.contactSection.contactShow .contact-main-details-content:nth-child(3) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 1s;
+}
+
+.contact-pic {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out 1.2s;
+}
+
+.contactSection.contactShow .contact-pic {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Form fields sliding in individually */
+.name-input {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: all 0.6s ease-out;
+}
+
+.contactSection.contactShow .name-input:nth-child(1) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.8s;
+}
+
+.contactSection.contactShow .name-input:nth-child(2) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 1s;
+}
+
+.contactSection.contactShow .name-input:nth-child(3) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 1.2s;
+}
+
+.contactSection.contactShow .name-input.Subject {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 1.4s;
+}
+
+.Message {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease-out 1.6s;
+}
+
+.contactSection.contactShow .Message {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.send-btn {
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
+  transition: all 0.6s ease-out 1.8s;
+}
+
+.contactSection.contactShow .send-btn {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Remove conflicting animation */
+.contactSection {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}

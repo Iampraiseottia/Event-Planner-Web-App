@@ -474,3 +474,65 @@
     display: none;
   }
 }
+
+
+
+
+#call-to-action h3 {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease-out;
+}
+
+.call {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease-out 0.2s;
+}
+
+.take.taketo {
+  opacity: 0;
+  transform: translateX(-100px);
+  transition: all 1s ease-out 0.4s;
+}
+
+.take:not(.taketo) {
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 1s ease-out 0.6s;
+}
+
+/* Show states when 'show' class is added */
+#call-to-action.show h3 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#call-to-action.show .call {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#call-to-action.show .take.taketo {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#call-to-action.show .take:not(.taketo) {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Remove conflicting animations */
+.to {
+  animation: none;
+}
+
+.take:nth-child(1) {
+  animation: pulse-glow 2s ease-in-out infinite 2s;
+}
+
+.take:nth-child(2) {
+  animation: pulse-glow 2s ease-in-out infinite 2.5s;
+}
+
