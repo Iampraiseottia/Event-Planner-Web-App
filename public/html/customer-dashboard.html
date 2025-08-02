@@ -29,7 +29,13 @@
             <div class="nav-logo">
                 <img src="../img/event3.jpg" alt="EVENTIFY">
                 <span>EVENTIFY</span>
+                  
             </div>
+
+            <button id="logoutBtn2" class="nav-link logout-btn mobileLogoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+
             <div class="nav-menu">
                 <a href="../index.html" class="nav-link">
                     <i class="fas fa-home"></i> Home
@@ -384,9 +390,8 @@
 
 
     <script>
-        // Add this JavaScript to your existing customer-dashboard.js file
 
-        // Mobile sidebar toggle functionality
+        // Sidebar toggle functionality
         function setupMobileSidebar() {
             const mobileToggle = document.getElementById('mobileToggle');
             const sidebar = document.querySelector('.sidebar');
@@ -404,25 +409,22 @@
                 }
             }
 
-            // Open sidebar
             function openSidebar() {
                 sidebar.classList.add('open');
                 sidebarOverlay.classList.add('show');
                 mobileToggle.classList.add('active');
                 toggleIcon.className = 'fas fa-times';
-                document.body.style.overflow = 'hidden'; // Prevent scrolling
+                document.body.style.overflow = 'hidden'; 
             }
 
-            // Close sidebar
             function closeSidebar() {
                 sidebar.classList.remove('open');
                 sidebarOverlay.classList.remove('show');
                 mobileToggle.classList.remove('active');
                 toggleIcon.className = 'fas fa-bars';
-                document.body.style.overflow = 'auto'; // Restore scrolling
+                document.body.style.overflow = 'auto'; 
             }
 
-            // Event listeners
             mobileToggle.addEventListener('click', toggleSidebar);
             sidebarOverlay.addEventListener('click', closeSidebar);
 
@@ -431,7 +433,7 @@
             menuItems.forEach(item => {
                 item.addEventListener('click', () => {
                     if (window.innerWidth <= 768) {
-                        setTimeout(closeSidebar, 300); // Small delay for better UX
+                        setTimeout(closeSidebar, 300); 
                     }
                 });
             });
@@ -453,21 +455,12 @@
             });
         }
 
-        // Call this function in your existing initializeDashboard function
-        // Add this line to your existing initializeDashboard function:
-        // setupMobileSidebar();
 
-        // Modified initializeDashboard function (add this to replace your existing one)
+        
         function initializeDashboard() {
-            checkAuthStatus();
-            setupSidebarNavigation();
-            setupModalHandlers();
-            setupProfileImageUpload();
-            setupFormHandlers();
-            setupMobileSidebar(); // Add this line
+            setupMobileSidebar(); 
         }
 
-        // Enhanced touch support for mobile devices
         function setupTouchSupport() {
             let touchStartX = 0;
             let touchEndX = 0;
@@ -500,11 +493,8 @@
             }
         }
 
-        // Call touch support setup
-        // Add this to your DOMContentLoaded event listener:
-        // setupTouchSupport();
     </script>
 
-    
+
 </body>
 </html>

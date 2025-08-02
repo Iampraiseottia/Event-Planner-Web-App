@@ -121,6 +121,7 @@ function showSection(sectionName) {
 function setupEventListeners() {
   // Logout button
   document.getElementById("logoutBtn").addEventListener("click", logout);
+  document.getElementById("logoutBtn2").addEventListener("click", logout2);
 
   // Profile form
   document
@@ -1113,3 +1114,21 @@ async function logout() {
     window.location.href = "/html/login.html";
   }
 }
+
+
+async function logout2() {
+  try {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      window.location.href = "/html/login.html";
+    }
+  } catch (error) {
+    console.error("Logout error:", error); 
+    window.location.href = "/html/login.html";
+  }
+}
+

@@ -1266,6 +1266,7 @@ body {
 }
 
 
+
 /* Mobile Toggle Button */
 .mobile-toggle {
   display: none;
@@ -1714,5 +1715,21 @@ body {
 @media (min-width: 900px) and (max-width: 1200px) {
   .stat-card{
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+
+@media (min-width: 800px) {
+  .mobileLogoutBtn{
+    display: none !important;
+  }
+
+}
+
+@media (max-width: 799px) {
+.mobileLogoutBtn{
+    display: block !important;
+    margin-right: -90px !important;
+    margin-left: 50px !important;
   }
 }

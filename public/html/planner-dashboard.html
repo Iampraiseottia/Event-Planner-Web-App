@@ -24,16 +24,20 @@
     <!-- Navigation -->
     <nav class="navbar">
       <div class="nav-container">
+        <button class="mobile-toggle" id="mobileToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+
         <div class="nav-logo">
           <img src="../img/event3.jpg" alt="EVENTIFY" />
           <span>EVENTIFY</span>
           <span class="planner-badge">PLANNER</span>
         </div>
         <div class="nav-menu">
-          <a href="../index.html" class="nav-link">
+          <a href="../index.html" class="nav-link hideMobileNavLink">
             <i class="fas fa-home"></i> Home
           </a>
-          <div class="nav-notifications">
+          <div class="nav-notifications hideMobileNavLink">
             <i class="fas fa-bell"></i>
             <span class="notification-count" id="navNotificationCount">0</span>
           </div>
@@ -43,6 +47,8 @@
         </div>
       </div>
     </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Main Dashboard Container -->
     <div class="dashboard-container">
@@ -192,7 +198,7 @@
         <!-- Profile Section -->
         <section id="profile" class="content-section">
           <div class="section-header">
-            <h1>Professional Profile</h1>
+            <h1>Profile Management</h1>
             <p>Manage your professional information and services</p>
           </div>
 
@@ -203,7 +209,7 @@
                   <div class="profile-image">
                     <img
                       id="profileImage"
-                      src="../img/default-planner.png"
+                      src="../img/profile.png"
                       alt="Profile"
                     />
                     <div class="image-overlay">
@@ -226,46 +232,68 @@
               <form id="profileForm" class="profile-form">
                 <div class="form-grid">
                   <div class="form-group">
-                    <label for="businessName">Business Name</label>
+                    <label for="businessName">Business Name*</label>
                     <input
                       type="text"
                       id="businessName"
+                      placeholder="Business / Company Name"
                       name="businessName"
                       required
                     />
                   </div>
                   <div class="form-group">
-                    <label for="ownerName">Owner/Manager Name</label>
+                    <label for="ownerName">Owner/Manager Name*</label>
                     <input
                       type="text"
+                      placeholder="Owner / Planner Name"
                       id="ownerName"
                       name="ownerName"
                       required
                     />
                   </div>
                   <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required />
-                  </div>
-                  <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" required />
-                  </div>
-                  <div class="form-group">
-                    <label for="location">Service Location</label>
-                    <input type="text" id="location" name="location" required />
-                  </div>
-                  <div class="form-group">
-                    <label for="experience">Years of Experience</label>
+                    <label for="email">Email Address*</label>
                     <input
-                      type="number"
-                      id="experience"
-                      name="experience"
-                      min="0"
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="Email Address"
+                      required
                     />
                   </div>
+                  <div class="form-group">
+                    <label for="phone">Phone Number*</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      placeholder="Phone Number"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="location">Service Location*</label>
+                    <input
+                      type="text"
+                      id="location"
+                      name="location"
+                      placeholder="Service Location"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="homeAddress">Home Address*</label>
+                    <input
+                      type="url"
+                      id="homeAddress"
+                      name="homeAddress"
+                      placeholder="Home Address"
+                    />
+                  </div>
+
                   <div class="form-group full-width">
-                    <label for="specializations">Specializations</label>
+                    <label for="specializations">Specializations*</label>
                     <select
                       id="specializations"
                       name="specializations"
@@ -282,7 +310,7 @@
                     </select>
                   </div>
                   <div class="form-group full-width">
-                    <label for="bio">Professional Bio</label>
+                    <label for="bio">Professional Bio*</label>
                     <textarea
                       id="bio"
                       name="bio"
@@ -291,7 +319,7 @@
                     ></textarea>
                   </div>
                   <div class="form-group">
-                    <label for="basePrice">Base Price (CFA)</label>
+                    <label for="basePrice">Base Price (CFA)*</label>
                     <input
                       type="number"
                       id="basePrice"
@@ -299,13 +327,15 @@
                       min="0"
                     />
                   </div>
+
                   <div class="form-group">
-                    <label for="website">Website</label>
+                    <label for="experience">Years of Experience*</label>
                     <input
-                      type="url"
-                      id="website"
-                      name="website"
-                      placeholder="https://yourwebsite.com"
+                      placeholder="Years of Experience"
+                      type="number"
+                      id="experience"
+                      name="experience"
+                      min="0"
                     />
                   </div>
                 </div>

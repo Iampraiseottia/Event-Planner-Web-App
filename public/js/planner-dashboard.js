@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     
     loadDashboardData();
+
+    setupMobileNavigation();
+    setupResponsiveModals();
+    setupResponsiveTables();
 });
 
 // Global variables
@@ -20,11 +24,14 @@ let currentCalendarDate = new Date();
 function initializeDashboard() {
     checkAuthStatus();
     setupSidebarNavigation();
+    setupMobileNavigation(); 
     setupModalHandlers();
+    setupResponsiveModals(); 
     setupProfileImageUpload();
     setupFormHandlers();
     setupCalendar();
     setupCharts();
+    setupResponsiveTables(); 
 }
 
 // Check authentication status
@@ -95,7 +102,7 @@ function updateUserInterface() {
         if (currentPlanner.experience) document.getElementById('experience').value = currentPlanner.experience;
         if (currentPlanner.bio) document.getElementById('bio').value = currentPlanner.bio;
         if (currentPlanner.base_price) document.getElementById('basePrice').value = currentPlanner.base_price;
-        if (currentPlanner.website) document.getElementById('website').value = currentPlanner.website;
+        if (currentPlanner.homeAddress) document.getElementById('homeAddress').value = currentPlanner.homeAddress;
         
         if (currentPlanner.profile_image) {
             document.getElementById('profileImage').src = currentPlanner.profile_image;
@@ -1314,4 +1321,118 @@ function closeModal() {
         modal.style.display = 'none';
     });
 }
+
+
+
+
+// Sidebar Toggle FunctionaliTy
+function setupMobileNavigation() {
+    const mobileToggle = document.getElementById('mobileToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (!mobileToggle || !sidebar || !sidebarOverlay) return;
+    
+    // Toggle sidebar on mobile
+    mobileToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+        
+        const icon = this.querySelector('i');
+        if (sidebar.classList.contains('active')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+        // Close sidebar when clicking overlay
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.remove('active');
+        sidebarOverlay.style.display = 'none';
+        
+        const icon = mobileToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+    });
+    
+    // Close sidebar when clicking menu item on mobile
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('active');
+                sidebarOverlay.style.display = 'none';
+                
+                const icon = mobileToggle.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+    });
+    
+        // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('active');
+            sidebarOverlay.style.display = 'none';
+            
+            const icon = mobileToggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    });
+}
+
+
+
+  function setupResponsiveModals() {
+    const modals = document.querySelectorAll('.modal');
+    
+    modals.forEach(modal => {
+        modal.addEventListener('show', function() {
+            document.body.style.overflow = 'hidden';
+        });
+        
+        modal.addEventListener('hide', function() {
+            document.body.style.overflow = '';
+        });
+    });
+    
+    // Touch handling for mobile modal close
+    let startY = 0;
+    modals.forEach(modal => {
+        modal.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        });
+        
+        modal.addEventListener('touchend', function(e) {
+            const endY = e.changedTouches[0].clientY;
+            const deltaY = startY - endY;
+            
+            if (deltaY < -100) {
+                closeModal();
+            }
+        });
+    });
+}
+
+
+function setupResponsiveTables() {
+    const tables = document.querySelectorAll('.bookings-table, .transactions-table');
+    
+    tables.forEach(table => {
+        if (window.innerWidth <= 768) {
+            const container = table.closest('.bookings-table-container, .transactions-table');
+            if (container && !container.querySelector('.scroll-hint')) {
+                const hint = document.createElement('div');
+                hint.className = 'scroll-hint';
+                hint.innerHTML = '<small style="color: var(--gray-500); text-align: center; display: block; margin-bottom: 0.5rem;"><i class="fas fa-arrows-alt-h"></i> Scroll horizontally to see all columns</small>';
+                container.insertBefore(hint, table);
+            }
+        }
+    });
+}
+
 
