@@ -42,7 +42,7 @@ async function checkAuthStatus() {
         
         if (!statusResponse.ok) {
             console.log('Auth status check failed:', statusResponse.status);
-            window.location.href = '/login';
+            window.location.href = '/html/login.html';
             return;
         }
         
@@ -51,7 +51,7 @@ async function checkAuthStatus() {
         
         if (!statusData.authenticated) {
             console.log('User not authenticated');
-            window.location.href = '/login';
+            window.location.href = '/html/login.html';
             return;
         }
         
@@ -60,7 +60,7 @@ async function checkAuthStatus() {
             console.log('User is not a planner:', statusData.user.user_type);
             showNotification('Access denied. Planner account required.', 'error');
             setTimeout(() => {
-                window.location.href = '/login';
+                window.location.href = '/html/login.html';
             }, 2000);
             return;
         }
@@ -74,7 +74,7 @@ async function checkAuthStatus() {
         console.error('Auth check error:', error);
         showNotification('Authentication error. Please login again.', 'error');
         setTimeout(() => {
-            window.location.href = '/login';
+            window.location.href = '/html/login.html';
         }, 2000);
     } finally {
         hideLoading();

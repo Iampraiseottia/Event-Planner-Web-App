@@ -14,6 +14,15 @@
     <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
+
+    <!-- Toggle button  -->
+     <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+
+     <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -157,7 +166,7 @@
                     <div class="profile-card">
                         <div class="profile-image-section">
                             <div class="profile-image">
-                                <img id="profileImage" src="../img/team-1.jpg" alt="Profile">
+                                <img id="profileImage" src="../img/profile.png" alt="Profile">
                                 <div class="image-overlay">
                                     <i class="fas fa-camera"></i>
                                 </div>
@@ -372,5 +381,130 @@
     </div>
 
     <script src="../js/customer-dashboard.js"></script>
+
+
+    <script>
+        // Add this JavaScript to your existing customer-dashboard.js file
+
+        // Mobile sidebar toggle functionality
+        function setupMobileSidebar() {
+            const mobileToggle = document.getElementById('mobileToggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const toggleIcon = mobileToggle.querySelector('i');
+
+            // Toggle sidebar
+            function toggleSidebar() {
+                const isOpen = sidebar.classList.contains('open');
+                
+                if (isOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            }
+
+            // Open sidebar
+            function openSidebar() {
+                sidebar.classList.add('open');
+                sidebarOverlay.classList.add('show');
+                mobileToggle.classList.add('active');
+                toggleIcon.className = 'fas fa-times';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+
+            // Close sidebar
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show');
+                mobileToggle.classList.remove('active');
+                toggleIcon.className = 'fas fa-bars';
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }
+
+            // Event listeners
+            mobileToggle.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+
+            // Close sidebar when clicking on menu items (mobile)
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        setTimeout(closeSidebar, 300); // Small delay for better UX
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    closeSidebar();
+                    sidebar.classList.remove('open');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Close sidebar on escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                    closeSidebar();
+                }
+            });
+        }
+
+        // Call this function in your existing initializeDashboard function
+        // Add this line to your existing initializeDashboard function:
+        // setupMobileSidebar();
+
+        // Modified initializeDashboard function (add this to replace your existing one)
+        function initializeDashboard() {
+            checkAuthStatus();
+            setupSidebarNavigation();
+            setupModalHandlers();
+            setupProfileImageUpload();
+            setupFormHandlers();
+            setupMobileSidebar(); // Add this line
+        }
+
+        // Enhanced touch support for mobile devices
+        function setupTouchSupport() {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const sidebar = document.querySelector('.sidebar');
+
+            // Swipe to open/close sidebar
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const swipeDistance = touchEndX - touchStartX;
+
+                if (window.innerWidth <= 768) {
+                    // Swipe right from left edge to open
+                    if (touchStartX < 50 && swipeDistance > swipeThreshold) {
+                        document.getElementById('mobileToggle').click();
+                    }
+                    // Swipe left to close when sidebar is open
+                    else if (sidebar.classList.contains('open') && swipeDistance < -swipeThreshold) {
+                        document.getElementById('mobileToggle').click();
+                    }
+                }
+            }
+        }
+
+        // Call touch support setup
+        // Add this to your DOMContentLoaded event listener:
+        // setupTouchSupport();
+    </script>
+
+    
 </body>
 </html>
