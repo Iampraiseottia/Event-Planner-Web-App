@@ -1,3 +1,4 @@
+// planner-dashboard.js
 document.addEventListener('DOMContentLoaded', function() {
 
     initializeDashboard();
@@ -176,7 +177,10 @@ function showSection(sectionName) {
 
 // Setup event listeners
 function setupEventListeners() {
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    const logoutBtn = document.getElementById('logoutBtn3');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout3);
+    }
     
     // Profile form
     document.getElementById('profileForm').addEventListener('submit', updateProfile);
@@ -1053,6 +1057,7 @@ async function updateProfile(event) {
     const formData = new FormData(event.target);
     const profileData = Object.fromEntries(formData.entries());
     
+    // Handle specializations
     const specializations = Array.from(document.getElementById('specializations').selectedOptions)
         .map(option => option.value);
     profileData.specializations = specializations;
@@ -1069,14 +1074,21 @@ async function updateProfile(event) {
             body: JSON.stringify(profileData)
         });
         
+        const data = await response.json();
+        
         if (response.ok) {
-            const updatedPlanner = await response.json();
-            currentPlanner = updatedPlanner;
+            // Update the global planner data
+            currentPlanner = data.planner;
+            
+            // Update the UI with new data
             updateUserInterface();
+            
             showNotification('Profile updated successfully', 'success');
+            
+            // Optionally reload profile data to ensure consistency
+            await loadProfile();
         } else {
-            const error = await response.json();
-            showNotification(error.message || 'Error updating profile', 'error');
+            showNotification(data.error || 'Error updating profile', 'error');
         }
     } catch (error) {
         console.error('Error updating profile:', error);
@@ -1085,6 +1097,52 @@ async function updateProfile(event) {
         hideLoading();
     }
 }
+
+// Function to load profile data
+async function loadProfile() {
+    try {
+        const response = await fetch('/api/planner/profile', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentPlanner = data.planner;
+            populateProfileForm();
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
+
+
+function populateProfileForm() {
+    if (!currentPlanner) return;
+    
+    document.getElementById('businessName').value = currentPlanner.business_name || '';
+    document.getElementById('ownerName').value = currentPlanner.full_name || '';
+    document.getElementById('email').value = currentPlanner.email || '';
+    document.getElementById('phone').value = currentPlanner.phone_number || '';
+    document.getElementById('homeAddress').value = currentPlanner.homeAddress || '';
+    document.getElementById('location').value = currentPlanner.location || '';
+    document.getElementById('bio').value = currentPlanner.bio || '';
+    document.getElementById('basePrice').value = currentPlanner.base_price || '';
+    document.getElementById('experience').value = currentPlanner.experience || '';
+    
+    // Handle specializations
+    if (currentPlanner.specializations) {
+        const specializations = typeof currentPlanner.specializations === 'string' 
+            ? JSON.parse(currentPlanner.specializations) 
+            : currentPlanner.specializations;
+            
+        const selectElement = document.getElementById('specializations');
+        Array.from(selectElement.options).forEach(option => {
+            option.selected = specializations.includes(option.value);
+        });
+    }
+}
+
 
 async function updateWorkingHours(event) {
     event.preventDefault();
@@ -1435,4 +1493,81 @@ function setupResponsiveTables() {
     });
 }
 
+// Logout 
+async function logout3() {
+    try {
+        showLoading(); 
+        
+        const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
+        if (response.ok) {
+            showNotification('Logged out successfully', 'success');
+            setTimeout(() => {
+                window.location.href = "/html/login.html";
+            }, 1000);
+        } else {
+            throw new Error('Logout request failed');
+        }
+    } catch (error) {
+        console.error("Logout error:", error);
+        showNotification('Logout failed, redirecting...', 'warning');
+        setTimeout(() => {
+            window.location.href = "/html/login.html";
+        }, 2000);
+    } finally {
+        hideLoading();
+    }
+}
+
+
+
+//  profile form submission
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const formData = new FormData(e.target);
+  const profileData = {
+    businessName: formData.get('businessName'),
+    ownerName: formData.get('ownerName'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    location: formData.get('location'),
+    homeAddress: formData.get('homeAddress'),
+    specializations: Array.from(document.getElementById('specializations').selectedOptions).map(option => option.value),
+    bio: formData.get('bio'),
+    basePrice: formData.get('basePrice'),
+    experience: formData.get('experience')
+  };
+
+  // Debug logging
+  console.log("=== FRONTEND DEBUG ===");
+  console.log("Form data being sent:", profileData);
+  
+  try {
+    const response = await fetch('/api/planner/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData)
+    });
+
+    const result = await response.json();
+    console.log("Response from server:", result);
+
+    if (response.ok) {
+      alert('Profile updated successfully!');
+    } else {
+      alert('Error: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    alert('Failed to update profile');
+  }
+});

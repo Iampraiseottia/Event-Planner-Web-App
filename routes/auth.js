@@ -1,3 +1,4 @@
+// routes/auth.js
 const express = require("express");
 const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
@@ -80,9 +81,8 @@ router.post("/register", async (req, res) => {
 // Login user
 router.post("/login", async (req, res) => {
   try {
-    const { email, password, full_name } = req.body;
+    const { email, password } = req.body;
 
-    // Validate required fields
     if (!email || !password) {
       return res.status(400).json({
         error: "Email and password are required",
@@ -90,9 +90,10 @@ router.post("/login", async (req, res) => {
     }
 
     // Find user by email
-    const user = await User.findByEmail(email);
+    const user = await User.findByEmail(email.toLowerCase().trim());
+
     if (!user) {
-      return res.status(400).json({
+      return res.status(401).json({
         error: "Invalid email or password",
       });
     }
@@ -102,27 +103,36 @@ router.post("/login", async (req, res) => {
       password,
       user.password_hash
     );
+
     if (!isValidPassword) {
-      return res.status(400).json({
+      return res.status(401).json({
         error: "Invalid email or password",
       });
     }
 
-    // Optional: Validate full name if provided (extra security)
-    if (full_name && user.full_name.toLowerCase() !== full_name.toLowerCase()) {
-      return res.status(400).json({
-        error: "Invalid credentials",
-      });
-    }
-
-    // Store user in session
+    // Create session
     req.session.user = {
       id: user.id,
       full_name: user.full_name,
       email: user.email,
       phone_number: user.phone_number,
       user_type: user.user_type,
+      location: user.location,
+      date_of_birth: user.date_of_birth,
+      preferences: user.preferences,
+      profile_image: user.profile_image,
     };
+
+    // Log activity
+    try {
+      await pool.query(
+        `INSERT INTO activity_logs (user_id, title, description, type) 
+         VALUES ($1, $2, $3, $4)`,
+        [user.id, "Login", "User logged in successfully", "login"]
+      );
+    } catch (logError) {
+      console.error("Error logging login activity:", logError);
+    }
 
     res.json({
       message: "Login successful",
@@ -130,33 +140,36 @@ router.post("/login", async (req, res) => {
         id: user.id,
         full_name: user.full_name,
         email: user.email,
-        phone_number: user.phone_number,
         user_type: user.user_type,
+        location: user.location,
+        profile_image: user.profile_image,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({
-      error: "Login failed. Please try again.",
+      error:
+        "Internal server error, PLease check your internet connetion and try again",
     });
   }
 });
 
 // Logout user
 router.post("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Logout error:", err);
-      return res.status(500).json({
-        error: "Logout failed",
-      });
-    }
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).json({ error: "Error during logout" });
+      }
 
-    res.clearCookie("connect.sid"); 
-    res.json({
-      message: "Logout successful",
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logout successful" });
     });
-  });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ error: "Error during logout" });
+  }
 });
 
 // Get current user
@@ -240,16 +253,54 @@ router.put("/profile", requireAuth, async (req, res) => {
 });
 
 // Check authentication status
-router.get("/status", (req, res) => {
-  if (req.session && req.session.user) {
+router.get("/status", async (req, res) => {
+  try {
+    if (!req.session.user || !req.session.user.id) {
+      return res.json({ authenticated: false, user: null });
+    }
+
+    const user = await User.findById(req.session.user.id);
+
+    if (!user) {
+      req.session.destroy();
+      return res.json({ authenticated: false, user: null });
+    }
+
+    // Update session with fresh data
+    req.session.user = user;
+
     res.json({
       authenticated: true,
-      user: req.session.user,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        phone_number: user.phone_number,
+        user_type: user.user_type,
+        location: user.location,
+        date_of_birth: user.date_of_birth,
+        preferences: user.preferences,
+        profile_image: user.profile_image,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        ...(user.user_type === "planner" && {
+          business_name: user.business_name,
+          bio: user.bio,
+          experience: user.experience,
+          specializations: user.specializations,
+          base_price: user.base_price,
+          home_address: user.home_address,
+          average_rating: user.average_rating,
+          total_reviews: user.total_reviews,
+        }),
+      },
     });
-  } else {
-    res.json({
+  } catch (error) {
+    console.error("Error checking auth status:", error);
+    res.status(500).json({
       authenticated: false,
       user: null,
+      error: "Internal server error",
     });
   }
 });

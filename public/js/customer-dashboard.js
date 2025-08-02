@@ -1,3 +1,4 @@
+// customer-dashboard.js
 
 document.addEventListener("DOMContentLoaded", function () {
   initializeDashboard();
@@ -6,8 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadDashboardData();
 });
-
-
 
 // Global variables
 let currentUser = null;
@@ -21,6 +20,7 @@ function initializeDashboard() {
   setupModalHandlers();
   setupProfileImageUpload();
   setupFormHandlers();
+  setupMobileSidebar();
 }
 
 // Check authentication status
@@ -31,9 +31,13 @@ async function checkAuthStatus() {
       credentials: "include",
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
 
-    if (!data.authenticated) {
+    if (!data.authenticated || !data.user) {
       window.location.href = "/html/login.html";
       return;
     }
@@ -42,7 +46,10 @@ async function checkAuthStatus() {
     updateUserInterface();
   } catch (error) {
     console.error("Auth check error:", error);
-    window.location.href = "/html/login.html";
+    showNotification("Authentication failed. Please login again.", "error");
+    setTimeout(() => {
+      window.location.href = "/html/login.html";
+    }, 2000);
   } finally {
     hideLoading();
   }
@@ -50,26 +57,105 @@ async function checkAuthStatus() {
 
 // Update user interface with user data
 function updateUserInterface() {
-  if (currentUser) {
-    document.getElementById("customerName").textContent =
-      currentUser.full_name || "Customer";
+  if (!currentUser) return;
 
-    // Update profile form
-    if (currentUser.full_name)
-      document.getElementById("fullName").value = currentUser.full_name;
-    if (currentUser.email)
-      document.getElementById("email").value = currentUser.email;
-    if (currentUser.phone_number)
-      document.getElementById("phone").value = currentUser.phone_number;
-    if (currentUser.location)
-      document.getElementById("location").value = currentUser.location;
-    if (currentUser.date_of_birth)
-      document.getElementById("dateOfBirth").value = currentUser.date_of_birth;
+  // Update welcome message
+  const customerNameEl = document.getElementById("customerName");
+  if (customerNameEl) {
+    customerNameEl.textContent = currentUser.full_name || "Customer";
+  }
 
-    // Update profile image if available
-    if (currentUser.profile_image) {
-      document.getElementById("profileImage").src = currentUser.profile_image;
+  // Update profile form fields
+  const fields = {
+    fullName: currentUser.full_name || "",
+    email: currentUser.email || "",
+    phone: currentUser.phone_number || "",
+    location: currentUser.location || "",
+    dateOfBirth: currentUser.date_of_birth || "",
+  };
+
+  Object.entries(fields).forEach(([fieldId, value]) => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.value = value;
     }
+  });
+
+  // Handle profile image
+  const profileImageEl = document.getElementById("profileImage");
+  if (profileImageEl && currentUser.profile_image) {
+    profileImageEl.src = currentUser.profile_image;
+  }
+
+  // Handle preferences with proper error handling
+  updatePreferencesSelect();
+}
+
+function updatePreferencesSelect() {
+  const preferencesSelect = document.getElementById("preferences");
+  if (!preferencesSelect || !currentUser.preferences) return;
+
+  let preferences = [];
+
+  try {
+    if (typeof currentUser.preferences === "string") {
+      if (
+        currentUser.preferences.trim() !== "" &&
+        currentUser.preferences !== "null"
+      ) {
+        preferences = JSON.parse(currentUser.preferences);
+      }
+    } else if (Array.isArray(currentUser.preferences)) {
+      preferences = currentUser.preferences;
+    }
+  } catch (e) {
+    console.error("Error parsing preferences:", e);
+    preferences = [];
+  }
+
+  // Clear all selections first
+  Array.from(preferencesSelect.options).forEach((option) => {
+    option.selected = false;
+  });
+
+  // Set selected options
+  if (Array.isArray(preferences) && preferences.length > 0) {
+    Array.from(preferencesSelect.options).forEach((option) => {
+      option.selected = preferences.includes(option.value);
+    });
+  }
+}
+
+function loadDashboardDataOffline() {
+  try {
+    // Load cached stats
+    const cachedStats = localStorage.getItem("dashboardStats");
+    if (cachedStats) {
+      const stats = JSON.parse(cachedStats);
+      updateStatsDisplay(stats);
+    }
+
+    // Load cached bookings
+    const cachedBookings = localStorage.getItem("bookingsData");
+    if (cachedBookings) {
+      bookingsData = JSON.parse(cachedBookings);
+      displayBookings(bookingsData);
+    }
+
+    // Load cached notifications
+    const cachedNotifications = localStorage.getItem("notificationsData");
+    if (cachedNotifications) {
+      notificationsData = JSON.parse(cachedNotifications);
+      displayNotifications(notificationsData);
+      updateNotificationBadge();
+    }
+
+    showNotification(
+      "Loaded cached data. Some information may be outdated.",
+      "info"
+    );
+  } catch (error) {
+    console.error("Error loading offline data:", error);
   }
 }
 
@@ -90,7 +176,6 @@ function setupSidebarNavigation() {
 
 // Show specific section
 function showSection(sectionName) {
-
   const sections = document.querySelectorAll(".content-section");
   sections.forEach((section) => section.classList.remove("active"));
 
@@ -119,7 +204,6 @@ function showSection(sectionName) {
 
 // Setup event listeners
 function setupEventListeners() {
-  // Logout button
   document.getElementById("logoutBtn").addEventListener("click", logout);
   document.getElementById("logoutBtn2").addEventListener("click", logout2);
 
@@ -158,15 +242,17 @@ async function loadDashboardData() {
   try {
     showLoading();
 
-    await Promise.all([
-      loadStats(),
-      loadRecentActivity(),
-      loadBookings(),
-      loadNotifications(),
-    ]);
+    // Load all data sequentially to handle dependencies
+    await loadStats();
+    await loadRecentActivity();
+    await loadBookings();
+    await loadNotifications();
   } catch (error) {
     console.error("Error loading dashboard data:", error);
-    showNotification("Error loading dashboard data", "error");
+    showNotification(
+      "Error loading dashboard data. Please refresh the page.",
+      "error"
+    );
   } finally {
     hideLoading();
   }
@@ -174,21 +260,28 @@ async function loadDashboardData() {
 
 // Load statistics
 async function loadStats() {
-    try {
-        const response = await fetch('/api/customer/stats', {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const stats = await response.json();
-            document.getElementById('totalBookings').textContent = stats.totalBookings;
-            document.getElementById('upcomingEvents').textContent = stats.upcomingEvents;
-            document.getElementById('completedEvents').textContent = stats.completedEvents;
-            document.getElementById('totalSpent').textContent = `CFA ${stats.totalSpent}`;
-        }
-    } catch (error) {
-        console.error('Error loading stats:', error);
+  try {
+    const response = await fetch("/api/customer/stats", {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const stats = await response.json();
+    updateStatsDisplay(stats);
+  } catch (error) {
+    console.error("Error loading stats:", error);
+    showNotification("Failed to load statistics", "warning");
+    // Set default values
+    updateStatsDisplay({
+      totalBookings: 0,
+      upcomingEvents: 0,
+      completedEvents: 0,
+      totalSpent: 0,
+    });
+  }
 }
 
 // Update stats display
@@ -211,12 +304,15 @@ async function loadRecentActivity() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      const activities = await response.json();
-      displayRecentActivity(activities);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const activities = await response.json();
+    displayRecentActivity(activities);
   } catch (error) {
     console.error("Error loading recent activity:", error);
+    displayRecentActivity([]);
   }
 }
 
@@ -269,12 +365,17 @@ async function loadBookings() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      bookingsData = await response.json();
-      displayBookings(bookingsData);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    bookingsData = await response.json();
+    displayBookings(bookingsData);
   } catch (error) {
     console.error("Error loading bookings:", error);
+    showNotification("Failed to load bookings", "warning");
+    bookingsData = [];
+    displayBookings([]);
   }
 }
 
@@ -341,17 +442,23 @@ function displayBookings(bookings) {
 // Show booking details in modal
 async function showBookingDetails(bookingId) {
   try {
+    showLoading();
+
     const response = await fetch(`/api/customer/bookings/${bookingId}`, {
       credentials: "include",
     });
 
-    if (response.ok) {
-      const booking = await response.json();
-      displayBookingModal(booking);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const booking = await response.json();
+    displayBookingModal(booking);
   } catch (error) {
     console.error("Error loading booking details:", error);
     showNotification("Error loading booking details", "error");
+  } finally {
+    hideLoading();
   }
 }
 
@@ -465,12 +572,16 @@ async function loadUpcomingEvents() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      const events = await response.json();
-      displayUpcomingEvents(events);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const events = await response.json();
+    displayUpcomingEvents(events);
   } catch (error) {
     console.error("Error loading upcoming events:", error);
+    showNotification("Failed to load upcoming events", "warning");
+    displayUpcomingEvents([]);
   }
 }
 
@@ -515,12 +626,16 @@ async function loadEventHistory() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      const history = await response.json();
-      displayEventHistory(history);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const history = await response.json();
+    displayEventHistory(history);
   } catch (error) {
     console.error("Error loading event history:", error);
+    showNotification("Failed to load event history", "warning");
+    displayEventHistory([]);
   }
 }
 
@@ -581,13 +696,19 @@ async function loadNotifications() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      notificationsData = await response.json();
-      displayNotifications(notificationsData);
-      updateNotificationBadge();
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    notificationsData = await response.json();
+    displayNotifications(notificationsData);
+    updateNotificationBadge();
   } catch (error) {
     console.error("Error loading notifications:", error);
+    showNotification("Failed to load notifications", "warning");
+    notificationsData = [];
+    displayNotifications([]);
+    updateNotificationBadge();
   }
 }
 
@@ -648,10 +769,12 @@ async function markAllNotificationsRead() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      loadNotifications();
-      showNotification("All notifications marked as read", "success");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    await loadNotifications(); // Reload from database
+    showNotification("All notifications marked as read", "success");
   } catch (error) {
     console.error("Error marking notifications as read:", error);
     showNotification("Error updating notifications", "error");
@@ -670,10 +793,12 @@ async function clearAllNotifications() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      loadNotifications();
-      showNotification("All notifications cleared", "success");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    await loadNotifications(); // Reload from database
+    showNotification("All notifications cleared", "success");
   } catch (error) {
     console.error("Error clearing notifications:", error);
     showNotification("Error clearing notifications", "error");
@@ -721,16 +846,23 @@ async function handleProfileImageUpload(event) {
       body: formData,
     });
 
-    if (response.ok) {
-      const result = await response.json();
-      document.getElementById("profileImage").src = result.imageUrl;
-      showNotification("Profile image updated successfully", "success");
-    } else {
-      throw new Error("Upload failed");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
+
+    // Update UI with new image
+    document.getElementById("profileImage").src = result.imageUrl;
+
+    if (currentUser) {
+      currentUser.profile_image = result.imageUrl;
+    }
+
+    showNotification("Profile image updated successfully", "success");
   } catch (error) {
     console.error("Error uploading profile image:", error);
-    showNotification("Error uploading image", "error");
+    showNotification("Error uploading image. Please try again.", "error");
   } finally {
     hideLoading();
   }
@@ -752,13 +884,30 @@ async function updateProfile(event) {
   event.preventDefault();
 
   const formData = new FormData(event.target);
-  const profileData = Object.fromEntries(formData.entries());
+  const profileData = {};
 
-  // Get selected preferences
-  const preferences = Array.from(
-    document.getElementById("preferences").selectedOptions
-  ).map((option) => option.value);
-  profileData.preferences = preferences;
+  // Map form fields to database columns
+  const fieldMapping = {
+    fullName: "full_name",
+    email: "email",
+    phone: "phone_number",
+    location: "location",
+    dateOfBirth: "date_of_birth",
+  };
+
+  // Process form fields
+  for (let [key, value] of formData.entries()) {
+    if (key !== "preferences" && value && value.trim()) {
+      const dbField = fieldMapping[key] || key;
+      profileData[dbField] = value.trim();
+    }
+  }
+
+  // Handle preferences
+  const selectedPreferences = formData.getAll("preferences");
+  profileData.preferences = selectedPreferences.filter(
+    (pref) => pref && pref.trim()
+  );
 
   try {
     showLoading();
@@ -772,18 +921,18 @@ async function updateProfile(event) {
       body: JSON.stringify(profileData),
     });
 
-    if (response.ok) {
-      const updatedUser = await response.json();
-      currentUser = updatedUser;
-      updateUserInterface();
-      showNotification("Profile updated successfully", "success");
-    } else {
-      const error = await response.json();
-      showNotification(error.message || "Error updating profile", "error");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to update profile");
     }
+
+    const updatedUser = await response.json();
+    currentUser = updatedUser;
+    updateUserInterface();
+    showNotification("Profile updated successfully", "success");
   } catch (error) {
     console.error("Error updating profile:", error);
-    showNotification("Error updating profile", "error");
+    showNotification(error.message || "Error updating profile", "error");
   } finally {
     hideLoading();
   }
@@ -909,7 +1058,6 @@ function resetForm() {
       "Are you sure you want to reset the form? All changes will be lost."
     )
   ) {
-    document.getElementById("profileForm").reset();
     updateUserInterface();
   }
 }
@@ -986,8 +1134,6 @@ function formatDateShort(dateString) {
   });
 }
 
-
-
 function formatTimeAgo(dateString) {
   const date = new Date(dateString);
   const now = new Date();
@@ -1048,7 +1194,6 @@ function hideLoading() {
 
 // Show notification
 function showNotification(message, type = "info") {
-
   const notification = document.createElement("div");
   notification.className = `notification notification-${type}`;
   notification.innerHTML = `
@@ -1059,8 +1204,7 @@ function showNotification(message, type = "info") {
         <button class="notification-close">&times;</button>
     `;
 
-
-    notification.style.cssText = `
+  notification.style.cssText = `
         position: fixed;
         top: 100px;
         right: 20px;
@@ -1090,7 +1234,6 @@ function showNotification(message, type = "info") {
     }
   }, 5000);
 
-  // Close button handler
   notification
     .querySelector(".notification-close")
     .addEventListener("click", () => {
@@ -1106,29 +1249,79 @@ async function logout() {
       credentials: "include",
     });
 
-    if (response.ok) {
-      window.location.href = "/html/login.html";
-    }
+    window.location.href = "/html/login.html";
   } catch (error) {
-    console.error("Logout error:", error); 
+    console.error("Logout error:", error);
     window.location.href = "/html/login.html";
   }
 }
-
 
 async function logout2() {
-  try {
-    const response = await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      window.location.href = "/html/login.html";
-    }
-  } catch (error) {
-    console.error("Logout error:", error); 
-    window.location.href = "/html/login.html";
-  }
+  return logout();
 }
 
+function setupMobileSidebar() {
+  const mobileToggle = document.getElementById("mobileToggle");
+  const sidebar = document.querySelector(".sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+  if (!mobileToggle || !sidebar || !sidebarOverlay) return;
+
+  const toggleIcon = mobileToggle.querySelector("i");
+
+  // Toggle sidebar
+  function toggleSidebar() {
+    const isOpen = sidebar.classList.contains("open");
+
+    if (isOpen) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
+  }
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarOverlay.classList.add("show");
+    mobileToggle.classList.add("active");
+    if (toggleIcon) toggleIcon.className = "fas fa-times";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("open");
+    sidebarOverlay.classList.remove("show");
+    mobileToggle.classList.remove("active");
+    if (toggleIcon) toggleIcon.className = "fas fa-bars";
+    document.body.style.overflow = "auto";
+  }
+
+  mobileToggle.addEventListener("click", toggleSidebar);
+  sidebarOverlay.addEventListener("click", closeSidebar);
+
+  // Close sidebar when clicking on menu items (mobile)
+  const menuItems = document.querySelectorAll(".menu-item");
+  menuItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      if (window.innerWidth <= 768) {
+        setTimeout(closeSidebar, 300);
+      }
+    });
+  });
+
+  // Handle window resize
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) {
+      closeSidebar();
+      sidebar.classList.remove("open");
+      document.body.style.overflow = "auto";
+    }
+  });
+
+  // Close sidebar on escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) {
+      closeSidebar();
+    }
+  });
+}

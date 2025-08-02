@@ -9,6 +9,12 @@ const {
 
 const router = express.Router();
 
+const getPlannerByName = async (plannerName) => {
+  const query = `SELECT id, full_name FROM users WHERE full_name = $1 AND user_type = 'planner'`;
+  const result = await pool.query(query, [plannerName]);
+  return result.rows[0];
+};
+
 // Create a new booking (customers only)
 router.post("/", requireAuth, async (req, res) => {
   try {
@@ -53,8 +59,16 @@ router.post("/", requireAuth, async (req, res) => {
       });
     }
 
+    const planner = await getPlannerByName(planner_name);
+  if (!planner) {
+    return res.status(400).json({
+      error: "Selected planner not found"
+    });
+  }
+
     const bookingData = {
       customer_id: req.session.user.id,
+      planner_id: planner.id,
       planner_name,
       customer_name,
       phone_number,
@@ -417,5 +431,31 @@ router.get("/all", requireAuth, async (req, res) => {
     });
   }
 });
+
+
+router.get("/planners", async (req, res) => {
+  try {
+    const query = `
+      SELECT id, full_name, email, phone_number, specialty, rating 
+      FROM users 
+      WHERE user_type = 'planner' AND is_active = true 
+      ORDER BY full_name ASC
+    `;
+    
+    const result = await pool.query(query);
+    
+    res.json({
+      success: true,
+      planners: result.rows
+    });
+  } catch (error) {
+    console.error("Get planners error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to retrieve planners"
+    });
+  }
+});
+
 
 module.exports = router;

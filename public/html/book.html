@@ -113,33 +113,7 @@
             <div class="input_box">
               <select name="planner_name" class="planner-name" required>
                 <option value="">Choose An Event Planner</option>
-                <option value="Deligent Servers" style="font-weight: 600">
-                  Deligent Servers
-                </option>
-                <option value="Esther Decor" style="font-weight: 600">
-                  Esther Decor
-                </option>
-                <option value="MOther Care" style="font-weight: 600">
-                  MOther Care
-                </option>
-                <option value="Ace Events" style="font-weight: 600">
-                  Ace Events
-                </option>
-                <option value=" Asong Raphael" style="font-weight: 600">
-                  Asong Raphael
-                </option>
-                <option value="Le Phenix" style="font-weight: 600">
-                  Le Phenix
-                </option>
-                <option value="Eyamende Raisa" style="font-weight: 600">
-                  Eyamende Raisa
-                </option>
-                <option value="Nkum Brandon " style="font-weight: 600">
-                  Nkum Brandon
-                </option>
-                <option value="Ncha Philip" style="font-weight: 600">
-                  Ncha Philip
-                </option>
+                <!-- Options will be populated dynamically -->
               </select>
             </div>
 
@@ -298,92 +272,182 @@
       </p>
     </div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const bookingForm = document.getElementById("bookingForm");
-
-        // Check authentication status
-        checkAuthStatus();
-
-        async function checkAuthStatus() {
-          try {
-            const response = await fetch("/api/auth/status", {
-              credentials: "include",
-            });
-            const data = await response.json();
-
-            if (!data.authenticated) {
-              alert("Please login first to book an event planner");
-              window.location.href = "/login";
-              return;
-            }
-
-            // Pre-fill user information if available
-            const user = data.user;
-            if (user.full_name) {
-              document.getElementById("name").value = user.full_name;
-            }
-            if (user.email) {
-              document.getElementById("email").value = user.email;
-            }
-            if (user.phone_number) {
-              document.getElementById("phone_number").value = user.phone_number;
-            }
-
-            // Store user data in localStorage for consistency
-            localStorage.setItem("user", JSON.stringify(user));
-          } catch (error) {
-            console.error("Auth check error:", error);
-            alert("Please login first to book an event planner");
-            window.location.href = "/login";
-          }
+<script>
+// Planner loading functions
+async function loadPlanners() {
+  try {
+    const response = await fetch('/api/bookings/planners', {
+      credentials: 'include'
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+      const plannerSelect = document.querySelector('.planner-name');
+      
+      // Clear existing options except the first one
+      plannerSelect.innerHTML = '<option value="">Choose An Event Planner</option>';
+      
+      // Add planners from database
+      data.planners.forEach(planner => {
+        const option = document.createElement('option');
+        option.value = planner.full_name;
+        option.textContent = planner.full_name;
+        option.style.fontWeight = '600';
+        
+        if (planner.specialty) {
+          option.textContent += ` (${planner.specialty})`;
         }
 
-        bookingForm.addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const formData = new FormData(bookingForm);
-          const bookingData = {
-            planner_name: formData.get("planner_name"),
-            customer_name: formData.get("customer_name"),
-            phone_number: formData.get("phone_number"),
-            email: formData.get("email"),
-            event_type: formData.get("event_type"),
-            category: formData.get("category"),
-            location: formData.get("location"),
-            event_date: formData.get("event_date"),
-            event_time: formData.get("event_time"),
-            requirements: formData.get("requirements"),
-          };
-
-          try {
-            const response = await fetch("/api/bookings", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify(bookingData),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-              alert("Booking created successfully! We will contact you soon.");
-              bookingForm.reset();
-              window.location.href = "../html/customer-dashboard.html";
-            } else {
-              alert(data.error || "Booking failed. Please try again.");
-            }
-          } catch (error) {
-            alert(
-              "Booking failed. Please check your connection and try again."
-            );
-            console.error("Booking error:", error);
-          }
-        });
+        plannerSelect.appendChild(option);
       });
-    </script>
+    } else {
+      console.error('Failed to load planners:', data.error);
+      loadFallbackPlanners();
+    }
+  } catch (error) {
+    console.error('Error loading planners:', error);
+    loadFallbackPlanners();
+  }
+}
+
+function loadFallbackPlanners() {
+  const plannerSelect = document.querySelector('.planner-name');
+  const fallbackPlanners = [
+    "Deligent Servers",
+    "Esther Decor", 
+    "MOther Care",
+    "Ace Events",
+    "Asong Raphael",
+    "Le Phenix",
+    "Eyamende Raisa",
+    "Nkum Brandon",
+    "Ncha Philip"
+  ];
+  
+  plannerSelect.innerHTML = '<option value="">Choose An Event Planner</option>';
+  
+  fallbackPlanners.forEach(plannerName => {
+    const option = document.createElement('option');
+    option.value = plannerName;
+    option.textContent = plannerName;
+    option.style.fontWeight = '600';
+    plannerSelect.appendChild(option);
+  });
+}
+
+// Main application logic
+document.addEventListener("DOMContentLoaded", function () {
+  const bookingForm = document.getElementById("bookingForm");
+
+  // Load planners first
+  loadPlanners();
+
+  // Check authentication status
+  checkAuthStatus();
+
+  async function checkAuthStatus() {
+    try {
+      const response = await fetch("/api/auth/status", {
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (!data.authenticated) {
+        alert("Please login first to book an event planner");
+        window.location.href = "/html/login/html";
+        return;
+      }
+
+      const user = data.user;
+      if (user.full_name) {
+        document.getElementById("name").value = user.full_name;
+      }
+      if (user.email) {
+        document.getElementById("email").value = user.email;
+      }
+      if (user.phone_number) {
+        document.getElementById("phone_number").value = user.phone_number;
+      }
+
+    } catch (error) {
+      console.error("Auth check error:", error);
+      alert("Please login first to book an event planner");
+      window.location.href = "/login";
+    }
+  }
+
+  bookingForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(bookingForm);
+    const bookingData = {
+      planner_name: formData.get("planner_name"),
+      customer_name: formData.get("customer_name"),
+      phone_number: formData.get("phone_number"),
+      email: formData.get("email"),
+      event_type: formData.get("event_type"),
+      category: formData.get("category"),
+      location: formData.get("location"),
+      event_date: formData.get("event_date"),
+      event_time: formData.get("event_time"),
+      requirements: formData.get("requirements"),
+    };
+
+    try {
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(bookingData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Booking created successfully! We will contact you soon.");
+        bookingForm.reset();
+        window.location.href = "../html/customer-dashboard.html";
+      } else {
+        alert(data.error || "Booking failed. Please try again.");
+      }
+    } catch (error) {
+      alert(
+        "Booking failed. Please check your connection and try again."
+      );
+      console.error("Booking error:", error);
+    }
+  });
+});
+
+// Mobile menu functionality - Fixed variable declarations
+document.addEventListener("DOMContentLoaded", function() {
+  const closeBtn = document.getElementById("close");
+  const menuBtn = document.getElementById("menu");
+  const navBar = document.querySelector(".nav");
+  const header = document.getElementById("header");
+  const body = document.body;
+
+  if (menuBtn && closeBtn && navBar) {
+    menuBtn.addEventListener("click", () => {
+      menuBtn.style.visibility = "hidden";
+      closeBtn.style.visibility = "visible";
+      navBar.style.visibility = "visible";
+      header.classList.add("menu-open");
+      body.classList.add("menu-open");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      menuBtn.style.visibility = "visible";
+      closeBtn.style.visibility = "hidden";
+      navBar.style.visibility = "hidden";
+      header.classList.remove("menu-open");
+      body.classList.remove("menu-open");
+    });
+  }
+});
+</script>
 
     <script src="../js/main.js"></script>
 
@@ -409,6 +473,70 @@
         header.classList.remove("menu-open");
         body.classList.remove("menu-open");
       });
+
+      // Populate Planner Dropdown
+      async function loadPlanners() {
+        try {
+          const response = await fetch("/api/bookings/planners", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            const plannerSelect = document.querySelector(".planner-name");
+
+            // Clear existing options except the first one
+            plannerSelect.innerHTML =
+              '<option value="">Choose An Event Planner</option>';
+
+            // Add planners from database
+            data.planners.forEach((planner) => {
+              const option = document.createElement("option");
+              option.value = planner.full_name;
+              option.textContent = planner.full_name;
+              option.style.fontWeight = "600";
+
+              if (planner.specialty) {
+                option.textContent += ` (${planner.specialty})`;
+              }
+
+              plannerSelect.appendChild(option);
+            });
+          } else {
+            console.error("Failed to load planners:", data.error);
+            loadFallbackPlanners();
+          }
+        } catch (error) {
+          console.error("Error loading planners:", error);
+          loadFallbackPlanners();
+        }
+      }
+
+      function loadFallbackPlanners() {
+        const plannerSelect = document.querySelector(".planner-name");
+        const fallbackPlanners = [
+          "Deligent Servers",
+          "Esther Decor",
+          "MOther Care",
+          "Ace Events",
+          "Asong Raphael",
+          "Le Phenix",
+          "Eyamende Raisa",
+          "Nkum Brandon",
+          "Ncha Philip",
+        ];
+
+        plannerSelect.innerHTML =
+          '<option value="">Choose An Event Planner</option>';
+
+        fallbackPlanners.forEach((plannerName) => {
+          const option = document.createElement("option");
+          option.value = plannerName;
+          option.textContent = plannerName;
+          option.style.fontWeight = "600";
+          plannerSelect.appendChild(option);
+        });
+      }
     </script>
   </body>
 </html>

@@ -1,3 +1,4 @@
+// route/planner.js
 const express = require("express");
 const {
   requireAuth,
@@ -227,11 +228,11 @@ router.put("/working-hours", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
-// Upload profile image
+// Upload profile image 
 router.post(
   "/profile/upload-image",
   requireAuth,
-  requireCustomer,
+  requirePlanner,
   upload.single("profileImage"),
   async (req, res) => {
     try {
@@ -261,5 +262,195 @@ router.post(
     }
   }
 );
+
+
+router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+    
+    console.log("=== PROFILE UPDATE DEBUG ===");
+    console.log("Planner ID from session:", plannerId);
+    console.log("Request body:", req.body);
+    console.log("Session user:", req.session.user);
+    
+    const {
+      businessName,
+      ownerName,
+      email,
+      phone,
+      location,
+      homeAddress,
+      specializations,
+      bio,
+      basePrice,
+      experience,
+    } = req.body;
+
+    if (
+      !businessName ||
+      !ownerName ||
+      !email ||
+      !phone ||
+      !location ||
+      !bio ||
+      !basePrice ||
+      !experience
+    ) {
+      console.log("Validation failed - missing fields");
+      return res.status(400).json({
+        error: "All required fields must be filled",
+      });
+    }
+
+    // Check if email is already taken by another user
+    const existingUser = await pool.query(
+      "SELECT id FROM users WHERE email = $1 AND id != $2",
+      [email, plannerId]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({
+        error: "Email is already taken by another user",
+      });
+    }
+
+    // Start transaction
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      // Update users table
+      const userUpdateQuery = `
+        UPDATE users 
+        SET full_name = $1, email = $2, phone_number = $3, location = $4, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $5
+        RETURNING *
+      `;
+
+      console.log("Updating users table with:", [ownerName, email, phone, location, plannerId]);
+      const userResult = await client.query(userUpdateQuery, [
+        ownerName,
+        email,
+        phone,
+        location,
+        plannerId,
+      ]);
+      
+      console.log("User update result:", userResult.rows[0]);
+
+      // First check if planner record exists
+      const plannerCheck = await client.query(
+        "SELECT * FROM planners WHERE user_id = $1",
+        [plannerId]
+      );
+      
+      console.log("Existing planner record:", plannerCheck.rows[0]);
+
+      let plannerResult;
+      if (plannerCheck.rows.length === 0) {
+        // Create planner record if it doesn't exist
+        const plannerInsertQuery = `
+          INSERT INTO planners (user_id, business_name, bio, experience, specializations, base_price, home_address)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          RETURNING *
+        `;
+        
+        console.log("Creating new planner record with:", [
+          plannerId,
+          businessName,
+          bio,
+          parseInt(experience),
+          JSON.stringify(specializations),
+          parseFloat(basePrice),
+          homeAddress
+        ]);
+        
+        plannerResult = await client.query(plannerInsertQuery, [
+          plannerId,
+          businessName,
+          bio,
+          parseInt(experience),
+          JSON.stringify(specializations),
+          parseFloat(basePrice),
+          homeAddress,
+        ]);
+      } else {
+        const plannerUpdateQuery = `
+          UPDATE planners 
+          SET business_name = $1, bio = $2, experience = $3, specializations = $4, 
+              base_price = $5, home_address = $6, updated_at = CURRENT_TIMESTAMP
+          WHERE user_id = $7
+          RETURNING *
+        `;
+
+        console.log("Updating planner record with:", [
+          businessName,
+          bio,
+          parseInt(experience),
+          JSON.stringify(specializations),
+          parseFloat(basePrice),
+          homeAddress,
+          plannerId
+        ]);
+
+        plannerResult = await client.query(plannerUpdateQuery, [
+          businessName,
+          bio,
+          parseInt(experience),
+          JSON.stringify(specializations),
+          parseFloat(basePrice),
+          homeAddress,
+          plannerId,
+        ]);
+      }
+
+      console.log("Planner update/insert result:", plannerResult.rows[0]);
+
+      await client.query("COMMIT");
+
+      // Update session data
+      req.session.user = {
+        ...req.session.user,
+        full_name: userResult.rows[0].full_name,
+        email: userResult.rows[0].email,
+        phone_number: userResult.rows[0].phone_number,
+        location: userResult.rows[0].location,
+      };
+
+      // Get complete updated profile
+      const completeProfileQuery = `
+        SELECT u.*, p.business_name, p.bio, p.experience, p.specializations, 
+               p.base_price, p.home_address, p.average_rating, p.total_reviews
+        FROM users u
+        LEFT JOIN planners p ON u.id = p.user_id
+        WHERE u.id = $1
+      `;
+
+      const completeProfile = await client.query(completeProfileQuery, [
+        plannerId,
+      ]);
+
+      console.log("Final complete profile:", completeProfile.rows[0]);
+
+      res.json({
+        message: "Profile updated successfully",
+        planner: completeProfile.rows[0],
+      });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.log("Transaction rollback due to error:", error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({
+      error: error.message || "Profile update failed",
+    });
+  }
+});
+
 
 module.exports = router;
