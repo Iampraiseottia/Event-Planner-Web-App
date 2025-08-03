@@ -1,6 +1,7 @@
-// routes/booking.js
+
 const express = require("express");
 const Booking = require("../models/Booking");
+const pool = require("../config/database");
 const {
   requireAuth,
   requireCustomer,
@@ -10,10 +11,58 @@ const {
 const router = express.Router();
 
 const getPlannerByName = async (plannerName) => {
-  const query = `SELECT id, full_name FROM users WHERE full_name = $1 AND user_type = 'planner'`;
-  const result = await pool.query(query, [plannerName]);
-  return result.rows[0];
+  try {
+    const query = `
+      SELECT id, full_name, email, phone_number 
+      FROM users 
+      WHERE full_name = $1 AND user_type = 'planner' AND is_active = true
+    `;
+    const result = await pool.query(query, [plannerName]);
+    console.log(`Looking for planner: ${plannerName}, found:`, result.rows[0]);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error getting planner by name:", error);
+    return null;
+  }
 };
+
+router.get("/planners", async (req, res) => {
+  try {
+    console.log("Fetching planners from database...");
+
+    const query = `
+      SELECT 
+        id, 
+        full_name, 
+        email, 
+        phone_number
+      FROM users 
+      WHERE user_type = 'planner' 
+        AND is_active = true 
+      ORDER BY full_name ASC
+    `;
+
+    const result = await pool.query(query);
+
+    console.log(`Found ${result.rows.length} planners in database`);
+    console.log("Planners data:", result.rows);
+
+    res.status(200).json({
+      success: true,
+      planners: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    console.error("Get planners error:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to retrieve planners from database",
+      message: error.message,
+      planners: [],
+    });
+  }
+});
 
 // Create a new booking (customers only)
 router.post("/", requireAuth, async (req, res) => {
@@ -30,6 +79,8 @@ router.post("/", requireAuth, async (req, res) => {
       event_time,
       requirements,
     } = req.body;
+
+    console.log("Booking request data:", req.body);
 
     // Validate required fields
     if (
@@ -59,17 +110,21 @@ router.post("/", requireAuth, async (req, res) => {
       });
     }
 
+    // Get planner details
     const planner = await getPlannerByName(planner_name);
-  if (!planner) {
-    return res.status(400).json({
-      error: "Selected planner not found"
-    });
-  }
+    if (!planner) {
+      console.error(`Planner not found: ${planner_name}`);
+      return res.status(400).json({
+        error: `Selected planner "${planner_name}" not found. Please refresh the page and try again.`,
+      });
+    }
+
+    console.log("Found planner:", planner);
 
     const bookingData = {
       customer_id: req.session.user.id,
       planner_id: planner.id,
-      planner_name,
+      planner_name: planner.full_name,
       customer_name,
       phone_number,
       email,
@@ -81,6 +136,8 @@ router.post("/", requireAuth, async (req, res) => {
       requirements: requirements || "",
     };
 
+    console.log("Creating booking with data:", bookingData);
+
     const booking = await Booking.create(bookingData);
 
     res.status(201).json({
@@ -88,9 +145,10 @@ router.post("/", requireAuth, async (req, res) => {
       booking: booking,
     });
   } catch (error) {
-    console.error("Booking creation error:", error); // This is the correct catch for this route
+    console.error("Booking creation error:", error);
     res.status(500).json({
       error: "Failed to create booking. Please try again.",
+      details: error.message,
     });
   }
 });
@@ -278,7 +336,7 @@ router.put("/:id", requireAuth, async (req, res) => {
   }
 });
 
-// Delete booking (customers can delete their own pending bookings)
+// Delete booking
 router.delete("/:id", requireAuth, async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -373,7 +431,7 @@ router.get("/stats/overview", requirePlanner, async (req, res) => {
   }
 });
 
-// Get user's bookings (customers see their own, planners see theirs)
+// Get user's bookings
 router.get("/my-bookings", requireAuth, async (req, res) => {
   try {
     let bookings;
@@ -394,7 +452,8 @@ router.get("/my-bookings", requireAuth, async (req, res) => {
       bookings: bookings,
     });
   } catch (error) {
-    console.error("Get user's bookings error:", error); // Changed from "Get bookings error" for clarity
+    console.error("Get user's bookings error:", error);
+
     res.status(500).json({
       error: "Failed to retrieve bookings",
     });
@@ -431,31 +490,5 @@ router.get("/all", requireAuth, async (req, res) => {
     });
   }
 });
-
-
-router.get("/planners", async (req, res) => {
-  try {
-    const query = `
-      SELECT id, full_name, email, phone_number, specialty, rating 
-      FROM users 
-      WHERE user_type = 'planner' AND is_active = true 
-      ORDER BY full_name ASC
-    `;
-    
-    const result = await pool.query(query);
-    
-    res.json({
-      success: true,
-      planners: result.rows
-    });
-  } catch (error) {
-    console.error("Get planners error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to retrieve planners"
-    });
-  }
-});
-
 
 module.exports = router;

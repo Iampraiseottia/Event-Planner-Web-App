@@ -1,4 +1,4 @@
-// routes/customer.js
+
 const express = require("express");
 const { requireAuth, requireCustomer } = require("../middleware/auth");
 const Booking = require("../models/Booking");
@@ -55,18 +55,32 @@ router.get("/bookings", requireAuth, requireCustomer, async (req, res) => {
              u.phone_number as planner_phone,
              u.email as planner_email
       FROM bookings b
-      JOIN users u ON b.planner_id = u.id
-      WHERE b.customer_id = $1 AND b.deleted_at IS NULL
+      LEFT JOIN users u ON b.planner_id = u.id
+      WHERE b.customer_id = $1 AND (b.deleted_at IS NULL OR b.deleted_at IS NULL)
       ORDER BY b.created_at DESC
     `;
 
     const result = await pool.query(query, [customerId]);
-    res.json(result.rows);
+
+    // Transform the data to ensure all required fields are present
+    const bookings = result.rows.map((booking) => ({
+      ...booking,
+      status: booking.status || "pending",
+      planner_name: booking.planner_name || "Not assigned",
+      event_time: booking.event_time || "Time TBD",
+      requirements: booking.requirements || "",
+    }));
+
+    res.json(bookings);
   } catch (error) {
     console.error("Error loading bookings:", error);
-    res.status(500).json({ error: "Failed to load bookings" });
+    res.status(500).json({
+      error: "Failed to load bookings",
+      bookings: [], // Return empty array as fallback
+    });
   }
 });
+
 
 // Get specific booking
 router.get("/bookings/:id", requireAuth, requireCustomer, async (req, res) => {

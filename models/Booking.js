@@ -1,3 +1,4 @@
+
 const pool = require("../config/database");
 
 class Booking {
@@ -5,20 +6,33 @@ class Booking {
     const {
       customer_id,
       planner_id,
+      planner_name,
+      customer_name,
+      phone_number,
+      email,
       event_type,
+      category,
+      location,
       event_date,
       event_time,
-      location,
-      category,
       requirements,
-      estimated_cost,
     } = bookingData;
 
     const query = `
-            INSERT INTO bookings (customer_id, planner_id, event_type, event_date, event_time, location, category, requirements, estimated_cost)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING *
-        `;
+    INSERT INTO bookings (
+      customer_id, 
+      planner_id, 
+      event_type, 
+      event_date, 
+      event_time, 
+      location, 
+      category, 
+      requirements,
+      status
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
+    RETURNING *
+  `;
 
     const values = [
       customer_id,
@@ -28,18 +42,19 @@ class Booking {
       event_time,
       location,
       category,
-      requirements,
-      estimated_cost,
+      requirements || "",
     ];
+
     const result = await pool.query(query, values);
+    const booking = result.rows[0];
 
     // Create notification for planner
     await this.createNotification(
       planner_id,
       "New Booking Request",
-      `New ${event_type} booking request from customer`,
+      `New ${event_type} booking request from ${customer_name}`,
       "info",
-      result.rows[0].id
+      booking.id
     );
 
     // Log activity
@@ -47,12 +62,13 @@ class Booking {
       customer_id,
       "booking",
       "Booking Created",
-      `Created booking for ${event_type}`,
-      result.rows[0].id
+      `Created booking for ${event_type} on ${event_date}`,
+      booking.id
     );
 
-    return result.rows[0];
+    return booking;
   }
+
 
   static async findByCustomerId(customerId) {
     const query = `

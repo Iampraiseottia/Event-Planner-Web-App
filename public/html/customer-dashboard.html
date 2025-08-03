@@ -101,7 +101,12 @@
           </div>
 
           <div class="stats-grid">
-            <div class="stat-card">
+            <div
+              class="stat-card"
+              style="cursor:  pointer;"
+              data-section="bookings"
+              onclick="navigateToSection('bookings')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-calendar-plus"></i>
               </div>
@@ -110,7 +115,12 @@
                 <p>Total Bookings</p>
               </div>
             </div>
-            <div class="stat-card">
+            <div
+              class="stat-card"
+              style="cursor:  pointer;"
+              data-section="upcoming"
+              onclick="navigateToSection('upcoming')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-clock"></i>
               </div>
@@ -119,7 +129,12 @@
                 <p>Upcoming Booked Events</p>
               </div>
             </div>
-            <div class="stat-card">
+            <div
+              class="stat-card"
+              style="cursor:  pointer;"
+              data-section="history"
+              onclick="navigateToSection('history')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-check-circle"></i>
               </div>
@@ -128,7 +143,11 @@
                 <p>Completed Events</p>
               </div>
             </div>
-            <div class="stat-card">
+            <div
+              class="stat-card"
+              data-section="overview"
+              onclick="navigateToSection('overview')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-dollar-sign"></i>
               </div>
@@ -299,7 +318,7 @@
               <input
                 type="text"
                 id="bookingSearch"
-                placeholder="Search bookings..."
+                placeholder="Search bookings based on type"
               />
               <i class="fas fa-search"></i>
             </div>
@@ -328,7 +347,7 @@
         <section id="history" class="content-section">
           <div class="section-header">
             <h1>Event History</h1>
-            <p>Your past events and experiences</p>
+            <p>All your past events </p>
           </div>
 
           <div class="history-container">

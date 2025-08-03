@@ -1,4 +1,4 @@
-// customer-dashboard.js
+// customer-dashboard.js 
 
 document.addEventListener("DOMContentLoaded", function () {
   initializeDashboard();
@@ -49,7 +49,7 @@ async function checkAuthStatus() {
     showNotification("Authentication failed. Please login again.", "error");
     setTimeout(() => {
       window.location.href = "/html/login.html";
-    }, 2000);
+    }, 24000);
   } finally {
     hideLoading();
   }
@@ -379,41 +379,37 @@ async function loadBookings() {
   }
 }
 
-// Display bookings
-function displayBookings(bookings) {
-  const container = document.getElementById("bookingsList");
-
-  if (!bookings || bookings.length === 0) {
-    container.innerHTML =
-      '<p class="text-center text-gray-500">No bookings found</p>';
-    return;
-  }
-}
 
 // Display bookings
 function displayBookings(bookings) {
   const container = document.getElementById("bookingsList");
 
   if (!bookings || bookings.length === 0) {
-    container.innerHTML =
-      '<p class="text-center text-gray-500">No bookings found</p>';
+    container.innerHTML = `
+      <div class="no-bookings">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No bookings found</h3>
+        <p>You haven't made any bookings yet. Start planning your next event!</p>
+        <a href="../html/category.html" class="btn-primary">Book Your First Event</a>
+      </div>
+    `;
     return;
   }
 
   container.innerHTML = bookings
     .map(
       (booking) => `
-        <div class="booking-card" onclick="showBookingDetails(${booking.id})">
+        <div class="booking-card" onclick="showBookingDetails('${booking.id}')">
             <div class="booking-header">
                 <div>
                     <div class="booking-title">${booking.event_type}</div>
                     <div class="booking-planner">Planner: ${
-                      booking.planner_name
+                      booking.planner_name || 'Not assigned'
                     }</div>
                 </div>
-                <span class="booking-status ${booking.status.toLowerCase()}">${
-        booking.status
-      }</span>
+                <span class="booking-status ${booking.status?.toLowerCase() || 'pending'}">${
+                  booking.status || 'Pending'
+                }</span>
             </div>
             <div class="booking-details">
                 <div class="booking-detail">
@@ -422,7 +418,7 @@ function displayBookings(bookings) {
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-clock"></i>
-                    <span>${booking.event_time}</span>
+                    <span>${booking.event_time || 'Time TBD'}</span>
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-map-marker-alt"></i>
@@ -432,6 +428,20 @@ function displayBookings(bookings) {
                     <i class="fas fa-tag"></i>
                     <span>${booking.category}</span>
                 </div>
+                ${booking.requirements ? `
+                <div class="booking-detail">
+                    <i class="fas fa-list"></i>
+                    <span class="requirements-preview">${booking.requirements.substring(0, 50)}${booking.requirements.length > 50 ? '...' : ''}</span>
+                </div>
+                ` : ''}
+            </div>
+            <div class="booking-footer">
+                <div class="booking-date-created">
+                    Created: ${formatDate(booking.created_at)}
+                </div>
+                <button class="view-details-btn" onclick="event.stopPropagation(); showBookingDetails('${booking.id}')">
+                    View Details
+                </button>
             </div>
         </div>
     `
@@ -439,16 +449,33 @@ function displayBookings(bookings) {
     .join("");
 }
 
+
+
 // Show booking details in modal
 async function showBookingDetails(bookingId) {
   try {
     showLoading();
 
+    const localBooking = bookingsData.find(b => b.id == bookingId || b.id === bookingId);
+    
+    if (localBooking) {
+      displayBookingModal(localBooking);
+      hideLoading();
+      return;
+    }
+
+    // Fetch Booking
     const response = await fetch(`/api/customer/bookings/${bookingId}`, {
       credentials: "include",
     });
 
     if (!response.ok) {
+      const stringBooking = bookingsData.find(b => String(b.id) === String(bookingId));
+      if (stringBooking) {
+        displayBookingModal(stringBooking);
+        return;
+      }
+      
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -456,7 +483,18 @@ async function showBookingDetails(bookingId) {
     displayBookingModal(booking);
   } catch (error) {
     console.error("Error loading booking details:", error);
-    showNotification("Error loading booking details", "error");
+    
+    const fallbackBooking = bookingsData.find(b => 
+      String(b.id) === String(bookingId) || 
+      b.id == bookingId
+    );
+    
+    if (fallbackBooking) {
+      console.log("Using fallback booking data");
+      displayBookingModal(fallbackBooking);
+    } else {
+      showNotification("Error loading booking details. Please try again.", "error");
+    }
   } finally {
     hideLoading();
   }
@@ -472,29 +510,29 @@ function displayBookingModal(booking) {
                 <h3>Event Information</h3>
                 <div class="detail-item">
                     <label>Event Type:</label>
-                    <span>${booking.event_type}</span>
+                    <span>${booking.event_type || 'N/A'}</span>
                 </div>
                 <div class="detail-item">
                     <label>Date:</label>
-                    <span>${formatDate(booking.event_date)}</span>
+                    <span>${booking.event_date ? formatDate(booking.event_date) : 'N/A'}</span>
                 </div>
                 <div class="detail-item">
                     <label>Time:</label>
-                    <span>${booking.event_time}</span>
+                    <span>${booking.event_time || 'N/A'}</span>
                 </div>
                 <div class="detail-item">
                     <label>Location:</label>
-                    <span>${booking.location}</span>
+                    <span>${booking.location || 'N/A'}</span>
                 </div>
                 <div class="detail-item">
                     <label>Category:</label>
-                    <span>${booking.category}</span>
+                    <span>${booking.category || 'N/A'}</span>
                 </div>
                 <div class="detail-item">
                     <label>Status:</label>
-                    <span class="booking-status ${booking.status.toLowerCase()}">${
-    booking.status
-  }</span>
+                    <span class="booking-status ${(booking.status || 'pending').toLowerCase()}">${
+                      booking.status || 'Pending'
+                    }</span>
                 </div>
             </div>
             
@@ -502,7 +540,7 @@ function displayBookingModal(booking) {
                 <h3>Planner Information</h3>
                 <div class="detail-item">
                     <label>Planner:</label>
-                    <span>${booking.planner_name}</span>
+                    <span>${booking.planner_name || 'Not assigned'}</span>
                 </div>
                 <div class="detail-item">
                     <label>Contact:</label>
@@ -524,9 +562,9 @@ function displayBookingModal(booking) {
                 <div class="timeline-small">
                     <div class="timeline-item-small">
                         <div class="timeline-date-small">Booked</div>
-                        <div class="timeline-content-small">${formatDate(
-                          booking.created_at
-                        )}</div>
+                        <div class="timeline-content-small">${
+                          booking.created_at ? formatDate(booking.created_at) : 'N/A'
+                        }</div>
                     </div>
                     ${
                       booking.confirmed_at
@@ -561,9 +599,12 @@ function displayBookingModal(booking) {
 
   // Update contact planner button
   const contactBtn = document.getElementById("contactPlannerBtn");
-  contactBtn.onclick = () =>
-    contactPlanner(booking.planner_phone, booking.planner_email);
+  if (contactBtn) {
+    contactBtn.onclick = () =>
+      contactPlanner(booking.planner_phone, booking.planner_email);
+  }
 }
+
 
 // Load upcoming events
 async function loadUpcomingEvents() {
@@ -1041,7 +1082,7 @@ function contactPlanner(phone, email) {
   const contactHtml = `
         <div class="contact-options">
             <h3>Contact Planner</h3>
-            <div class="contact-buttons">
+            <div class="contact-buttons" style="margin-top: 30px !important;">
                 ${contactOptions.join("")}
             </div>
         </div>
@@ -1325,3 +1366,21 @@ function setupMobileSidebar() {
     }
   });
 }
+
+
+
+
+// Stat card clicking to showing contnt
+function navigateToSection(sectionName) {
+  // Show the section content
+  showSection(sectionName);
+  
+   const sidebarMenuItems = document.querySelectorAll('.sidebar .menu-item');
+  sidebarMenuItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.dataset.section === sectionName) {
+      item.classList.add('active');
+    } 
+  });
+}
+

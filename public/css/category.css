@@ -182,7 +182,7 @@ marquee span {
 }
 
 .event1-title button a:hover {
-  color: chocolate;
+  color: white;
 }
 
 @media (max-width: 642px) {
