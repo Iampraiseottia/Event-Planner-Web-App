@@ -390,8 +390,8 @@
               <div class="support-option">
                 <i class="fas fa-comments"></i>
                 <h3>Live Chat</h3>
-                <p>Chat with our support team in real-time</p>
-                <button class="btn-primary">Start Chat</button>
+                <p>Chat with our support team in real-time through the purple icon found in the bottom right of the page</p>
+                <!-- <button class="btn-primary">Start Chat</button> -->
               </div>
               <div class="support-option">
                 <i class="fas fa-envelope"></i>
@@ -550,8 +550,6 @@
 
       document.addEventListener("DOMContentLoaded", setupTouchSupport);
 
-
-
       function formatCurrency(amount) {
         return new Intl.NumberFormat("en-US").format(amount);
       }
@@ -560,5 +558,23 @@
         stats.totalSpent
       )} <span>Francs</span>`;
     </script>
+
+    <!-- live chat tawk to  -->
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+      var Tawk_API = Tawk_API || {},
+        Tawk_LoadStart = new Date();
+      (function () {
+        var s1 = document.createElement("script"),
+          s0 = document.getElementsByTagName("script")[0];
+        s1.async = true;
+        s1.src = "https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k";
+        s1.charset = "UTF-8";
+        s1.setAttribute("crossorigin", "*");
+        s0.parentNode.insertBefore(s1, s0);
+      })();
+    </script>
+    <!--End of Tawk.to Script-->
+
   </body>
 </html>
