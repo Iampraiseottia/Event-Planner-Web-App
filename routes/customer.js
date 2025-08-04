@@ -1,4 +1,4 @@
-
+// routes/customer.js 
 const express = require("express");
 const { requireAuth, requireCustomer } = require("../middleware/auth");
 const Booking = require("../models/Booking");

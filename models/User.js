@@ -1,3 +1,4 @@
+// models/user.js
 
 const pool = require("../config/database");
 const bcrypt = require("bcryptjs");

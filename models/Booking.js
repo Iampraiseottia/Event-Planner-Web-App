@@ -1,5 +1,3 @@
-// models/booking.js
-
 const pool = require("../config/database");
 
 class Booking {
@@ -70,21 +68,27 @@ class Booking {
     return booking;
   }
 
+  // Find Existing customer By CustomerId method
   static async findByCustomerId(customerId) {
     const query = `
-            SELECT b.*, 
-                   u.full_name as planner_name, 
-                   u.phone_number as planner_phone,
-                   u.email as planner_email,
-                   uc.full_name as customer_name,
-                   uc.phone_number,
-                   uc.email
-            FROM bookings b
-            JOIN users u ON b.planner_id = u.id
-            JOIN users uc ON b.customer_id = uc.id
-            WHERE b.customer_id = $1
-            ORDER BY b.created_at DESC
-        `;
+    SELECT b.*, 
+           u.full_name as planner_name, 
+           u.phone_number as planner_phone,
+           u.email as planner_email,
+           uc.full_name as customer_name,
+           uc.phone_number,
+           uc.email
+    FROM bookings b
+    JOIN users u ON b.planner_id = u.id
+    JOIN users uc ON b.customer_id = uc.id
+    WHERE b.customer_id = $1
+      AND (
+        b.event_date > CURRENT_DATE 
+        OR (b.event_date = CURRENT_DATE AND b.event_time >= CURRENT_TIME)
+        OR b.status = 'pending'
+      )
+    ORDER BY b.created_at DESC
+  `;
 
     const result = await pool.query(query, [customerId]);
     return result.rows;

@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 let currentUser = null;
 let bookingsData = [];
 let notificationsData = [];
+let eventHistoryData = [];
 
 // Initialize dashboard
 function initializeDashboard() {
@@ -238,6 +239,7 @@ function setupEventListeners() {
 }
 
 // Load dashboard data
+// UPDATE loadDashboardData function
 async function loadDashboardData() {
   try {
     showLoading();
@@ -246,6 +248,7 @@ async function loadDashboardData() {
     await loadStats();
     await loadRecentActivity();
     await loadBookings();
+    await loadEventHistory(); // Add this line
     await loadNotifications();
   } catch (error) {
     console.error("Error loading dashboard data:", error);
@@ -661,74 +664,209 @@ function displayUpcomingEvents(events) {
 }
 
 // Load event history
-async function loadEventHistory() {
+function loadEventHistory() {
   try {
-    const response = await fetch("/api/customer/event-history", {
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const history = await response.json();
-    displayEventHistory(history);
+    // Filter completed/cancelled bookings from existing bookingsData
+    const completedStatuses = ['completed', 'cancelled'];
+    eventHistoryData = bookingsData.filter(booking => 
+      completedStatuses.includes(booking.status?.toLowerCase())
+    ).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+    
+    displayEventHistory(eventHistoryData);
   } catch (error) {
     console.error("Error loading event history:", error);
     showNotification("Failed to load event history", "warning");
+    eventHistoryData = [];
     displayEventHistory([]);
   }
 }
+
+
 
 // Display event history
 function displayEventHistory(history) {
   const container = document.getElementById("eventHistoryList");
 
   if (!history || history.length === 0) {
-    container.innerHTML =
-      '<p class="text-center text-gray-500">No event history</p>';
+    container.innerHTML = `
+      <div class="no-history">
+        <i class="fas fa-history"></i>
+        <h3>No event history</h3>
+        <p>Your completed events will appear here</p>
+      </div>
+    `;
     return;
   }
 
   container.innerHTML = history
     .map(
       (event) => `
-        <div class="history-card">
-            <div class="history-image">
-                <img src="${event.image || "/img/default-event.jpg"}" alt="${
-        event.event_type
-      }">
-                <div class="history-overlay">${formatDate(
-                  event.event_date
-                )}</div>
-            </div>
+        <div class="history-card" onclick="showEventHistoryDetails('${event.id}')">
             <div class="history-content">
-                <h3>${event.event_type}</h3>
-                <p>Planner: ${event.planner_name}</p>
-                <p>Location: ${event.location}</p>
-                ${
-                  event.rating
-                    ? `
-                    <div class="history-rating">
-                        <div class="stars">
-                            ${generateStars(event.rating)}
-                        </div>
-                        <span class="rating-text">${event.rating}/5</span>
+                <div class="history-header">
+                    <h3>${event.event_type}</h3>
+                    <span class="history-status ${event.status?.toLowerCase() || 'completed'}">${
+                      event.status || 'Completed'
+                    }</span>
+                </div>
+                <div class="history-details">
+                    <div class="history-detail">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Planner: ${event.planner_name || 'N/A'}</span>
                     </div>
-                `
-                    : ""
-                }
-                ${
-                  event.review
-                    ? `<p class="review-text">"${event.review}"</p>`
-                    : ""
-                }
+                    <div class="history-detail">
+                        <i class="fas fa-calendar"></i>
+                        <span>${formatDate(event.event_date)}</span>
+                    </div>
+                    <div class="history-detail">
+                        <i class="fas fa-clock"></i>
+                        <span>${event.event_time || 'N/A'}</span>
+                    </div>
+                    <div class="history-detail">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>${event.location}</span>
+                    </div>
+                    <div class="history-detail">
+                        <i class="fas fa-tag"></i>
+                        <span>${event.category}</span>
+                    </div>
+                </div>
+                ${event.requirements ? `
+                <div class="history-requirements">
+                    <i class="fas fa-list"></i>
+                    <span>${event.requirements.substring(0, 100)}${event.requirements.length > 100 ? '...' : ''}</span>
+                </div>
+                ` : ''}
+                <div class="history-footer">
+                    <small class="text-muted">
+                        Event Date: ${formatDate(event.event_date)}
+                        ${event.completed_at ? ` | Completed: ${formatDate(event.completed_at)}` : ''}
+                    </small>
+                </div>
             </div>
         </div>
     `
     )
     .join("");
 }
+
+
+
+
+// Show event history details
+function showEventHistoryDetails(eventId) {
+
+  const event = eventHistoryData?.find(e => e.id == eventId);
+  
+  if (!event) {
+    showNotification("Event details not found", "error");
+    return;
+  }
+
+  const modalBody = document.getElementById("bookingModalBody");
+  
+  modalBody.innerHTML = `
+    <div class="booking-detail-grid">
+        <div class="detail-section">
+            <h3>Event Information</h3>
+            <div class="detail-item">
+                <label>Event Type:</label>
+                <span>${event.event_type || 'N/A'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Date:</label>
+                <span>${event.event_date ? formatDate(event.event_date) : 'N/A'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Time:</label>
+                <span>${event.event_time || 'N/A'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Location:</label>
+                <span>${event.location || 'N/A'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Category:</label>
+                <span>${event.category || 'N/A'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Status:</label>
+                <span class="booking-status ${(event.status || 'completed').toLowerCase()}">${
+                  event.status || 'Completed'
+                }</span>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h3>Planner Information</h3>
+            <div class="detail-item">
+                <label>Planner:</label>
+                <span>${event.planner_name || 'Not assigned'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Contact:</label>
+                <span>${event.planner_phone || "N/A"}</span>
+            </div>
+            <div class="detail-item">
+                <label>Email:</label>
+                <span>${event.planner_email || "N/A"}</span>
+            </div>
+        </div>
+        
+        <div class="detail-section full-width">
+            <h3>Requirements</h3>
+            <p>${event.requirements || "No specific requirements"}</p>
+        </div>
+        
+        <div class="detail-section full-width">
+            <h3>Event Timeline</h3>
+            <div class="timeline-small">
+                <div class="timeline-item-small completed">
+                    <div class="timeline-date-small">Booked</div>
+                    <div class="timeline-content-small">${
+                      event.created_at ? formatDate(event.created_at) : 'N/A'
+                    }</div>
+                </div>
+                ${
+                  event.confirmed_at
+                    ? `
+                    <div class="timeline-item-small completed">
+                        <div class="timeline-date-small">Confirmed</div>
+                        <div class="timeline-content-small">${formatDate(
+                          event.confirmed_at
+                        )}</div>
+                    </div>
+                `
+                    : ""
+                }
+                <div class="timeline-item-small completed">
+                    <div class="timeline-date-small">Event Date</div>
+                    <div class="timeline-content-small">${formatDate(
+                      event.event_date
+                    )}</div>
+                </div>
+                ${
+                  event.completed_at
+                    ? `
+                    <div class="timeline-item-small completed">
+                        <div class="timeline-date-small">Completed</div>
+                        <div class="timeline-content-small">${formatDate(
+                          event.completed_at
+                        )}</div>
+                    </div>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+    </div>
+  `;
+
+  document.getElementById("bookingModal").style.display = "block";
+}
+
+
+
 
 // Load notifications
 async function loadNotifications() {
@@ -1370,9 +1508,9 @@ function setupMobileSidebar() {
 
 
 
-// Stat card clicking to showing contnt
+// Stat card clicking to showing content
 function navigateToSection(sectionName) {
-  // Show the section content
+
   showSection(sectionName);
   
    const sidebarMenuItems = document.querySelectorAll('.sidebar .menu-item');

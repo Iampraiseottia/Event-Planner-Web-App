@@ -1,4 +1,3 @@
-// routes/booking.js
 const express = require("express");
 const Booking = require("../models/Booking");
 const pool = require("../config/database");
@@ -166,6 +165,7 @@ router.get("/:id", requireAuth, async (req, res) => {
     }
 
     // Check if user has permission to view this booking
+    // This now uses the planner_id, which is more robust than planner_name
     if (
       req.session.user.user_type === "customer" &&
       booking.customer_id !== req.session.user.id
@@ -177,7 +177,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 
     if (
       req.session.user.user_type === "planner" &&
-      booking.planner_name !== req.session.user.full_name
+      booking.planner_id !== req.session.user.id
     ) {
       return res.status(403).json({
         error: "Unauthorized access to this booking",
@@ -220,8 +220,8 @@ router.patch("/:id/status", requireAuth, async (req, res) => {
       });
     }
 
-    // Check if planner owns this booking
-    if (booking.planner_name !== req.session.user.full_name) {
+    // Check if planner owns this booking using planner_id
+    if (booking.planner_id !== req.session.user.id) {
       return res.status(403).json({
         error: "You can only update your own bookings",
       });
@@ -241,7 +241,7 @@ router.patch("/:id/status", requireAuth, async (req, res) => {
   }
 });
 
-// Booking details 
+// Booking details
 router.put("/:id", requireAuth, async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -264,6 +264,13 @@ router.put("/:id", requireAuth, async (req, res) => {
       if (booking.status !== "pending") {
         return res.status(400).json({
           error: "You can only update pending bookings",
+        });
+      }
+    } else if (req.session.user.user_type === "planner") {
+      // Added a check for planners to ensure they can only update their own bookings
+      if (booking.planner_id !== req.session.user.id) {
+        return res.status(403).json({
+          error: "You can only update your own bookings",
         });
       }
     }
@@ -362,7 +369,8 @@ router.delete("/:id", requireAuth, async (req, res) => {
         });
       }
     } else if (req.session.user.user_type === "planner") {
-      if (booking.planner_name !== req.session.user.full_name) {
+      // Now using planner_id for permission check
+      if (booking.planner_id !== req.session.user.id) {
         return res.status(403).json({
           error: "You can only delete your own bookings",
         });
@@ -459,8 +467,7 @@ router.get("/my-bookings", requireAuth, async (req, res) => {
   }
 });
 
-
-// Get all bookings (admin/planner view with pagination)
+// Get all bookings (admin/planner view)
 router.get("/all", requireAuth, async (req, res) => {
   try {
     // Only planners can see all bookings
@@ -487,6 +494,115 @@ router.get("/all", requireAuth, async (req, res) => {
     console.error("Get all bookings error:", error);
     res.status(500).json({
       error: "Failed to retrieve bookings",
+    });
+  }
+});
+
+// Customer's event history (past completed events)
+router.get("/history", requireAuth, async (req, res) => {
+  try {
+    // Only customers can access their event history
+    if (req.session.user.user_type !== "customer") {
+      return res.status(403).json({
+        error: "Only customers can access event history",
+      });
+    }
+
+    const query = `
+      SELECT b.*, 
+             u.full_name as planner_name, 
+             u.phone_number as planner_phone,
+             u.email as planner_email
+      FROM bookings b
+      JOIN users u ON b.planner_id = u.id
+      WHERE b.customer_id = $1 
+        AND (
+          b.event_date < CURRENT_DATE 
+          OR (b.event_date = CURRENT_DATE AND b.event_time < CURRENT_TIME)
+        )
+        AND b.status IN ('completed', 'confirmed', 'cancelled')
+      ORDER BY b.event_date DESC, b.event_time DESC
+    `;
+
+    const result = await pool.query(query, [req.session.user.id]);
+
+    res.json({
+      success: true,
+      history: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    console.error("Get event history error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to retrieve event history",
+      message: error.message,
+      history: [],
+    });
+  }
+});
+
+// Customer stats
+router.get("/stats", requireAuth, async (req, res) => {
+  try {
+    if (req.session.user.user_type !== "customer") {
+      return res.status(403).json({
+        error: "Only customers can access stats",
+      });
+    }
+
+    const customerId = req.session.user.id;
+
+    // Total bookings
+    const totalBookingsQuery = `
+      SELECT COUNT(*) as count 
+      FROM bookings 
+      WHERE customer_id = $1
+    `;
+
+    // upcoming events
+    const upcomingEventsQuery = `
+      SELECT COUNT(*) as count 
+      FROM bookings 
+      WHERE customer_id = $1 
+        AND (
+          event_date > CURRENT_DATE 
+          OR (event_date = CURRENT_DATE AND event_time > CURRENT_TIME)
+        )
+        AND status IN ('confirmed', 'pending')
+    `;
+
+    // Completed events (past events)
+    const completedEventsQuery = `
+      SELECT COUNT(*) as count 
+      FROM bookings 
+      WHERE customer_id = $1 
+        AND (
+          event_date < CURRENT_DATE 
+          OR (event_date = CURRENT_DATE AND event_time < CURRENT_TIME)
+        )
+        AND status IN ('completed', 'confirmed')
+    `;
+
+    const [totalResult, upcomingResult, completedResult] = await Promise.all([
+      pool.query(totalBookingsQuery, [customerId]),
+      pool.query(upcomingEventsQuery, [customerId]),
+      pool.query(completedEventsQuery, [customerId]),
+    ]);
+
+    const stats = {
+      totalBookings: parseInt(totalResult.rows[0].count),
+      upcomingEvents: parseInt(upcomingResult.rows[0].count),
+      completedEvents: parseInt(completedResult.rows[0].count),
+      totalSpent: 0, 
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Get customer stats error:", error);
+    res.status(500).json({
+      error: "Failed to retrieve statistics",
+      message: error.message,
     });
   }
 });
