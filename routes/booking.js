@@ -553,48 +553,76 @@ router.get("/stats", requireAuth, async (req, res) => {
 
     const customerId = req.session.user.id;
 
-    // Total bookings
-    const totalBookingsQuery = `
-      SELECT COUNT(*) as count 
+    // Get booking stats and categories for completed bookings
+    const bookingStatsQuery = `
+      SELECT 
+        COUNT(*) as total_bookings,
+        COUNT(CASE WHEN status IN ('confirmed', 'pending') AND (
+          event_date > CURRENT_DATE 
+          OR (event_date = CURRENT_DATE AND event_time > CURRENT_TIME)
+        ) THEN 1 END) as upcoming_events,
+        COUNT(CASE WHEN status IN ('completed', 'confirmed') AND (
+          event_date < CURRENT_DATE 
+          OR (event_date = CURRENT_DATE AND event_time < CURRENT_TIME)
+        ) THEN 1 END) as completed_events,
+        array_agg(CASE WHEN status = 'completed' THEN category ELSE NULL END) as completed_categories
       FROM bookings 
       WHERE customer_id = $1
     `;
 
-    // upcoming events
-    const upcomingEventsQuery = `
-      SELECT COUNT(*) as count 
-      FROM bookings 
-      WHERE customer_id = $1 
-        AND (
-          event_date > CURRENT_DATE 
-          OR (event_date = CURRENT_DATE AND event_time > CURRENT_TIME)
-        )
-        AND status IN ('confirmed', 'pending')
+    // Get total spent from payments 
+    const paymentsQuery = `
+      SELECT COALESCE(SUM(amount), 0) as total_from_payments
+      FROM payments 
+      WHERE customer_id = $1 AND payment_status = 'completed'
     `;
 
-    // Completed events (past events)
-    const completedEventsQuery = `
-      SELECT COUNT(*) as count 
-      FROM bookings 
-      WHERE customer_id = $1 
-        AND (
-          event_date < CURRENT_DATE 
-          OR (event_date = CURRENT_DATE AND event_time < CURRENT_TIME)
-        )
-        AND status IN ('completed', 'confirmed')
-    `;
-
-    const [totalResult, upcomingResult, completedResult] = await Promise.all([
-      pool.query(totalBookingsQuery, [customerId]),
-      pool.query(upcomingEventsQuery, [customerId]),
-      pool.query(completedEventsQuery, [customerId]),
+    const [bookingResult, paymentsResult] = await Promise.all([
+      pool.query(bookingStatsQuery, [customerId]),
+      pool.query(paymentsQuery, [customerId]),
     ]);
 
+    const bookingStats = bookingResult.rows[0];
+    const payments = paymentsResult.rows[0];
+
+    // Extract price from category string
+    const extractPriceFromCategory = (category) => {
+      if (!category) return 0;
+
+      const priceMap = {
+        "Platinum ~ 2.5M": 2500000,
+        "Diamond ~ 1.5M": 1500000,
+        "Gold ~ 1.0M": 1000000,
+        "Bronze ~ 800K": 800000,
+        "Silver ~ 500K": 500000,
+        "High Class ~ 250K": 250000,
+        "Normal Class ~ 120K": 120000,
+        "Lowest Class ~ 80K": 80000,
+      };
+
+      return priceMap[category] || 0;
+    };
+
+    // Calculate total spent from completed bookings
+    let totalFromBookings = 0;
+    if (
+      bookingStats.completed_categories &&
+      Array.isArray(bookingStats.completed_categories)
+    ) {
+      totalFromBookings = bookingStats.completed_categories
+        .filter((category) => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    // Calculate total spent by combining both sources
+    const totalSpent =
+      totalFromBookings + parseFloat(payments.total_from_payments);
+
     const stats = {
-      totalBookings: parseInt(totalResult.rows[0].count),
-      upcomingEvents: parseInt(upcomingResult.rows[0].count),
-      completedEvents: parseInt(completedResult.rows[0].count),
-      totalSpent: 0, 
+      totalBookings: parseInt(bookingStats.total_bookings),
+      upcomingEvents: parseInt(bookingStats.upcoming_events),
+      completedEvents: parseInt(bookingStats.completed_events),
+      totalSpent: totalSpent || 0, 
     };
 
     res.json(stats);
@@ -603,6 +631,10 @@ router.get("/stats", requireAuth, async (req, res) => {
     res.status(500).json({
       error: "Failed to retrieve statistics",
       message: error.message,
+      totalBookings: 0,
+      upcomingEvents: 0,
+      completedEvents: 0,
+      totalSpent: 0,
     });
   }
 });

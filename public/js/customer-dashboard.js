@@ -1,5 +1,3 @@
-// customer-dashboard.js 
-
 document.addEventListener("DOMContentLoaded", function () {
   initializeDashboard();
 
@@ -261,30 +259,25 @@ async function loadDashboardData() {
 }
 
 // Load statistics
-async function loadStats() {
-  try {
-    const response = await fetch("/api/customer/stats", {
-      credentials: "include",
-    });
+function loadStats() {
+  fetch('/api/customer/stats')
+    .then(response => response.json())
+    .then(stats => {
+      document.getElementById('totalBookings').textContent = stats.totalBookings;
+      document.getElementById('upcomingEvents').textContent = stats.upcomingEvents;
+      document.getElementById('completedEvents').textContent = stats.completedEvents;
+      
+      // Format the total spent with commas and add Francs
+      const formattedAmount = new Intl.NumberFormat('en-US').format(stats.totalSpent);
+      document.getElementById('totalSpent').innerHTML = `${formattedAmount} <span>Francs</span>`;
+    })
+    .catch(error => {
+      console.error('Error loading stats:', error);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const stats = await response.json();
-    updateStatsDisplay(stats);
-  } catch (error) {
-    console.error("Error loading stats:", error);
-    showNotification("Failed to load statistics", "warning");
-    // Set default values
-    updateStatsDisplay({
-      totalBookings: 0,
-      upcomingEvents: 0,
-      completedEvents: 0,
-      totalSpent: 0,
+      document.getElementById('totalSpent').innerHTML = '0 <span>Francs</span>';
     });
-  }
 }
+
 
 // Update stats display
 function updateStatsDisplay(stats) {

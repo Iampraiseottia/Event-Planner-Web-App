@@ -17,19 +17,60 @@ router.get("/stats", requireAuth, requireCustomer, async (req, res) => {
         COUNT(*) as total_bookings,
         COUNT(CASE WHEN status = 'confirmed' AND event_date > CURRENT_DATE THEN 1 END) as upcoming_events,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_events,
-        COALESCE(SUM(CASE WHEN status = 'completed' THEN final_cost ELSE 0 END), 0) as total_spent
+        array_agg(CASE WHEN status = 'completed' THEN category ELSE NULL END) as completed_categories
       FROM bookings 
       WHERE customer_id = $1 AND deleted_at IS NULL
     `;
 
-    const result = await pool.query(statsQuery, [customerId]);
-    const stats = result.rows[0];
+    // Get total spent from payments 
+    const paymentsQuery = `
+      SELECT COALESCE(SUM(amount), 0) as total_from_payments
+      FROM payments 
+      WHERE customer_id = $1 AND payment_status = 'completed'
+    `;
+
+    const [statsResult, paymentsResult] = await Promise.all([
+      pool.query(statsQuery, [customerId]),
+      pool.query(paymentsQuery, [customerId])
+    ]);
+
+    const stats = statsResult.rows[0];
+    const payments = paymentsResult.rows[0];
+
+    // Extract price from category string
+    const extractPriceFromCategory = (category) => {
+      if (!category) return 0;
+      
+      const priceMap = {
+        'Platinum ~ 2.5M': 2500000,
+        'Diamond ~ 1.5M': 1500000,
+        'Gold ~ 1.0M': 1000000,
+        'Bronze ~ 800K': 800000,
+        'Silver ~ 500K': 500000,
+        'High Class ~ 250K': 250000,
+        'Normal Class ~ 120K': 120000,
+        'Lowest Class ~ 80K': 80000
+      };
+      
+      return priceMap[category] || 0;
+    };
+
+    // Calculate total spent from completed bookings
+    let totalFromBookings = 0;
+    if (stats.completed_categories && Array.isArray(stats.completed_categories)) {
+      totalFromBookings = stats.completed_categories
+        .filter(category => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    // Calculate total spent by combining both sources
+    const totalSpent = totalFromBookings + parseFloat(payments.total_from_payments);
 
     res.json({
       totalBookings: parseInt(stats.total_bookings) || 0,
       upcomingEvents: parseInt(stats.upcoming_events) || 0,
       completedEvents: parseInt(stats.completed_events) || 0,
-      totalSpent: parseFloat(stats.total_spent) || 0,
+      totalSpent: totalSpent || 0,
     });
   } catch (error) {
     console.error("Error loading customer stats:", error);
@@ -42,6 +83,7 @@ router.get("/stats", requireAuth, requireCustomer, async (req, res) => {
     });
   }
 });
+
 
 // Get customer bookings
 router.get("/bookings", requireAuth, requireCustomer, async (req, res) => {

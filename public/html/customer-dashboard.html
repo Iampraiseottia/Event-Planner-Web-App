@@ -103,7 +103,7 @@
           <div class="stats-grid">
             <div
               class="stat-card"
-              style="cursor:  pointer;"
+              style="cursor: pointer"
               data-section="bookings"
               onclick="navigateToSection('bookings')"
             >
@@ -117,7 +117,7 @@
             </div>
             <div
               class="stat-card"
-              style="cursor:  pointer;"
+              style="cursor: pointer"
               data-section="upcoming"
               onclick="navigateToSection('upcoming')"
             >
@@ -131,7 +131,7 @@
             </div>
             <div
               class="stat-card"
-              style="cursor:  pointer;"
+              style="cursor: pointer"
               data-section="history"
               onclick="navigateToSection('history')"
             >
@@ -149,7 +149,7 @@
               onclick="navigateToSection('overview')"
             >
               <div class="stat-icon">
-                <i class="fas fa-dollar-sign"></i>
+                <i class="fas fa-coins"></i>
               </div>
               <div class="stat-info">
                 <h3 id="totalSpent">0 <span>Francs</span></h3>
@@ -347,7 +347,7 @@
         <section id="history" class="content-section">
           <div class="section-header">
             <h1>Event History</h1>
-            <p>All your past events </p>
+            <p>All your past events</p>
           </div>
 
           <div class="history-container">
@@ -396,14 +396,26 @@
               <div class="support-option">
                 <i class="fas fa-envelope"></i>
                 <h3>Email Support</h3>
-                <p>Send us an email and we'll respond within 24 hours</p>
-                <button class="btn-secondary">Send Email</button>
+                <p>Send us an email and we'll respond within an hour</p>
+                <button class="btn-secondary">
+                  <a
+                    href="mailto:lovework352@gmail.com"
+                    style="text-decoration: none; color: black !important"
+                    >Send Email</a
+                  >
+                </button>
               </div>
               <div class="support-option">
                 <i class="fas fa-phone"></i>
                 <h3>Phone Support</h3>
                 <p>Call us directly for immediate assistance</p>
-                <button class="btn-secondary">Call Now</button>
+                <button class="btn-secondary">
+                  <a
+                    href="tel:+237674417261"
+                    style="text-decoration: none; color: black !important"
+                    >Call Now</a
+                  >
+                </button>
               </div>
             </div>
 
@@ -416,9 +428,15 @@
                 </div>
                 <div class="faq-answer">
                   <p>
-                    You can book an event planner by visiting our "Book Event"
-                    section, selecting your preferred planner, and filling out
-                    the booking form with your event details.
+                    You can book an event planner by clicking on overview in the
+                    dashboard, then click "Book New Event" or "Book Event" in
+                    the header. You will be redirected to the category page,
+                    where you will see all the different categories and select
+                    between Wedding Celebration, Birthday Celebration,
+                    Funerals/Memorials, anniversary Celebration. After seeing
+                    and making your selection click the "Book Now" and you will
+                    be redirected to the main booking page where you will find
+                    all verified planners and details.
                   </p>
                 </div>
               </div>
@@ -444,7 +462,8 @@
                   <p>
                     We accept all major credit cards, bank transfers, and mobile
                     money payments. Payment details will be provided during the
-                    booking process.
+                    booking process when all details has been finalized and both
+                    you and the chosen planner are on frequency.
                   </p>
                 </div>
               </div>
@@ -530,6 +549,16 @@
       }
 
       document.addEventListener("DOMContentLoaded", setupTouchSupport);
+
+
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("en-US").format(amount);
+      }
+
+      document.getElementById("totalSpent").innerHTML = `${formatCurrency(
+        stats.totalSpent
+      )} <span>Francs</span>`;
     </script>
   </body>
 </html>
