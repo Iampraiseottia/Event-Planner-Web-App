@@ -1,4 +1,3 @@
-// middleware/auth.js 
 
 // Authentication middleware using sessions
 const requireAuth = (req, res, next) => {

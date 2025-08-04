@@ -239,7 +239,6 @@ function setupEventListeners() {
 }
 
 // Load dashboard data
-// UPDATE loadDashboardData function
 async function loadDashboardData() {
   try {
     showLoading();
@@ -248,7 +247,7 @@ async function loadDashboardData() {
     await loadStats();
     await loadRecentActivity();
     await loadBookings();
-    await loadEventHistory(); // Add this line
+    await loadEventHistory();
     await loadNotifications();
   } catch (error) {
     console.error("Error loading dashboard data:", error);
@@ -952,7 +951,7 @@ async function markAllNotificationsRead() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await loadNotifications(); // Reload from database
+    await loadNotifications(); 
     showNotification("All notifications marked as read", "success");
   } catch (error) {
     console.error("Error marking notifications as read:", error);
@@ -976,7 +975,7 @@ async function clearAllNotifications() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await loadNotifications(); // Reload from database
+    await loadNotifications(); 
     showNotification("All notifications cleared", "success");
   } catch (error) {
     console.error("Error clearing notifications:", error);

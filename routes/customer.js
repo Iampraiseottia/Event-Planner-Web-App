@@ -1,4 +1,3 @@
-// routes/customer.js 
 const express = require("express");
 const { requireAuth, requireCustomer } = require("../middleware/auth");
 const Booking = require("../models/Booking");
@@ -226,7 +225,7 @@ router.post(
 
       const query = `
       UPDATE notifications 
-      SET is_read = true, updated_at = CURRENT_TIMESTAMP
+      SET is_read = true
       WHERE user_id = $1 AND is_read = false AND deleted_at IS NULL
     `;
 
