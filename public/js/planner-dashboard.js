@@ -20,6 +20,7 @@ let portfolioData = [];
 let earningsData = [];
 let reviewsData = [];
 let currentCalendarDate = new Date();
+let currentBookingId = null;
 
 // Initialize dashboard
 function initializeDashboard() {
@@ -89,12 +90,12 @@ async function checkAuthStatus() {
     }
 }
 
-// Update user interface with planner data
+// user interface with planner data
 function updateUserInterface() {
     if (currentPlanner) {
         document.getElementById('plannerName').textContent = currentPlanner.business_name || currentPlanner.full_name || 'Event Planner';
         
-        // Update profile form
+        // profile form
         if (currentPlanner.business_name) document.getElementById('businessName').value = currentPlanner.business_name;
         if (currentPlanner.full_name) document.getElementById('ownerName').value = currentPlanner.full_name;
         if (currentPlanner.email) document.getElementById('email').value = currentPlanner.email;
@@ -109,7 +110,7 @@ function updateUserInterface() {
             document.getElementById('profileImage').src = currentPlanner.profile_image;
         }
         
-        // Update specializations
+        // specializations
         if (currentPlanner.specializations) {
             const specializationSelect = document.getElementById('specializations');
             const specializations = Array.isArray(currentPlanner.specializations) 
@@ -247,7 +248,7 @@ async function loadStats() {
     }
 }
 
-// Update stats display
+// stats display
 function updateStatsDisplay(stats) {
     document.getElementById('totalEvents').textContent = stats.totalEvents || 0;
     document.getElementById('pendingEvents').textContent = stats.pendingEvents || 0;
@@ -339,21 +340,64 @@ function displayUpcomingEvents(events) {
 // Load bookings
 async function loadBookings() {
     try {
+        showLoading();
+        
+        // Try the correct endpoint first
         const response = await fetch('/api/planner/bookings', {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
         });
         
         if (response.ok) {
-            bookingsData = await response.json();
+            const data = await response.json();
+            bookingsData = data.bookings || data || [];
             displayBookings(bookingsData);
             updateBookingStats(bookingsData);
+        } else {
+            console.error('Failed to load bookings:', response.status);
+            
+            // If status is 500, try alternative endpoint
+            if (response.status === 500) {
+                console.log('Trying alternative bookings endpoint...');
+                const altResponse = await fetch('/api/bookings/planner', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (altResponse.ok) {
+                    const altData = await altResponse.json();
+                    bookingsData = altData.bookings || altData || [];
+                    displayBookings(bookingsData);
+                    updateBookingStats(bookingsData);
+                } else {
+                    throw new Error(`Alternative endpoint also failed: ${altResponse.status}`);
+                }
+            } else {
+                throw new Error(`Failed to load bookings: ${response.status}`);
+            }
         }
     } catch (error) {
         console.error('Error loading bookings:', error);
+        showNotification('Error loading bookings. Please try again later.', 'error');
+        
+        // Show empty state instead of error
+        bookingsData = [];
+        displayBookings(bookingsData);
+        updateBookingStats(bookingsData);
+    } finally {
+        hideLoading();
     }
 }
 
+
 // Display bookings
+
 function displayBookings(bookings) {
     const container = document.getElementById('bookingsList');
     
@@ -380,9 +424,9 @@ function displayBookings(bookings) {
                     <tr>
                         <td>
                             <div>
-                                <strong>${booking.customer_name}</strong>
+                                <strong>${booking.customer_name || 'N/A'}</strong>
                                 <br>
-                                <small>${booking.phone_number}</small>
+                                <small>${booking.phone_number || 'N/A'}</small>
                             </div>
                         </td>
                         <td>${booking.event_type}</td>
@@ -396,15 +440,20 @@ function displayBookings(bookings) {
                         </td>
                         <td>
                             <div class="booking-actions">
-                                <button class="action-btn-sm view" onclick="showBookingDetails(${booking.id})">
+                                <button class="action-btn-sm view" onclick="showBookingDetails(${booking.id})" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 ${booking.status.toLowerCase() === 'pending' ? `
-                                    <button class="action-btn-sm accept" onclick="acceptBooking(${booking.id})">
+                                    <button class="action-btn-sm accept" onclick="acceptBooking(${booking.id})" title="Accept Booking">
                                         <i class="fas fa-check"></i>
                                     </button>
-                                    <button class="action-btn-sm reject" onclick="rejectBooking(${booking.id})">
+                                    <button class="action-btn-sm reject" onclick="rejectBooking(${booking.id})" title="Reject Booking">
                                         <i class="fas fa-times"></i>
+                                    </button>
+                                ` : ''}
+                                ${booking.status.toLowerCase() !== 'completed' ? `
+                                    <button class="action-btn-sm delete" onclick="deleteBooking(${booking.id})" title="Delete Booking">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 ` : ''}
                             </div>
@@ -418,7 +467,88 @@ function displayBookings(bookings) {
     container.innerHTML = tableHTML;
 }
 
-// Update booking stats
+
+
+// Delete booking 
+async function deleteBooking(bookingId) {
+    console.log('Delete booking called with ID:', bookingId); 
+    
+    if (!bookingId || bookingId === 'undefined') {
+        showNotification('Invalid booking ID', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/bookings/${bookingId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            showNotification('Booking deleted successfully', 'success');
+            loadBookings();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Error deleting booking', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        showNotification('Error deleting booking', 'error');
+    }
+}
+
+
+function filterBookings() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const dateFilter = document.getElementById('dateFilter').value;
+    
+    let filteredBookings = [...bookingsData];
+    
+    // Filter by status
+    if (statusFilter !== 'all') {
+        filteredBookings = filteredBookings.filter(booking => 
+            booking.status.toLowerCase() === statusFilter.toLowerCase()
+        );
+    }
+    
+    // Filter by date (month)
+    if (dateFilter) {
+        const filterMonth = dateFilter.substring(0, 7); 
+        filteredBookings = filteredBookings.filter(booking => 
+            booking.event_date.substring(0, 7) === filterMonth
+        );
+    }
+    
+    displayBookings(filteredBookings);
+}
+
+
+// Search bookings 
+function searchBookings() {
+    const searchTerm = document.getElementById('bookingSearch').value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayBookings(bookingsData);
+        return;
+    }
+    
+    const filteredBookings = bookingsData.filter(booking => 
+        booking.customer_name.toLowerCase().includes(searchTerm) ||
+        booking.event_type.toLowerCase().includes(searchTerm) ||
+        booking.location.toLowerCase().includes(searchTerm) ||
+        booking.category.toLowerCase().includes(searchTerm)
+    );
+    
+    displayBookings(filteredBookings);
+}
+
+
+
+// booking stats
 function updateBookingStats(bookings) {
     const pendingCount = bookings.filter(b => b.status.toLowerCase() === 'pending').length;
     const confirmedCount = bookings.filter(b => b.status.toLowerCase() === 'confirmed').length;
@@ -431,14 +561,24 @@ function updateBookingStats(bookings) {
 
 // Show booking details
 async function showBookingDetails(bookingId) {
+    console.log('Show booking details called with ID:', bookingId); 
+    
+    if (!bookingId || bookingId === 'undefined') {
+        showNotification('Invalid booking ID', 'error');
+        return;
+    }
+    
     try {
-        const response = await fetch(`/api/planner/bookings/${bookingId}`, {
+        const response = await fetch(`/api/bookings/${bookingId}`, {
             credentials: 'include'
         });
         
         if (response.ok) {
-            const booking = await response.json();
-            displayBookingModal(booking);
+            const data = await response.json();
+            displayBookingModal(data.booking);
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Error loading booking details', 'error');
         }
     } catch (error) {
         console.error('Error loading booking details:', error);
@@ -446,8 +586,12 @@ async function showBookingDetails(bookingId) {
     }
 }
 
+
 // Display booking modal
 function displayBookingModal(booking) {
+
+    currentBookingId = booking.id;
+    
     const modalBody = document.getElementById('bookingModalBody');
     
     modalBody.innerHTML = `
@@ -522,14 +666,52 @@ function displayBookingModal(booking) {
                     ` : ''}
                 </div>
             </div>
+            
+            ${booking.status.toLowerCase() === 'pending' ? `
+                <div class="detail-section full-width">
+                    <div class="modal-actions" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button id="acceptBtn" class="btn-primary" onclick="acceptBookingFromModal()">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        <button id="rejectBtn" class="btn-danger" onclick="rejectBookingFromModal()">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
         </div>
     `;
     
     document.getElementById('bookingModal').style.display = 'block';
 }
 
+
+function acceptBookingFromModal() {
+    if (currentBookingId) {
+        acceptBooking(currentBookingId);
+    } else {
+        showNotification('Invalid booking ID', 'error');
+    }
+}
+
+function rejectBookingFromModal() {
+    if (currentBookingId) {
+        rejectBooking(currentBookingId);
+    } else {
+        showNotification('Invalid booking ID', 'error');
+    }
+}
+
+
 // Accept booking
 async function acceptBooking(bookingId) {
+    console.log('Accept booking called with ID:', bookingId);
+    
+    if (!bookingId || bookingId === 'undefined') {
+        showNotification('Invalid booking ID', 'error');
+        return;
+    }
+    
     if (!confirm('Are you sure you want to accept this booking?')) {
         return;
     }
@@ -537,16 +719,20 @@ async function acceptBooking(bookingId) {
     try {
         const response = await fetch(`/api/planner/bookings/${bookingId}/accept`, {
             method: 'POST',
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
+        
+        const data = await response.json();
         
         if (response.ok) {
             showNotification('Booking accepted successfully', 'success');
-            loadBookings();
-            closeModal();
+            loadBookings(); 
+            closeModal(); 
         } else {
-            const error = await response.json();
-            showNotification(error.message || 'Error accepting booking', 'error');
+            showNotification(data.error || 'Error accepting booking', 'error');
         }
     } catch (error) {
         console.error('Error accepting booking:', error);
@@ -556,6 +742,13 @@ async function acceptBooking(bookingId) {
 
 // Reject booking
 async function rejectBooking(bookingId) {
+    console.log('Reject booking called with ID:', bookingId);
+    
+    if (!bookingId || bookingId === 'undefined') {
+        showNotification('Invalid booking ID', 'error');
+        return;
+    }
+    
     const reason = prompt('Please provide a reason for rejection (optional):');
     if (reason === null) return; 
     
@@ -569,19 +762,22 @@ async function rejectBooking(bookingId) {
             body: JSON.stringify({ reason })
         });
         
+        const data = await response.json();
+        
         if (response.ok) {
-            showNotification('Booking rejected', 'success');
-            loadBookings();
-            closeModal();
+            showNotification('Booking rejected successfully', 'success');
+            loadBookings(); 
+            closeModal(); 
         } else {
-            const error = await response.json();
-            showNotification(error.message || 'Error rejecting booking', 'error');
+            showNotification(data.error || 'Error rejecting booking', 'error');
         }
     } catch (error) {
         console.error('Error rejecting booking:', error);
         showNotification('Error rejecting booking', 'error');
     }
 }
+
+
 
 // Setup calendar
 function setupCalendar() {
@@ -907,16 +1103,16 @@ async function loadReviews() {
 
 // Display reviews
 function displayReviews(reviews) {
-    // Update overall rating
+    // overall rating
     const overallRating = reviews.overall || { rating: 0, total: 0 };
     document.getElementById('overallRating').textContent = overallRating.rating.toFixed(1);
     document.getElementById('totalReviews').textContent = `${overallRating.total} reviews`;
     
-    // Update stars
+    // stars
     const starsContainer = document.getElementById('overallStars');
     starsContainer.innerHTML = generateStars(overallRating.rating);
     
-    // Update rating breakdown
+    // rating breakdown
     const breakdown = reviews.breakdown || {};
     document.getElementById('five-star-count').textContent = breakdown['5'] || 0;
     document.getElementById('four-star-count').textContent = breakdown['4'] || 0;
@@ -1040,16 +1236,27 @@ async function handleProfileImageUpload(event) {
     }
 }
 
+
+// Form validation and other handlers
+
 function setupFormHandlers() {
-    // Add form validation and other handlers
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         const inputs = form.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
+
             input.addEventListener('blur', validateInput);
+            
+            input.addEventListener('input', function() {
+
+                if (this.classList.contains('error')) {
+                    this.classList.remove('error');
+                }
+            });
         });
     });
 }
+
 
 async function updateProfile(event) {
     event.preventDefault();
@@ -1077,15 +1284,15 @@ async function updateProfile(event) {
         const data = await response.json();
         
         if (response.ok) {
-            // Update the global planner data
+            //  Global planner data
             currentPlanner = data.planner;
             
-            // Update the UI with new data
+            // UI with new data
             updateUserInterface();
             
             showNotification('Profile updated successfully', 'success');
             
-            // Optionally reload profile data to ensure consistency
+            // Profile data to ensure consistency
             await loadProfile();
         } else {
             showNotification(data.error || 'Error updating profile', 'error');
@@ -1098,7 +1305,7 @@ async function updateProfile(event) {
     }
 }
 
-// Function to load profile data
+// Load profile data
 async function loadProfile() {
     try {
         const response = await fetch('/api/planner/profile', {
@@ -1349,6 +1556,10 @@ function closeModal() {
     modals.forEach(modal => {
         modal.style.display = 'none';
     });
+    // Clear the current booking ID when modal is closed
+
+    
+    currentBookingId = null;
 }
 
 
@@ -1545,7 +1756,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
     experience: formData.get('experience')
   };
 
-  // Debug logging
+  ging
   console.log("=== FRONTEND DEBUG ===");
   console.log("Form data being sent:", profileData);
   
@@ -1571,3 +1782,60 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
     alert('Failed to update profile');
   }
 });
+
+
+
+
+
+
+
+
+
+// Validate Input 
+function validateInput(event) {
+    const input = event.target;
+    const value = input.value.trim();
+    
+    input.classList.remove('error');
+    
+    switch(input.type) {
+        case 'email':
+            if (value && !isValidEmail(value)) {
+                input.classList.add('error');
+                showNotification('Please enter a valid email address', 'error');
+            }
+            break;
+        case 'tel':
+            if (value && !isValidPhone(value)) {
+                input.classList.add('error');
+                showNotification('Please enter a valid phone number', 'error');
+            }
+            break;
+        case 'number':
+            if (value && isNaN(value)) {
+                input.classList.add('error');
+                showNotification('Please enter a valid number', 'error');
+            }
+            break;
+    }
+    
+    if (input.hasAttribute('required') && !value) {
+        input.classList.add('error');
+    }
+}
+
+
+// Helper functions for validation
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidPhone(phone) {
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+}
+
+
+
+

@@ -1,3 +1,4 @@
+// models/booking.js
 
 const pool = require("../config/database");
 
@@ -69,7 +70,6 @@ class Booking {
     return booking;
   }
 
-
   static async findByCustomerId(customerId) {
     const query = `
             SELECT b.*, 
@@ -125,27 +125,33 @@ class Booking {
     return result.rows[0];
   }
 
+  // UpdateStatus method
+
   static async updateStatus(id, status, rejectionReason = null) {
     const query = `
-            UPDATE bookings 
-            SET status = $1, rejection_reason = $2, 
-                confirmed_at = CASE WHEN $1 = 'confirmed' THEN CURRENT_TIMESTAMP ELSE confirmed_at END,
-                completed_at = CASE WHEN $1 = 'completed' THEN CURRENT_TIMESTAMP ELSE completed_at END,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $3
-            RETURNING *
-        `;
+    UPDATE bookings 
+    SET status = $2::varchar, 
+        rejection_reason = $3, 
+        confirmed_at = CASE WHEN $2::varchar = 'confirmed' THEN CURRENT_TIMESTAMP ELSE confirmed_at END,
+        completed_at = CASE WHEN $2::varchar = 'completed' THEN CURRENT_TIMESTAMP ELSE completed_at END,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = $1
+    RETURNING *
+  `;
 
-    const result = await pool.query(query, [status, rejectionReason, id]);
+    const result = await pool.query(query, [
+      parseInt(id),
+      status,
+      rejectionReason,
+    ]);
     const booking = result.rows[0];
 
     if (booking) {
       // Create notification for customer
       const statusMessages = {
         confirmed: "Your booking has been confirmed!",
-        rejected: `Your booking has been rejected. ${rejectionReason || ""}`,
+        cancelled: `Your booking has been rejected. ${rejectionReason || ""}`,
         completed: "Your event has been completed!",
-        cancelled: "Your booking has been cancelled.",
       };
 
       await this.createNotification(
@@ -154,7 +160,7 @@ class Booking {
         statusMessages[status] || `Booking status updated to ${status}`,
         status === "confirmed"
           ? "success"
-          : status === "rejected"
+          : status === "cancelled"
           ? "error"
           : "info",
         booking.id
@@ -210,6 +216,146 @@ class Booking {
       description,
       bookingId,
     ]);
+    return result.rows[0];
+  }
+
+  // Get Planner by Name Method
+
+  static async getByPlannerName(plannerName) {
+    const query = `
+      SELECT b.*, 
+            uc.full_name as customer_name,
+            uc.phone_number,
+            uc.email
+      FROM bookings b
+      JOIN users uc ON b.customer_id = uc.id
+      JOIN users up ON b.planner_id = up.id
+      WHERE up.full_name = $1
+      ORDER BY b.created_at DESC
+    `;
+
+    const result = await pool.query(query, [plannerName]);
+    return result.rows;
+  }
+
+  static async getByDateRange(startDate, endDate) {
+    const query = `
+      SELECT b.*, 
+            up.full_name as planner_name, 
+            up.phone_number as planner_phone,
+            up.email as planner_email,
+            uc.full_name as customer_name,
+            uc.phone_number,
+            uc.email
+      FROM bookings b
+      JOIN users up ON b.planner_id = up.id
+      JOIN users uc ON b.customer_id = uc.id
+      WHERE b.event_date BETWEEN $1 AND $2
+      ORDER BY b.event_date ASC, b.event_time ASC
+    `;
+
+    const result = await pool.query(query, [startDate, endDate]);
+    return result.rows;
+  }
+
+  static async getStats() {
+    const totalQuery = `SELECT COUNT(*) as total FROM bookings`;
+    const pendingQuery = `SELECT COUNT(*) as pending FROM bookings WHERE status = 'pending'`;
+    const confirmedQuery = `SELECT COUNT(*) as confirmed FROM bookings WHERE status = 'confirmed'`;
+    const completedQuery = `SELECT COUNT(*) as completed FROM bookings WHERE status = 'completed'`;
+
+    const [totalResult, pendingResult, confirmedResult, completedResult] =
+      await Promise.all([
+        pool.query(totalQuery),
+        pool.query(pendingQuery),
+        pool.query(confirmedQuery),
+        pool.query(completedQuery),
+      ]);
+
+    return {
+      total: parseInt(totalResult.rows[0].total),
+      pending: parseInt(pendingResult.rows[0].pending),
+      confirmed: parseInt(confirmedResult.rows[0].confirmed),
+      completed: parseInt(completedResult.rows[0].completed),
+    };
+  }
+
+  static async getAll(limit = 50, offset = 0) {
+    const query = `
+      SELECT b.*, 
+            up.full_name as planner_name, 
+            up.phone_number as planner_phone,
+            up.email as planner_email,
+            uc.full_name as customer_name,
+            uc.phone_number,
+            uc.email
+      FROM bookings b
+      JOIN users up ON b.planner_id = up.id
+      JOIN users uc ON b.customer_id = uc.id
+      ORDER BY b.created_at DESC
+      LIMIT $1 OFFSET $2
+    `;
+
+    const result = await pool.query(query, [limit, offset]);
+    return result.rows;
+  }
+
+  static async update(id, updateData) {
+    const {
+      planner_name,
+      customer_name,
+      phone_number,
+      email,
+      event_type,
+      category,
+      location,
+      event_date,
+      event_time,
+      requirements,
+    } = updateData;
+
+    // Get the planner_id from planner_name
+    const plannerQuery = `SELECT id FROM users WHERE full_name = $1 AND user_type = 'planner'`;
+    const plannerResult = await pool.query(plannerQuery, [planner_name]);
+
+    if (plannerResult.rows.length === 0) {
+      throw new Error("Planner not found");
+    }
+
+    const planner_id = plannerResult.rows[0].id;
+
+    const query = `
+      UPDATE bookings 
+      SET planner_id = $1, 
+          event_type = $2, 
+          category = $3, 
+          location = $4, 
+          event_date = $5, 
+          event_time = $6, 
+          requirements = $7,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $8
+      RETURNING *
+    `;
+
+    const values = [
+      planner_id,
+      event_type,
+      category,
+      location,
+      event_date,
+      event_time,
+      requirements || "",
+      id,
+    ];
+
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+
+  static async delete(id) {
+    const query = `DELETE FROM bookings WHERE id = $1 RETURNING *`;
+    const result = await pool.query(query, [id]);
     return result.rows[0];
   }
 }

@@ -1,4 +1,4 @@
-
+// routes/booking.js
 const express = require("express");
 const Booking = require("../models/Booking");
 const pool = require("../config/database");
@@ -241,7 +241,7 @@ router.patch("/:id/status", requireAuth, async (req, res) => {
   }
 });
 
-// Update booking details (customers can update their own bookings if status is pending)
+// Booking details 
 router.put("/:id", requireAuth, async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -441,7 +441,7 @@ router.get("/my-bookings", requireAuth, async (req, res) => {
       bookings = await Booking.findByCustomerId(req.session.user.id);
     } else if (req.session.user.user_type === "planner") {
       // Planner sees bookings assigned to them
-      bookings = await Booking.getByPlannerName(req.session.user.full_name);
+      bookings = await Booking.findByPlannerId(req.session.user.id);
     } else {
       return res.status(403).json({
         error: "Unauthorized access",
@@ -453,12 +453,12 @@ router.get("/my-bookings", requireAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Get user's bookings error:", error);
-
     res.status(500).json({
       error: "Failed to retrieve bookings",
     });
   }
 });
+
 
 // Get all bookings (admin/planner view with pagination)
 router.get("/all", requireAuth, async (req, res) => {

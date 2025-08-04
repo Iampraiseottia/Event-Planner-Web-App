@@ -58,70 +58,72 @@ router.get("/bookings", requireAuth, requirePlanner, async (req, res) => {
 });
 
 // Accept booking
-router.post(
-  "/bookings/:id/accept",
-  requireAuth,
-  requirePlanner,
-  async (req, res) => {
-    try {
-      const bookingId = req.params.id;
-      const plannerId = req.session.user.id;
-
-      // Verify booking belongs to planner
-      const booking = await Booking.findById(bookingId);
-      if (!booking || booking.planner_id !== plannerId) {
-        return res.status(404).json({ error: "Booking not found" });
-      }
-
-      if (booking.status !== "pending") {
-        return res.status(400).json({ error: "Booking is not pending" });
-      }
-
-      const updatedBooking = await Booking.updateStatus(bookingId, "confirmed");
-      res.json({
-        message: "Booking accepted successfully",
-        booking: updatedBooking,
+router.post("/bookings/:id/accept", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const booking = await Booking.findById(bookingId);
+    
+    if (!booking) {
+      return res.status(404).json({
+        error: "Booking not found",
       });
-    } catch (error) {
-      console.error("Error accepting booking:", error);
-      res.status(500).json({ error: "Failed to accept booking" });
     }
+
+    // Check if planner owns this booking
+    if (booking.planner_id !== req.session.user.id) {
+      return res.status(403).json({
+        error: "You can only accept your own bookings",
+      });
+    }
+
+    const updatedBooking = await Booking.updateStatus(bookingId, "confirmed");
+
+    res.json({
+      message: "Booking accepted successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Accept booking error:", error);
+    res.status(500).json({
+      error: "Failed to accept booking",
+    });
   }
-);
+});
+
 
 // Reject booking
-router.post(
-  "/bookings/:id/reject",
-  requireAuth,
-  requirePlanner,
-  async (req, res) => {
-    try {
-      const bookingId = req.params.id;
-      const plannerId = req.session.user.id;
-      const { reason } = req.body;
-
-      // Verify booking belongs to planner
-      const booking = await Booking.findById(bookingId);
-      if (!booking || booking.planner_id !== plannerId) {
-        return res.status(404).json({ error: "Booking not found" });
-      }
-
-      if (booking.status !== "pending") {
-        return res.status(400).json({ error: "Booking is not pending" });
-      }
-
-      const updatedBooking = await Booking.updateStatus(
-        bookingId,
-        "rejected",
-        reason
-      );
-      res.json({ message: "Booking rejected", booking: updatedBooking });
-    } catch (error) {
-      console.error("Error rejecting booking:", error);
-      res.status(500).json({ error: "Failed to reject booking" });
+router.post("/bookings/:id/reject", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const { reason } = req.body;
+    const booking = await Booking.findById(bookingId);
+    
+    if (!booking) {
+      return res.status(404).json({
+        error: "Booking not found",
+      });
     }
+
+    if (booking.planner_id !== req.session.user.id) {
+      return res.status(403).json({
+        error: "You can only reject your own bookings",
+      });
+    }
+
+    const updatedBooking = await Booking.updateStatus(bookingId, "cancelled", reason);
+
+    res.json({
+      message: "Booking rejected successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Reject booking error:", error);
+    res.status(500).json({
+      error: "Failed to reject booking",
+    });
   }
-);
+});
+
 
 // Get upcoming events
 router.get(
@@ -448,6 +450,30 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
     console.error("Profile update error:", error);
     res.status(500).json({
       error: error.message || "Profile update failed",
+    });
+  }
+});
+
+
+// Get planner's bookings specifically 
+router.get("/planner/bookings", requireAuth, async (req, res) => {
+  try {
+    if (req.session.user.user_type !== "planner") {
+      return res.status(403).json({
+        error: "Planner access required",
+      });
+    }
+
+    const bookings = await Booking.findByPlannerId(req.session.user.id);
+    
+    res.json({
+      success: true,
+      bookings: bookings
+    });
+  } catch (error) {
+    console.error("Get planner bookings error:", error);
+    res.status(500).json({
+      error: "Failed to retrieve bookings",
     });
   }
 });
