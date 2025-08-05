@@ -43,20 +43,6 @@ const requirePlanner = (req, res, next) => {
   next();
 };
 
-// Check if user is a planner
-// const requirePlanner = (req, res, next) => {
-//   if ( 
-//     req.session &&
-//     req.session.user &&
-//     req.session.user.user_type === "planner"
-//   ) {
-//     return next();
-//   } else {
-//     return res.status(403).json({
-//       error: "Planner access required.",
-//     });
-//   }
-// };
 
 // Check if user is authenticated
 const requireAnyAuth = (req, res, next) => {

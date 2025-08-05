@@ -170,28 +170,74 @@ router.get(
 router.get("/schedule", requireAuth, requirePlanner, async (req, res) => {
   try {
     const plannerId = req.session.user.id;
+    const { year, month } = req.query;
 
+    // Today's schedule query
     const todayQuery = `
-            SELECT b.*, 
-                   u.full_name as customer_name
-            FROM bookings b
-            JOIN users u ON b.customer_id = u.id
-            WHERE b.planner_id = $1 
-            AND b.event_date = CURRENT_DATE 
-            AND b.status IN ('confirmed', 'in-progress')
-            ORDER BY b.event_time ASC
-        `;
+      SELECT b.*, 
+             u.full_name as customer_name,
+             u.phone_number
+      FROM bookings b
+      JOIN users u ON b.customer_id = u.id
+      WHERE b.planner_id = $1 
+      AND b.event_date = CURRENT_DATE 
+      AND b.status = 'confirmed'
+      ORDER BY b.event_time ASC
+    `;
 
-    const result = await pool.query(todayQuery, [plannerId]);
+    const todayResult = await pool.query(todayQuery, [plannerId]);
+
+    // If year and month are provided, get all events for that month
+    let allEvents = [];
+    if (year && month) {
+      const monthQuery = `
+        SELECT b.*, 
+               u.full_name as customer_name,
+               u.phone_number
+        FROM bookings b
+        JOIN users u ON b.customer_id = u.id
+        WHERE b.planner_id = $1 
+        AND EXTRACT(YEAR FROM b.event_date) = $2
+        AND EXTRACT(MONTH FROM b.event_date) = $3
+        AND b.status = 'confirmed'
+        ORDER BY b.event_date ASC, b.event_time ASC
+      `;
+
+      const monthResult = await pool.query(monthQuery, [
+        plannerId,
+        year,
+        month,
+      ]);
+      allEvents = monthResult.rows;
+    } else {
+      // If no specific month requested, get upcoming events for next 3 months
+      const upcomingQuery = `
+        SELECT b.*, 
+               u.full_name as customer_name,
+               u.phone_number
+        FROM bookings b
+        JOIN users u ON b.customer_id = u.id
+        WHERE b.planner_id = $1 
+        AND b.event_date >= CURRENT_DATE 
+        AND b.event_date <= CURRENT_DATE + INTERVAL '3 months'
+        AND b.status = 'confirmed'
+        ORDER BY b.event_date ASC, b.event_time ASC
+      `;
+
+      const upcomingResult = await pool.query(upcomingQuery, [plannerId]);
+      allEvents = upcomingResult.rows;
+    }
 
     res.json({
-      today: result.rows,
+      today: todayResult.rows,
+      allEvents: allEvents,
     });
   } catch (error) {
     console.error("Error loading schedule:", error);
     res.status(500).json({ error: "Failed to load schedule" });
   }
 });
+
 
 // Update working hours
 router.put("/working-hours", requireAuth, requirePlanner, async (req, res) => {
@@ -254,8 +300,8 @@ router.post(
       }
 
       const userId = req.session.user.id;
-      const imageBuffer = req.file.buffer; 
-      const mimeType = req.file.mimetype; 
+      const imageBuffer = req.file.buffer;
+      const mimeType = req.file.mimetype;
 
       const query = `
         UPDATE users 
@@ -272,7 +318,6 @@ router.post(
 
       res.json({
         message: "Profile image updated successfully",
-
       });
     } catch (error) {
       console.error("Error uploading profile image:", error);
@@ -534,7 +579,7 @@ router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
 
     const profileData = result.rows[0];
 
-    // Specializations is always an array  
+    // Specializations is always an array
     if (!Array.isArray(profileData.specializations)) {
       profileData.specializations = [];
     }
@@ -547,7 +592,6 @@ router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
     res.status(500).json({ error: "Failed to load profile" });
   }
 });
-
 
 // Get Profile Image
 router.get("/profile/image", requireAuth, requirePlanner, async (req, res) => {
@@ -565,14 +609,12 @@ router.get("/profile/image", requireAuth, requirePlanner, async (req, res) => {
       return res.status(404).json({ error: "Image not found" });
     }
 
-    res.set('Content-Type', user.profile_image_mime_type);
+    res.set("Content-Type", user.profile_image_mime_type);
     res.send(user.profile_image_data);
-
   } catch (error) {
     console.error("Error getting profile image:", error);
     res.status(500).json({ error: "Failed to retrieve image" });
   }
 });
-
 
 module.exports = router;

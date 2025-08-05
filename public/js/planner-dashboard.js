@@ -20,6 +20,7 @@ let earningsData = [];
 let reviewsData = [];
 let currentCalendarDate = new Date();
 let currentBookingId = null;
+let scheduleData = [];
 
 // Initialize dashboard
 function initializeDashboard() {
@@ -810,6 +811,7 @@ function generateCalendar() {
     
     calendar.innerHTML = '';
     
+    // Day headers
     const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     dayHeaders.forEach(day => {
         const dayHeader = document.createElement('div');
@@ -842,29 +844,103 @@ function generateCalendar() {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         
+        // Calendar day clickable
+        dayElement.style.cursor = 'pointer';
+        dayElement.addEventListener('click', () => {
+            const clickedDate = new Date(year, month, day);
+            showDaySchedule(clickedDate);
+        });
+        
         const dayNumber = document.createElement('div');
         dayNumber.className = 'day-number';
         dayNumber.textContent = day;
         dayElement.appendChild(dayNumber);
         
-        if (year === today.getFullYear() && 
-            month === today.getMonth() && 
-            day === today.getDate()) {
+        // Check if it's today
+        const isToday = year === today.getFullYear() && 
+                       month === today.getMonth() && 
+                       day === today.getDate();
+        
+        if (isToday) {
             dayElement.classList.add('today');
         }
         
         const dayEvents = document.createElement('div');
         dayEvents.className = 'day-events';
-        dayElement.appendChild(dayEvents);
         
+        // Specific day
+        const dayDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const eventsForDay = scheduleData.filter(event => {
+            const eventDate = event.event_date.split('T')[0]; 
+            return eventDate === dayDate && event.status === 'confirmed';
+        });
+        
+        if (eventsForDay.length > 0) {
+            dayElement.classList.add('has-events');
+            
+            const eventIndicator = document.createElement('div');
+            eventIndicator.className = 'event-indicator';
+            eventIndicator.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 8px;
+                height: 8px;
+                background: var(--primary-color);
+                border-radius: 50%;
+                z-index: 1;
+            `;
+            dayElement.style.position = 'relative';
+            dayElement.appendChild(eventIndicator);
+        }
+        
+        // Event indicators 
+        eventsForDay.forEach((event, index) => {
+            if (index < 3) { 
+                const eventDot = document.createElement('div');
+                eventDot.className = 'event-dot';
+                eventDot.style.cssText = `
+                    width: 6px;
+                    height: 6px;
+                    background: var(--primary-color);
+                    border-radius: 50%;
+                    margin: 1px;
+                    display: inline-block;
+                `;
+                eventDot.title = `${event.event_type} - ${event.customer_name}`;
+                dayEvents.appendChild(eventDot);
+            }
+        });
+        
+        // Show "+X more" if there are more than 3 events
+        if (eventsForDay.length > 3) {
+            const moreText = document.createElement('small');
+            moreText.textContent = `+${eventsForDay.length - 3} more`;
+            moreText.style.cssText = `
+                font-size: 8px;
+                color: var(--primary-color);
+                display: block;
+                text-align: center;
+            `;
+            dayEvents.appendChild(moreText);
+        }
+        
+        dayElement.appendChild(dayEvents);
         calendar.appendChild(dayElement);
+        
+        // Auto-show today's events if this is today's date
+        if (isToday && eventsForDay.length > 0) {
+            setTimeout(() => {
+                const todayDate = new Date(year, month, day);
+                showDaySchedule(todayDate);
+            }, 100);
+        }
     }
 }
-
 // Navigate calendar
 function navigateCalendar(direction) {
     currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
-    generateCalendar();
+    loadSchedule(); 
 }
 
 // Get month name
@@ -879,18 +955,177 @@ function getMonthName(monthIndex) {
 // Load schedule
 async function loadSchedule() {
     try {
-        const response = await fetch('/api/planner/schedule', {
+        showLoading();
+        
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth() + 1; 
+        
+        const response = await fetch(`/api/planner/schedule?year=${year}&month=${month}`, {
             credentials: 'include'
         });
         
         if (response.ok) {
             const schedule = await response.json();
+            scheduleData = schedule.allEvents || [];
+            
+            const today = new Date();
             displayTodaySchedule(schedule.today || []);
+            
+            generateCalendar();
+            
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            if (currentCalendarDate.getMonth() === currentMonth && 
+                currentCalendarDate.getFullYear() === currentYear) {
+                const todayEvents = scheduleData.filter(event => {
+                    const eventDate = event.event_date.split('T')[0];
+                    const todayDate = today.toISOString().split('T')[0];
+                    return eventDate === todayDate && event.status === 'confirmed';
+                });
+                
+                if (todayEvents.length > 0) {
+                    displayDaySchedule(todayEvents, today);
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading schedule:', error);
+        showNotification('Error loading schedule', 'error');
+    } finally {
+        hideLoading();
     }
 }
+
+const eventIndicatorStyles = `
+    .calendar-day {
+        position: relative;
+        min-height: 60px;
+        border: 1px solid var(--gray-200);
+        padding: 8px;
+        background: white;
+        transition: all 0.2s ease;
+    }
+    
+    .calendar-day.has-events {
+        background: #f8f9ff;
+        border-color: var(--primary-color);
+    }
+    
+    .calendar-day.today {
+        background: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .calendar-day.today.has-events {
+        background: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.3);
+    }
+    
+    .calendar-day:hover {
+        background: var(--gray-50);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .calendar-day.today:hover {
+        background: var(--primary-color);
+        opacity: 0.9;
+    }
+    
+    .event-indicator {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+`;
+
+if (!document.getElementById('calendar-event-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'calendar-event-styles';
+    styleSheet.textContent = eventIndicatorStyles;
+    document.head.appendChild(styleSheet);
+}
+
+
+
+// Schedule for a specific day
+function showDaySchedule(date) {
+    const dateString = date.toISOString().split('T')[0];
+    const eventsForDay = scheduleData.filter(event => {
+        const eventDate = event.event_date.split('T')[0];
+        return eventDate === dateString && event.status === 'confirmed';
+    });
+    
+    displayDaySchedule(eventsForDay, date);
+}
+
+// Day schedule
+function displayDaySchedule(events, date) {
+    const container = document.getElementById('todaySchedule');
+    const scheduleTitle = document.querySelector('.schedule-list h3');
+    
+    // Update title based on selected date
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+    scheduleTitle.textContent = isToday ? "Today's Schedule" : `Schedule for ${formatDate(date)}`;
+    
+    if (!events || events.length === 0) {
+        const dateText = isToday ? 'today' : formatDate(date);
+        container.innerHTML = `<p class="text-center text-gray-500">No events scheduled for ${dateText}</p>`;
+        return;
+    }
+    
+    // Sort events by time
+    events.sort((a, b) => {
+        const timeA = a.event_time || '00:00';
+        const timeB = b.event_time || '00:00';
+        return timeA.localeCompare(timeB);
+    });
+    
+    container.innerHTML = events.map(event => `
+        <div class="schedule-item" onclick="showEventDetails(${event.id})" style="cursor: pointer;">
+            <div class="schedule-time">${formatTime(event.event_time)}</div>
+            <div class="schedule-content">
+                <h4>${event.event_type}</h4>
+                <p><i class="fas fa-user"></i> Client: ${event.customer_name}</p>
+                <p><i class="fas fa-map-marker-alt"></i> Location: ${event.location}</p>
+                <p><i class="fas fa-phone"></i> Phone: ${event.phone_number || 'N/A'}</p>
+                <div class="event-status">
+                    <span class="booking-status confirmed">Confirmed</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Format time
+function formatTime(timeString) {
+    if (!timeString) return 'Time TBD';
+    
+    try {
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+        return timeString;
+    }
+}
+
+// Show detailed event information
+function showEventDetails(eventId) {
+    const event = scheduleData.find(e => e.id === eventId);
+    if (!event) return;
+    
+    showNotification(`Event: ${event.event_type} with ${event.customer_name}`, 'info');
+}
+
 
 // Display today's schedule
 function displayTodaySchedule(schedule) {
