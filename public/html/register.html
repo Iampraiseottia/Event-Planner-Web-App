@@ -4,11 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register | Eventify</title>
-    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <link rel="stylesheet" href="../css/register.css" />
-    <link rel="stylesheet" href="../css/header.css" />
+
+    <link rel="icon" href="./img/planner1.webp" style="border-radius: 50%" />
     <link rel="icon" href="../img/planner1.webp" style="border-radius: 50%" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
 
     <!-- Vercel Web Analytics -->
     <script>
@@ -26,9 +30,9 @@
         margin-top: 33px;
         justify-content: center;
         align-items: center;
-        width: 95%;
+        width: 100%;
         height: fit-content;
-        background: url(../img/planner6.jpg) no-repeat;
+        background: url(../img/planner7.jpg) no-repeat;
         background-size: cover;
         background-position: center;
         flex-direction: column;
@@ -39,12 +43,181 @@
         color: #0b52cd;
       }
 
-      .closePlan {
+      /* Header Styles */
+      #header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: #37517e;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header-container h1 {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        color: #fff;
+      }
+
+      .home-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .nav ul {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .nav a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .nav a:hover {
+        color: #0b52cd;
+      }
+
+      .dropdown {
+        position: relative;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background: white;
+        min-width: 160px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 0.5rem 0;
+        top: 100%;
+        left: 0;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      .dropdown-content a {
+        display: block;
+        padding: 0.5rem 1rem;
+        color: #333;
+      }
+
+      .signIn {
+        background: #0b52cd;
+        color: white !important;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .signIn:hover {
+        background: #093ba8;
+        transform: translateY(-2px);
+      }
+
+      .signIn a {
+        color: white !important;
+        text-decoration: none;
+      }
+
+      /* Mobile Back to Home Button */
+      .mobile-back-btn {
+        display: none;
+        background: #0b52cd;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .mobile-back-btn:hover {
+        background: #093ba8;
+        transform: translateY(-2px);
+      }
+
+      #menu,
+      #close {
         display: none;
       }
 
-      .closeCus {
-        display: none;
+      /* Mobile Styles */
+      @media (max-width: 700px) {
+        body {
+          margin-top: 80px;
+        }
+
+        .header-container {
+          padding: 1rem;
+        }
+
+        .header-container h1 {
+          font-size: 24px !important;
+        }
+
+        .home-img {
+          width: 35px;
+          height: 35px;
+        }
+
+        .nav {
+          display: none;
+        }
+
+        .mobile-back-btn {
+          display: inline-block;
+        }
+
+        #menu,
+        #close {
+          display: none !important;
+          visibility: hidden !important;
+        }
+      }
+
+      /* Tablet and smaller desktop  */
+      @media (max-width: 1024px) and (min-width: 701px) {
+        .header-container {
+          padding: 1rem 1.5rem;
+        }
+
+        .nav ul {
+          gap: 1.5rem;
+        }
+
+        .signIn {
+          padding: 0.6rem 1.2rem;
+          font-size: 14px;
+        }
       }
     </style>
 
@@ -61,11 +234,23 @@
   <body>
     <section id="header">
       <div class="header-container">
-        <h1 style="user-select: none; font-size: 30px; letter-spacing: 1px; font-weight: bold;">
-          <img src="../img/event3.jpg" class="home-img" style="margin-right: 5px;"> EVENTIFY
-          <i class="fa-solid fa-x" id="close" style="cursor: pointer; visibility: hidden; margin-left: 60px;"></i>
-          <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; visibility: visible;"></i>
+        <h1
+          style="
+            user-select: none;
+            font-size: 30px;
+            letter-spacing: 1px;
+            font-weight: bold;
+          "
+        >
+          <img
+            src="../img/event3.jpg"
+            class="home-img"
+            style="margin-right: 5px"
+          />
+          EVENTIFY
         </h1>
+
+        <!-- Desktop Navigation -->
         <nav class="nav">
           <ul>
             <li><a href="../index.html">Home</a></li>
@@ -75,15 +260,23 @@
             <div class="dropdown">
               <li><a href="../index.html#testimony-main">Testimony</a></li>
               <div class="dropdown-content">
-                <a href="../index.html#testimony-main">John Paul</a><br>
-                <a href="../index.html#testimony-main">Ayan Trasy</a><br>
+                <a href="../index.html#testimony-main">John Paul</a><br />
+                <a href="../index.html#testimony-main">Ayan Trasy</a><br />
                 <a href="../index.html#testimony-main">Nji Pekins</a>
               </div>
             </div>
             <li class="con"><a href="../index.html#contact-us">Contact</a></li>
-            <button class="signIn"><a href="/html/login.html">Sign In</a></button>
+            <button class="signIn current" style="width: 30%">
+              <a href="/html/register.html">Sign Up</a>
+            </button>
           </ul>
         </nav>
+
+        <!-- Mobile Back to Home Button -->
+        <a href="../index.html" class="mobile-back-btn">
+          <i class="fas fa-arrow-left" style="margin-right: 8px"></i>
+          Back to Home
+        </a>
       </div>
     </section>
 
@@ -300,41 +493,41 @@
     </div>
 
     <script>
-      // Mobile menu toggle functionality
-      document.addEventListener('DOMContentLoaded', function() {
-        const menuBtn = document.getElementById('menu');
-        const closeBtn = document.getElementById('close');
-        const header = document.getElementById('header');
-
-        menuBtn.addEventListener('click', function() {
-          header.classList.add('menu-open');
-        });
-
-        closeBtn.addEventListener('click', function() {
-          header.classList.remove('menu-open');
-        });
-      });
-
+      // Toggle
       function showCustomerSec() {
-        document.getElementById("regCus").classList.add("active");
-        document.getElementById("regPlan").classList.remove("active");
-        document.getElementById("regCustomer").classList.remove("closeCus");
-        document.getElementById("regPlanner").classList.add("closePlan");
-        document.getElementById("regCus").style.color = "#0b52cd";
-        document.getElementById("regCus").style.opacity = "1";
-        document.getElementById("regPlan").style.color = "white";
-        document.getElementById("regPlan").style.opacity = "0.4";
+        const regCus = document.getElementById("regCus");
+        const regPlan = document.getElementById("regPlan");
+        const regCustomer = document.getElementById("regCustomer");
+        const regPlanner = document.getElementById("regPlanner");
+
+        regCus.classList.add("active");
+        regPlan.classList.remove("active");
+
+        regCustomer.classList.remove("closeCus");
+        regPlanner.classList.add("closePlan");
+
+        regCus.style.color = "#0b52cd";
+        regCus.style.opacity = "1";
+        regPlan.style.color = "black";
+        regPlan.style.opacity = "0.4";
       }
 
       function showPlannerSec() {
-        document.getElementById("regPlan").classList.add("active");
-        document.getElementById("regCus").classList.remove("active");
-        document.getElementById("regPlanner").classList.remove("closePlan");
-        document.getElementById("regCustomer").classList.add("closeCus");
-        document.getElementById("regCus").style.color = "white";
-        document.getElementById("regCus").style.opacity = "0.4";
-        document.getElementById("regPlan").style.color = "#0b52cd";
-        document.getElementById("regPlan").style.opacity = "1";
+        const regCus = document.getElementById("regCus");
+        const regPlan = document.getElementById("regPlan");
+        const regCustomer = document.getElementById("regCustomer");
+        const regPlanner = document.getElementById("regPlanner");
+
+        regPlan.classList.add("active");
+        regCus.classList.remove("active");
+
+        regPlanner.classList.remove("closePlan");
+        regCustomer.classList.add("closeCus");
+
+        regCus.style.color = "black";
+        regCus.style.opacity = "0.4";
+        regPlan.style.color = "#0b52cd";
+        regPlan.style.opacity = "1";
       }
 
       // Registration functionality
@@ -430,21 +623,20 @@
     </script>
   </body>
 
-
-
   <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-
-
+  <script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+      Tawk_LoadStart = new Date();
+    (function () {
+      var s1 = document.createElement("script"),
+        s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      s0.parentNode.insertBefore(s1, s0);
+    })();
+  </script>
+  <!--End of Tawk.to Script-->
+  
 </html>
