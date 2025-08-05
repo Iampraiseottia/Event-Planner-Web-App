@@ -24,7 +24,7 @@
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
 
-    <style>
+   <style>
       body {
         display: flex;
         margin-top: 33px;
@@ -62,6 +62,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        height: 60px;
       }
 
       .header-container h1 {
@@ -89,13 +90,14 @@
 
       .nav a {
         text-decoration: none;
-        color: #333;
+        color: white;
         font-weight: 500;
         transition: color 0.3s ease;
+        font-size: 20px;
       }
 
       .nav a:hover {
-        color: #0b52cd;
+        color: gold;
       }
 
       .dropdown {
@@ -121,7 +123,12 @@
       .dropdown-content a {
         display: block;
         padding: 0.5rem 1rem;
-        color: #333;
+        color: #000;
+        font-weight: bold;
+      }
+
+      .dropdown-content a:hover{
+        color: #093ba8;
       }
 
       .signIn {
@@ -145,7 +152,6 @@
         text-decoration: none;
       }
 
-      /* Mobile Back to Home Button */
       .mobile-back-btn {
         display: none;
         background: #0b52cd;
@@ -197,6 +203,8 @@
           display: inline-block;
         }
 
+        
+
         #menu,
         #close {
           display: none !important;
@@ -204,7 +212,7 @@
         }
       }
 
-      /* Tablet and smaller desktop  */
+      /* Tablet and smaller desktop */
       @media (max-width: 1024px) and (min-width: 701px) {
         .header-container {
           padding: 1rem 1.5rem;
@@ -219,17 +227,14 @@
           font-size: 14px;
         }
       }
+
+      @media (min-width: 1100px) {
+        .toggle{
+          margin-top: 120px !important;
+        }
+      }
     </style>
 
-    <!-- Vercel Web Analytics -->
-    <script>
-      window.va =
-        window.va ||
-        function () {
-          (window.va.q = window.va.q || []).push(arguments);
-        };
-    </script>
-    <script src="/_vercel/insights/script.js"></script>
   </head>
   <body>
     <section id="header">
@@ -292,7 +297,7 @@
 
     <div class="wrapper" style="margin-bottom: 90px" id="regCustomer">
       <div class="borderline">
-        <h1 style="color: white !important">Sign Up As Customer</h1>
+        <h1 style="color: #0b52cd !important">Sign Up As Customer</h1>
         <form id="customerRegisterForm">
           <div class="input_box">
             <box-icon name="rename" color="#4c0e2e"></box-icon>
@@ -393,7 +398,7 @@
 
     <div class="wrapper closePlan" style="margin-bottom: 50px" id="regPlanner">
       <div class="borderline">
-        <h1 style="color: white !important">Sign Up As Planner</h1>
+        <h1 style="color: #0b52cd !important;">Sign Up As Planner</h1>
         <form id="plannerRegisterForm">
           <div class="input_box">
             <box-icon name="rename" color="#4c0e2e"></box-icon>

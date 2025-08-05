@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   initializeDashboard();
 
@@ -82,9 +83,10 @@ function updateUserInterface() {
 
   // Handle profile image
   const profileImageEl = document.getElementById("profileImage");
-  if (profileImageEl && currentUser.profile_image) {
-    profileImageEl.src = currentUser.profile_image;
+  if (profileImageEl) {
+    profileImageEl.src = `/api/customer/profile/image?t=${Date.now()}`;
   }
+
 
   // Handle preferences with proper error handling
   updatePreferencesSelect();
@@ -978,65 +980,58 @@ async function clearAllNotifications() {
 
 // Setup profile image upload
 function setupProfileImageUpload() {
-  const profileImage = document.querySelector(".profile-image");
-  const fileInput = document.getElementById("profileImageInput");
+    const profileImageSection = document.querySelector('.profile-image-section');
+    const profileImageInput = document.getElementById('profileImageInput');
+    
+    if (profileImageSection && profileImageInput) {
+        // Add a click listener to the entire profile image container
+        profileImageSection.addEventListener('click', () => {
+            profileImageInput.click();
+        });
 
-  profileImage.addEventListener("click", () => {
-    fileInput.click();
-  });
-
-  fileInput.addEventListener("change", handleProfileImageUpload);
+        // Add a change listener to the file input to handle the upload
+        profileImageInput.addEventListener('change', handleProfileImageUpload);
+    }
 }
+ 
 
 // Handle profile image upload
 async function handleProfileImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  // Validate file type
-  if (!file.type.startsWith("image/")) {
-    showNotification("Please select a valid image file", "error");
-    return;
-  }
-
-  // Validate file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    showNotification("Image file size must be less than 5MB", "error");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("profileImage", file);
-
-  try {
-    showLoading();
-
-    const response = await fetch("/api/customer/profile/upload-image", {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const file = event.target.files[0];
+    if (!file) {
+        return;
     }
 
-    const result = await response.json();
+    const formData = new FormData();
+    formData.append('profileImage', file);
 
-    // Update UI with new image
-    document.getElementById("profileImage").src = result.imageUrl;
+    try {
+        showLoading();
+        const response = await fetch('/api/customer/profile/upload-image', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        });
 
-    if (currentUser) {
-      currentUser.profile_image = result.imageUrl;
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Profile image uploaded successfully', 'success');
+            
+            // To display the new image immediately, update the source
+            const profileImageEl = document.getElementById("profileImage");
+            if (profileImageEl) {
+                profileImageEl.src = `/api/customer/profile/image?t=${Date.now()}`;
+            }
+        } else {
+            showNotification(data.error || 'Error uploading image', 'error');
+        }
+    } catch (error) {
+        console.error('Error uploading profile image:', error);
+        showNotification('Failed to upload image', 'error');
+    } finally {
+        hideLoading();
     }
-
-    showNotification("Profile image updated successfully", "success");
-  } catch (error) {
-    console.error("Error uploading profile image:", error);
-    showNotification("Error uploading image. Please try again.", "error");
-  } finally {
-    hideLoading();
-  }
 }
 
 // Setup form handlers

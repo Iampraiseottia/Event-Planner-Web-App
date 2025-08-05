@@ -1,4 +1,3 @@
-// planner-dashboard.js
 document.addEventListener('DOMContentLoaded', function() {
 
     initializeDashboard();
@@ -121,6 +120,13 @@ function updateUserInterface() {
                 option.selected = specializations.includes(option.value);
             });
         }
+
+        // Profile image to use the image API endpoint 
+        const profileImageElement = document.getElementById('profileImage');
+        if (profileImageElement) {
+            profileImageElement.src = `/api/planner/profile/image?t=${Date.now()}`;
+        }
+        
     }
 }
 
@@ -209,6 +215,12 @@ function setupEventListeners() {
             filterPortfolio(this.dataset.filter);
         });
     });
+
+    // Profile IMage
+    const profileImageInput = document.getElementById('profileImageInput');
+    if (profileImageInput) {
+        profileImageInput.addEventListener('change', handleProfileImageUpload);
+    }
 }
 
 // Load dashboard data
@@ -218,6 +230,7 @@ async function loadDashboardData() {
         
         // Load all dashboard data in parallel
         await Promise.all([
+            loadProfile(), // Add this to load complete profile data
             loadStats(),
             loadRecentActivity(),
             loadUpcomingEvents(),
@@ -231,6 +244,7 @@ async function loadDashboardData() {
         hideLoading();
     }
 }
+
 
 // Load statistics
 async function loadStats() {
@@ -1258,16 +1272,49 @@ function setupFormHandlers() {
 }
 
 
+// UpdateProfile 
 async function updateProfile(event) {
     event.preventDefault();
     
     const formData = new FormData(event.target);
     const profileData = Object.fromEntries(formData.entries());
     
-    // Handle specializations
-    const specializations = Array.from(document.getElementById('specializations').selectedOptions)
-        .map(option => option.value);
-    profileData.specializations = specializations;
+    const specializationSelect = document.getElementById('specializations');
+    const specializations = Array.from(specializationSelect.selectedOptions)
+        .map(option => option.value)
+        .filter(value => value && value.trim() !== ''); 
+    
+    profileData.specializations = specializations.length > 0 ? specializations : [];
+    
+    // Validate required fields
+    if (!profileData.businessName || !profileData.ownerName || !profileData.email || 
+        !profileData.phone || !profileData.location || !profileData.bio || 
+        !profileData.basePrice || !profileData.experience) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+
+    // Validate numeric fields
+    const basePrice = parseFloat(profileData.basePrice);
+    if (isNaN(basePrice) || basePrice < 0) {
+        showNotification('Base Price must be a valid positive number.', 'error');
+        return;
+    }
+    
+    const experience = parseInt(profileData.experience);
+    if (isNaN(experience) || experience < 0 || experience > 100) { 
+        showNotification('Experience must be a valid number (e.g., years).', 'error');
+        return;
+    }
+    
+    // Convert to numbers before sending
+    profileData.basePrice = basePrice;
+    profileData.experience = experience;
+    
+    console.log("=== FRONTEND DEBUG ===");
+    console.log("Form data being sent:", profileData);
+    console.log("Specializations array:", profileData.specializations);
     
     try {
         showLoading();
@@ -1282,18 +1329,15 @@ async function updateProfile(event) {
         });
         
         const data = await response.json();
+        console.log("Response from server:", data);
         
         if (response.ok) {
-            //  Global planner data
+
             currentPlanner = data.planner;
             
-            // UI with new data
             updateUserInterface();
             
             showNotification('Profile updated successfully', 'success');
-            
-            // Profile data to ensure consistency
-            await loadProfile();
         } else {
             showNotification(data.error || 'Error updating profile', 'error');
         }
@@ -1304,6 +1348,7 @@ async function updateProfile(event) {
         hideLoading();
     }
 }
+
 
 // Load profile data
 async function loadProfile() {
@@ -1316,6 +1361,19 @@ async function loadProfile() {
         if (response.ok) {
             const data = await response.json();
             currentPlanner = data.planner;
+            
+            // Update session user data
+            if (currentPlanner) {
+                Object.assign(currentPlanner, {
+                    business_name: data.planner.business_name,
+                    bio: data.planner.bio,
+                    experience: data.planner.experience,
+                    specializations: data.planner.specializations,
+                    base_price: data.planner.base_price,
+                    home_address: data.planner.home_address
+                });
+            }
+            
             populateProfileForm();
         }
     } catch (error) {
@@ -1324,25 +1382,37 @@ async function loadProfile() {
 }
 
 
+
+// PopulateProfileForm 
 function populateProfileForm() {
     if (!currentPlanner) return;
     
-    document.getElementById('businessName').value = currentPlanner.business_name || '';
-    document.getElementById('ownerName').value = currentPlanner.full_name || '';
-    document.getElementById('email').value = currentPlanner.email || '';
-    document.getElementById('phone').value = currentPlanner.phone_number || '';
-    document.getElementById('homeAddress').value = currentPlanner.homeAddress || '';
-    document.getElementById('location').value = currentPlanner.location || '';
-    document.getElementById('bio').value = currentPlanner.bio || '';
-    document.getElementById('basePrice').value = currentPlanner.base_price || '';
-    document.getElementById('experience').value = currentPlanner.experience || '';
+    // Basic user info
+    if (currentPlanner.business_name) document.getElementById('businessName').value = currentPlanner.business_name;
+    if (currentPlanner.full_name) document.getElementById('ownerName').value = currentPlanner.full_name;
+    if (currentPlanner.email) document.getElementById('email').value = currentPlanner.email;
+    if (currentPlanner.phone_number) document.getElementById('phone').value = currentPlanner.phone_number;
+    if (currentPlanner.location) document.getElementById('location').value = currentPlanner.location;
+    if (currentPlanner.home_address) document.getElementById('homeAddress').value = currentPlanner.home_address;
     
-    // Handle specializations
+    // Planner specific info
+    if (currentPlanner.bio) document.getElementById('bio').value = currentPlanner.bio;
+    if (currentPlanner.base_price) document.getElementById('basePrice').value = currentPlanner.base_price;
+    if (currentPlanner.experience) document.getElementById('experience').value = currentPlanner.experience;
+    
+    // Profile image
+    if (currentPlanner.profile_image) {
+        document.getElementById('profileImage').src = currentPlanner.profile_image;
+    }
+    
+    // Handle specializations properly
     if (currentPlanner.specializations) {
-        const specializations = typeof currentPlanner.specializations === 'string' 
-            ? JSON.parse(currentPlanner.specializations) 
-            : currentPlanner.specializations;
-            
+        const specializations = Array.isArray(currentPlanner.specializations) 
+            ? currentPlanner.specializations 
+            : (typeof currentPlanner.specializations === 'string' 
+                ? JSON.parse(currentPlanner.specializations) 
+                : []);
+        
         const selectElement = document.getElementById('specializations');
         Array.from(selectElement.options).forEach(option => {
             option.selected = specializations.includes(option.value);
@@ -1738,55 +1808,6 @@ async function logout3() {
 
 
 
-//  profile form submission
-document.getElementById('profileForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const formData = new FormData(e.target);
-  const profileData = {
-    businessName: formData.get('businessName'),
-    ownerName: formData.get('ownerName'),
-    email: formData.get('email'),
-    phone: formData.get('phone'),
-    location: formData.get('location'),
-    homeAddress: formData.get('homeAddress'),
-    specializations: Array.from(document.getElementById('specializations').selectedOptions).map(option => option.value),
-    bio: formData.get('bio'),
-    basePrice: formData.get('basePrice'),
-    experience: formData.get('experience')
-  };
-
-  ging
-  console.log("=== FRONTEND DEBUG ===");
-  console.log("Form data being sent:", profileData);
-  
-  try {
-    const response = await fetch('/api/planner/profile', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(profileData)
-    });
-
-    const result = await response.json();
-    console.log("Response from server:", result);
-
-    if (response.ok) {
-      alert('Profile updated successfully!');
-    } else {
-      alert('Error: ' + result.error);
-    }
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    alert('Failed to update profile');
-  }
-});
-
-
-
-
-
 
 
 
@@ -1839,3 +1860,134 @@ function isValidPhone(phone) {
 
 
 
+
+
+
+// Stat card clicking to showing content
+function navigateToSection(sectionName) {
+
+  showSection(sectionName);
+  
+   const sidebarMenuItems = document.querySelectorAll('.sidebar .menu-item');
+  sidebarMenuItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.dataset.section === sectionName) {
+      item.classList.add('active');
+    } 
+  });
+}
+
+
+
+
+function searchClients() {
+    const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayClients(clientsData);
+        return;
+    }
+    
+    const filteredClients = clientsData.filter(client => 
+        client.full_name.toLowerCase().includes(searchTerm) ||
+        client.email.toLowerCase().includes(searchTerm) ||
+        client.phone_number.toLowerCase().includes(searchTerm)
+    );
+    
+    displayClients(filteredClients);
+}
+
+
+
+
+function contactClient(phoneNumber) {
+    window.location.href = `tel:${phoneNumber}`;
+}
+
+function emailClient(email) {
+    window.location.href = `mailto:${email}`;
+}
+
+function showClientDetails(clientId) {
+    console.log('Show client details for ID:', clientId);
+}
+
+function addNewClient() {
+    console.log('Add new client');
+}
+
+function addPortfolioItem() {
+    document.getElementById('portfolioModal').style.display = 'block';
+}
+
+function savePortfolioItem() {
+    console.log('Save portfolio item');
+    closeModal();
+}
+
+function blockDate() {
+    const date = document.getElementById('blockDate').value;
+    const reason = document.getElementById('blockReason').value;
+    
+    if (!date) {
+        showNotification('Please select a date to block', 'error');
+        return;
+    }
+    
+    console.log('Block date:', date, 'Reason:', reason);
+    showNotification('Date blocked successfully', 'success');
+    
+    document.getElementById('blockDate').value = '';
+    document.getElementById('blockReason').value = '';
+}
+
+function exportBookings() {
+    console.log('Export bookings');
+    showNotification('Export feature coming soon', 'info');
+}
+
+function resetForm() {
+    if (confirm('Are you sure you want to reset the form? All changes will be lost.')) {
+        document.getElementById('profileForm').reset();
+        populateProfileForm(); 
+    }
+}
+
+
+
+
+// handle Profile Image Upload
+async function handleProfileImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('profileImage', file); 
+
+    try {
+        showLoading();
+        const response = await fetch('/api/planner/profile/upload-image', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData, 
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Profile image uploaded successfully', 'success');
+            
+            document.getElementById('profileImage').src = `/api/planner/profile/image?t=${Date.now()}`;
+            
+        } else {
+            showNotification(data.error || 'Error uploading image', 'error');
+        }
+    } catch (error) {
+        console.error('Error uploading profile image:', error);
+        showNotification('Failed to upload image', 'error');
+    } finally {
+        hideLoading();
+    }
+}

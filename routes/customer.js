@@ -323,17 +323,28 @@ router.post(
       }
 
       const userId = req.session.user.id;
-      const imageUrl = `/uploads/${req.file.filename}`;
+      const imageBuffer = req.file.buffer; 
+      const mimeType = req.file.mimetype; 
 
-      // Update database using User model
-      const result = await User.updateProfileImage(userId, imageUrl);
+      const query = `
+        UPDATE users 
+        SET profile_image_data = $1, profile_image_mime_type = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        RETURNING profile_image_data, profile_image_mime_type
+      `;
 
-      // Update session
-      req.session.user.profile_image = result.profile_image;
+      const result = await pool.query(query, [imageBuffer, mimeType, userId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Update the session with the new data
+      req.session.user.profile_image_data = result.rows[0].profile_image_data;
+      req.session.user.profile_image_mime_type = result.rows[0].profile_image_mime_type;
 
       res.json({
         message: "Profile image updated successfully",
-        imageUrl: result.profile_image,
       });
     } catch (error) {
       console.error("Error uploading profile image:", error);
@@ -343,6 +354,33 @@ router.post(
     }
   }
 );
+
+
+// Get Profile Image
+router.get("/profile/image", requireAuth, requireCustomer, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    const query = `
+      SELECT profile_image_data, profile_image_mime_type FROM users WHERE id = $1
+    `;
+
+    const result = await pool.query(query, [userId]);
+    const user = result.rows[0];
+
+    if (!user || !user.profile_image_data) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+
+    res.set('Content-Type', user.profile_image_mime_type);
+    res.send(user.profile_image_data);
+
+  } catch (error) {
+    console.error("Error getting profile image:", error);
+    res.status(500).json({ error: "Failed to retrieve image" });
+  }
+});
+
 
 // Update customer profile
 router.put("/profile", requireAuth, requireCustomer, async (req, res) => {

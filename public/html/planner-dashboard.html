@@ -113,17 +113,27 @@
           </div>
 
           <div class="stats-grid">
-            <div class="stat-card primary">
+            <div
+              class="stat-card primary"
+              style="cursor: pointer"
+              data-section="schedule"
+              onclick="navigateToSection('schedule')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-calendar-check"></i>
               </div>
               <div class="stat-info">
                 <h3 id="totalEvents">0</h3>
                 <p>Total Events</p>
-                <span class="stat-change positive">+12% this month</span>
+                <span class="stat-change positive">+1% this month</span>
               </div>
             </div>
-            <div class="stat-card success">
+            <div
+              class="stat-card success"
+              style="cursor: pointer"
+              data-section="bookings"
+              onclick="navigateToSection('bookings')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-hourglass-half"></i>
               </div>
@@ -133,7 +143,12 @@
                 <span class="stat-change">Requires attention</span>
               </div>
             </div>
-            <div class="stat-card warning">
+            <div
+              class="stat-card warning"
+              style="cursor: pointer"
+              data-section="earnings"
+              onclick="navigateToSection('earnings')"
+            >
               <div class="stat-icon">
                 <i class="fas fa-money-bill-wave"></i>
               </div>
@@ -143,7 +158,12 @@
                 <span class="stat-change positive">+8% from last month</span>
               </div>
             </div>
-            <div class="stat-card info">
+            <div
+              class="stat-card info"
+              style="cursor: pointer"
+              data-section="reviews"
+              onclick="navigateToSection('reviews')" 
+            >
               <div class="stat-icon">
                 <i class="fas fa-star"></i>
               </div>
@@ -161,21 +181,25 @@
               <div class="action-buttons">
                 <button
                   class="action-btn primary"
-                  onclick="showSection('bookings')"
+                  data-section="bookings"
+                  onclick="navigateToSection('bookings')" 
                 >
                   <i class="fas fa-plus"></i>
                   View New Bookings
                 </button>
                 <button
                   class="action-btn secondary"
-                  onclick="showSection('schedule')"
+                  data-section="schedule"
+                  onclick="navigateToSection('schedule')" 
                 >
                   <i class="fas fa-calendar"></i>
                   Check Schedule
                 </button>
                 <button
                   class="action-btn secondary"
-                  onclick="showSection('availability')"
+                  data-section="availability"
+                  onclick="navigateToSection('availability')"
+
                 >
                   <i class="fas fa-clock"></i>
                   Update Availability
@@ -328,6 +352,7 @@
                       type="number"
                       id="basePrice"
                       name="basePrice"
+                      placeholder="Minimum Price for any Event"
                       min="0"
                     />
                   </div>
@@ -797,7 +822,6 @@
         <div class="modal-body" id="bookingModalBody">
           <!-- Booking details space to contain loaded items from database -->
         </div>
-       
       </div>
     </div>
 
@@ -877,22 +901,19 @@
     <script src="../js/planner-dashboard.js"></script>
   </body>
 
-
-
   <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-
-
-
+  <script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+      Tawk_LoadStart = new Date();
+    (function () {
+      var s1 = document.createElement("script"),
+        s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      s0.parentNode.insertBefore(s1, s0);
+    })();
+  </script>
+  <!--End of Tawk.to Script-->
 </html>

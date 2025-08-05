@@ -1,4 +1,3 @@
-// route/planner.js
 const express = require("express");
 const {
   requireAuth,
@@ -58,72 +57,84 @@ router.get("/bookings", requireAuth, requirePlanner, async (req, res) => {
 });
 
 // Accept booking
-router.post("/bookings/:id/accept", requireAuth, requirePlanner, async (req, res) => {
-  try {
-    const bookingId = parseInt(req.params.id);
-    const booking = await Booking.findById(bookingId);
-    
-    if (!booking) {
-      return res.status(404).json({
-        error: "Booking not found",
+router.post(
+  "/bookings/:id/accept",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      const booking = await Booking.findById(bookingId);
+
+      if (!booking) {
+        return res.status(404).json({
+          error: "Booking not found",
+        });
+      }
+
+      // Check if planner owns this booking
+      if (booking.planner_id !== req.session.user.id) {
+        return res.status(403).json({
+          error: "You can only accept your own bookings",
+        });
+      }
+
+      const updatedBooking = await Booking.updateStatus(bookingId, "confirmed");
+
+      res.json({
+        message: "Booking accepted successfully",
+        booking: updatedBooking,
+      });
+    } catch (error) {
+      console.error("Accept booking error:", error);
+      res.status(500).json({
+        error: "Failed to accept booking",
       });
     }
-
-    // Check if planner owns this booking
-    if (booking.planner_id !== req.session.user.id) {
-      return res.status(403).json({
-        error: "You can only accept your own bookings",
-      });
-    }
-
-    const updatedBooking = await Booking.updateStatus(bookingId, "confirmed");
-
-    res.json({
-      message: "Booking accepted successfully",
-      booking: updatedBooking,
-    });
-  } catch (error) {
-    console.error("Accept booking error:", error);
-    res.status(500).json({
-      error: "Failed to accept booking",
-    });
   }
-});
-
+);
 
 // Reject booking
-router.post("/bookings/:id/reject", requireAuth, requirePlanner, async (req, res) => {
-  try {
-    const bookingId = parseInt(req.params.id);
-    const { reason } = req.body;
-    const booking = await Booking.findById(bookingId);
-    
-    if (!booking) {
-      return res.status(404).json({
-        error: "Booking not found",
+router.post(
+  "/bookings/:id/reject",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      const { reason } = req.body;
+      const booking = await Booking.findById(bookingId);
+
+      if (!booking) {
+        return res.status(404).json({
+          error: "Booking not found",
+        });
+      }
+
+      if (booking.planner_id !== req.session.user.id) {
+        return res.status(403).json({
+          error: "You can only reject your own bookings",
+        });
+      }
+
+      const updatedBooking = await Booking.updateStatus(
+        bookingId,
+        "cancelled",
+        reason
+      );
+
+      res.json({
+        message: "Booking rejected successfully",
+        booking: updatedBooking,
+      });
+    } catch (error) {
+      console.error("Reject booking error:", error);
+      res.status(500).json({
+        error: "Failed to reject booking",
       });
     }
-
-    if (booking.planner_id !== req.session.user.id) {
-      return res.status(403).json({
-        error: "You can only reject your own bookings",
-      });
-    }
-
-    const updatedBooking = await Booking.updateStatus(bookingId, "cancelled", reason);
-
-    res.json({
-      message: "Booking rejected successfully",
-      booking: updatedBooking,
-    });
-  } catch (error) {
-    console.error("Reject booking error:", error);
-    res.status(500).json({
-      error: "Failed to reject booking",
-    });
   }
-});
-
+);
 
 // Get upcoming events
 router.get(
@@ -230,7 +241,7 @@ router.put("/working-hours", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
-// Upload profile image 
+// Upload profile image
 router.post(
   "/profile/upload-image",
   requireAuth,
@@ -243,20 +254,25 @@ router.post(
       }
 
       const userId = req.session.user.id;
-      const imageUrl = `/uploads/${req.file.filename}`;
+      const imageBuffer = req.file.buffer; 
+      const mimeType = req.file.mimetype; 
 
       const query = `
-            UPDATE users 
-            SET profile_image = $1, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $2
-            RETURNING profile_image
-        `;
+        UPDATE users 
+        SET profile_image_data = $1, profile_image_mime_type = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        RETURNING profile_image_data, profile_image_mime_type
+      `;
 
-      const result = await pool.query(query, [imageUrl, userId]);
+      const result = await pool.query(query, [imageBuffer, mimeType, userId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
       res.json({
         message: "Profile image updated successfully",
-        imageUrl: result.rows[0].profile_image,
+
       });
     } catch (error) {
       console.error("Error uploading profile image:", error);
@@ -265,16 +281,16 @@ router.post(
   }
 );
 
+// PUT /profile
 
 router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
-    
+    const userId = req.session.user.id;
+
     console.log("=== PROFILE UPDATE DEBUG ===");
-    console.log("Planner ID from session:", plannerId);
+    console.log("User ID from session:", userId);
     console.log("Request body:", req.body);
-    console.log("Session user:", req.session.user);
-    
+
     const {
       businessName,
       ownerName,
@@ -288,6 +304,7 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
       experience,
     } = req.body;
 
+    // Validate required fields
     if (
       !businessName ||
       !ownerName ||
@@ -304,10 +321,25 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
       });
     }
 
+    let specializationsArray = [];
+    if (Array.isArray(specializations)) {
+      specializationsArray = specializations.filter(
+        (item) => item && item.trim() !== ""
+      );
+    } else if (typeof specializations === "string") {
+      try {
+        specializationsArray = JSON.parse(specializations);
+      } catch (e) {
+        specializationsArray = specializations ? [specializations] : [];
+      }
+    }
+
+    console.log("Processed specializations array:", specializationsArray);
+
     // Check if email is already taken by another user
     const existingUser = await pool.query(
       "SELECT id FROM users WHERE email = $1 AND id != $2",
-      [email, plannerId]
+      [email, userId]
     );
 
     if (existingUser.rows.length > 0) {
@@ -330,23 +362,29 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
         RETURNING *
       `;
 
-      console.log("Updating users table with:", [ownerName, email, phone, location, plannerId]);
+      console.log("Updating users table with:", [
+        ownerName,
+        email,
+        phone,
+        location,
+        userId,
+      ]);
       const userResult = await client.query(userUpdateQuery, [
         ownerName,
         email,
         phone,
         location,
-        plannerId,
+        userId,
       ]);
-      
+
       console.log("User update result:", userResult.rows[0]);
 
-      // First check if planner record exists
+      // Check if planner record exists
       const plannerCheck = await client.query(
         "SELECT * FROM planners WHERE user_id = $1",
-        [plannerId]
+        [userId]
       );
-      
+
       console.log("Existing planner record:", plannerCheck.rows[0]);
 
       let plannerResult;
@@ -357,27 +395,28 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
           VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING *
         `;
-        
+
         console.log("Creating new planner record with:", [
-          plannerId,
+          userId,
           businessName,
           bio,
           parseInt(experience),
-          JSON.stringify(specializations),
+          specializationsArray,
           parseFloat(basePrice),
-          homeAddress
+          homeAddress || null,
         ]);
-        
+
         plannerResult = await client.query(plannerInsertQuery, [
-          plannerId,
+          userId,
           businessName,
           bio,
           parseInt(experience),
-          JSON.stringify(specializations),
+          specializationsArray,
           parseFloat(basePrice),
-          homeAddress,
+          homeAddress || null,
         ]);
       } else {
+        // Update existing planner record
         const plannerUpdateQuery = `
           UPDATE planners 
           SET business_name = $1, bio = $2, experience = $3, specializations = $4, 
@@ -390,20 +429,20 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
           businessName,
           bio,
           parseInt(experience),
-          JSON.stringify(specializations),
+          specializationsArray,
           parseFloat(basePrice),
-          homeAddress,
-          plannerId
+          homeAddress || null,
+          userId,
         ]);
 
         plannerResult = await client.query(plannerUpdateQuery, [
           businessName,
           bio,
           parseInt(experience),
-          JSON.stringify(specializations),
+          specializationsArray,
           parseFloat(basePrice),
-          homeAddress,
-          plannerId,
+          homeAddress || null,
+          userId,
         ]);
       }
 
@@ -422,26 +461,39 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
 
       // Get complete updated profile
       const completeProfileQuery = `
-        SELECT u.*, p.business_name, p.bio, p.experience, p.specializations, 
-               p.base_price, p.home_address, p.average_rating, p.total_reviews
+        SELECT u.*, 
+               p.business_name, 
+               p.bio, 
+               p.experience, 
+               p.specializations, 
+               p.base_price, 
+               p.home_address,
+               p.average_rating, 
+               p.total_reviews
         FROM users u
         LEFT JOIN planners p ON u.id = p.user_id
         WHERE u.id = $1
       `;
 
       const completeProfile = await client.query(completeProfileQuery, [
-        plannerId,
+        userId,
       ]);
 
       console.log("Final complete profile:", completeProfile.rows[0]);
 
+      const profileData = completeProfile.rows[0];
+
+      if (!Array.isArray(profileData.specializations)) {
+        profileData.specializations = [];
+      }
+
       res.json({
         message: "Profile updated successfully",
-        planner: completeProfile.rows[0],
+        planner: profileData,
       });
     } catch (error) {
       await client.query("ROLLBACK");
-      console.log("Transaction rollback due to error:", error);
+      console.error("Transaction rollback due to error:", error);
       throw error;
     } finally {
       client.release();
@@ -454,27 +506,71 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
-
-// Get planner's bookings specifically 
-router.get("/planner/bookings", requireAuth, async (req, res) => {
+// profile route
+router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
   try {
-    if (req.session.user.user_type !== "planner") {
-      return res.status(403).json({
-        error: "Planner access required",
-      });
+    const userId = req.session.user.id;
+
+    const query = `
+      SELECT u.*, 
+             p.business_name, 
+             p.bio, 
+             p.experience, 
+             p.specializations, 
+             p.base_price, 
+             p.home_address,
+             p.average_rating, 
+             p.total_reviews
+      FROM users u
+      LEFT JOIN planners p ON u.id = p.user_id
+      WHERE u.id = $1
+    `;
+
+    const result = await pool.query(query, [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Planner not found" });
     }
 
-    const bookings = await Booking.findByPlannerId(req.session.user.id);
-    
+    const profileData = result.rows[0];
+
+    // Specializations is always an array  
+    if (!Array.isArray(profileData.specializations)) {
+      profileData.specializations = [];
+    }
+
     res.json({
-      success: true,
-      bookings: bookings
+      planner: profileData,
     });
   } catch (error) {
-    console.error("Get planner bookings error:", error);
-    res.status(500).json({
-      error: "Failed to retrieve bookings",
-    });
+    console.error("Error loading profile:", error);
+    res.status(500).json({ error: "Failed to load profile" });
+  }
+});
+
+
+// Get Profile Image
+router.get("/profile/image", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    const query = `
+      SELECT profile_image_data, profile_image_mime_type FROM users WHERE id = $1
+    `;
+
+    const result = await pool.query(query, [userId]);
+    const user = result.rows[0];
+
+    if (!user || !user.profile_image_data) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+
+    res.set('Content-Type', user.profile_image_mime_type);
+    res.send(user.profile_image_data);
+
+  } catch (error) {
+    console.error("Error getting profile image:", error);
+    res.status(500).json({ error: "Failed to retrieve image" });
   }
 });
 
