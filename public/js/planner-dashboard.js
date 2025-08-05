@@ -160,6 +160,14 @@ function showSection(sectionName) {
         switch(sectionName) {
             case 'bookings':
                 loadBookings();
+
+                const filterClientId = sessionStorage.getItem('filterClientId');
+                if (filterClientId) {
+                    setTimeout(() => {
+                        applyClientFilter(filterClientId);
+                        sessionStorage.removeItem('filterClientId');
+                    }, 500);
+                }
                 break;
             case 'schedule':
                 loadSchedule();
@@ -182,6 +190,21 @@ function showSection(sectionName) {
         }
     }
 }
+
+// Apply client filter to bookings
+function applyClientFilter(clientId) {
+    const filteredBookings = bookingsData.filter(booking => 
+        booking.customer_id == clientId
+    );
+    
+    if (filteredBookings.length > 0) {
+        displayBookings(filteredBookings);
+        showNotification(`Showing bookings for selected client (${filteredBookings.length} found)`, 'info');
+    } else {
+        showNotification('No bookings found for selected client', 'warning');
+    }
+}
+
 
 // Setup event listeners
 function setupEventListeners() {
@@ -1149,8 +1172,11 @@ function displayTodaySchedule(schedule) {
 }
 
 // Load clients
+
 async function loadClients() {
     try {
+        showLoading();
+        
         const response = await fetch('/api/planner/clients', {
             credentials: 'include'
         });
@@ -1158,18 +1184,35 @@ async function loadClients() {
         if (response.ok) {
             clientsData = await response.json();
             displayClients(clientsData);
+        } else {
+            console.error('Failed to load clients:', response.status);
+            showNotification('Error loading clients', 'error');
+            clientsData = [];
+            displayClients(clientsData);
         }
     } catch (error) {
         console.error('Error loading clients:', error);
+        showNotification('Error loading clients', 'error');
+        clientsData = [];
+        displayClients(clientsData);
+    } finally {
+        hideLoading();
     }
 }
+
 
 // Display clients
 function displayClients(clients) {
     const container = document.getElementById('clientsList');
     
     if (!clients || clients.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500">No clients found</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-users" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+                <h3>No clients found</h3>
+                <p>Clients who make bookings with you will appear here</p>
+            </div>
+        `;
         return;
     }
     
@@ -1177,12 +1220,13 @@ function displayClients(clients) {
         <div class="client-card" onclick="showClientDetails(${client.id})">
             <div class="client-header">
                 <div class="client-avatar">
-                    ${client.full_name.charAt(0).toUpperCase()}
+                    ${client.full_name ? client.full_name.charAt(0).toUpperCase() : 'U'}
                 </div>
                 <div class="client-info">
-                    <h3>${client.full_name}</h3>
-                    <p>${client.email}</p>
-                    <p>${client.phone_number}</p>
+                    <h3>${client.full_name || 'Unknown'}</h3>
+                    <p><i class="fas fa-envelope"></i> ${client.email || 'No email'}</p>
+                    <p><i class="fas fa-phone"></i> ${client.phone_number || 'No phone'}</p>
+                    ${client.location ? `<p><i class="fas fa-map-marker-alt"></i> ${client.location}</p>` : ''}
                 </div>
             </div>
             <div class="client-stats">
@@ -1195,21 +1239,47 @@ function displayClients(clients) {
                     <span class="label">Spent</span>
                 </div>
                 <div class="client-stat">
-                    <span class="number">${client.rating || 'N/A'}</span>
+                    <span class="number">${client.rating ? parseFloat(client.rating).toFixed(1) : 'N/A'}</span>
                     <span class="label">Rating</span>
                 </div>
             </div>
+            <div class="client-meta">
+                <small class="text-gray-500">
+                    <i class="fas fa-calendar"></i> 
+                    Last booking: ${client.last_booking_date ? formatDate(client.last_booking_date) : 'N/A'}
+                </small>
+            </div>
             <div class="client-actions">
-                <button class="btn-sm primary" onclick="event.stopPropagation(); contactClient('${client.phone_number}')">
+                <button class="btn-sm primary" onclick="event.stopPropagation(); contactClient('${client.phone_number}')" title="Call Client">
                     <i class="fas fa-phone"></i>
                 </button>
-                <button class="btn-sm secondary" onclick="event.stopPropagation(); emailClient('${client.email}')">
+                <button class="btn-sm secondary" onclick="event.stopPropagation(); emailClient('${client.email}')" title="Email Client">
                     <i class="fas fa-envelope"></i>
+                </button>
+                <button class="btn-sm info" onclick="event.stopPropagation(); viewClientBookings(${client.id})" title="View Bookings">
+                    <i class="fas fa-calendar-alt"></i>
                 </button>
             </div>
         </div>
     `).join('');
 }
+
+
+
+
+// View client bookings 
+function viewClientBookings(clientId) {
+    // Store client filter
+    sessionStorage.setItem('filterClientId', clientId);
+    showSection('bookings');
+    
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(mi => mi.classList.remove('active'));
+    document.querySelector('[data-section="bookings"]').classList.add('active');
+}
+
+
+
 
 // Load portfolio
 async function loadPortfolio() {
@@ -2115,6 +2185,7 @@ function navigateToSection(sectionName) {
 
 
 
+// Search clients (updated to work with real data)
 function searchClients() {
     const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
     
@@ -2124,9 +2195,10 @@ function searchClients() {
     }
     
     const filteredClients = clientsData.filter(client => 
-        client.full_name.toLowerCase().includes(searchTerm) ||
-        client.email.toLowerCase().includes(searchTerm) ||
-        client.phone_number.toLowerCase().includes(searchTerm)
+        (client.full_name && client.full_name.toLowerCase().includes(searchTerm)) ||
+        (client.email && client.email.toLowerCase().includes(searchTerm)) ||
+        (client.phone_number && client.phone_number.toLowerCase().includes(searchTerm)) ||
+        (client.location && client.location.toLowerCase().includes(searchTerm))
     );
     
     displayClients(filteredClients);
@@ -2143,13 +2215,105 @@ function emailClient(email) {
     window.location.href = `mailto:${email}`;
 }
 
-function showClientDetails(clientId) {
-    console.log('Show client details for ID:', clientId);
+// Show client details modal
+async function showClientDetails(clientId) {
+    try {
+        showLoading();
+        
+        // Get client details with their bookings
+        const response = await fetch(`/api/planner/clients/${clientId}/details`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const clientDetails = await response.json();
+            displayClientDetailsModal(clientDetails);
+        } else {
+            showNotification('Error loading client details', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading client details:', error);
+        showNotification('Error loading client details', 'error');
+    } finally {
+        hideLoading();
+    }
 }
 
-function addNewClient() {
-    console.log('Add new client');
+
+
+// Display client details modal
+function displayClientDetailsModal(client) {
+    const modalBody = document.getElementById('clientModalBody');
+    
+    modalBody.innerHTML = `
+        <div class="client-detail-grid">
+            <div class="detail-section">
+                <h3>Contact Information</h3>
+                <div class="detail-item">
+                    <label>Name:</label>
+                    <span>${client.full_name || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Email:</label>
+                    <span>${client.email || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Phone:</label>
+                    <span>${client.phone_number || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Location:</label>
+                    <span>${client.location || 'N/A'}</span>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Booking Statistics</h3>
+                <div class="detail-item">
+                    <label>Total Bookings:</label>
+                    <span>${client.total_bookings || 0}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Total Spent:</label>
+                    <span>CFA ${formatNumber(client.total_spent || 0)}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Average Rating:</label>
+                    <span>${client.rating ? parseFloat(client.rating).toFixed(1) + ' stars' : 'Not rated yet'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Client Since:</label>
+                    <span>${formatDate(client.created_at)}</span>
+                </div>
+            </div>
+            
+            ${client.bookings && client.bookings.length > 0 ? `
+                <div class="detail-section full-width">
+                    <h3>Recent Bookings</h3>
+                    <div class="bookings-list-small">
+                        ${client.bookings.slice(0, 5).map(booking => `
+                            <div class="booking-item-small">
+                                <div class="booking-info">
+                                    <strong>${booking.event_type}</strong>
+                                    <span>${formatDate(booking.event_date)}</span>
+                                </div>
+                                <div class="booking-status">
+                                    <span class="booking-status ${booking.status.toLowerCase().replace(' ', '-')}">${booking.status}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${client.bookings.length > 5 ? `<p><em>+${client.bookings.length - 5} more bookings...</em></p>` : ''}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('clientModal').style.display = 'block';
 }
+
+
+
 
 function addPortfolioItem() {
     document.getElementById('portfolioModal').style.display = 'block';

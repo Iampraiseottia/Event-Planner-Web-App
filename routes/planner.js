@@ -238,7 +238,6 @@ router.get("/schedule", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
-
 // Update working hours
 router.put("/working-hours", requireAuth, requirePlanner, async (req, res) => {
   try {
@@ -616,5 +615,107 @@ router.get("/profile/image", requireAuth, requirePlanner, async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve image" });
   }
 });
+
+// Get planner clients (customers who have made bookings)
+router.get("/clients", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+
+    const query = `
+      SELECT DISTINCT
+        u.id,
+        u.full_name,
+        u.email,
+        u.phone_number,
+        u.location,
+        u.created_at,
+        COUNT(b.id) as total_bookings,
+        COALESCE(SUM(CASE WHEN b.status = 'completed' THEN b.final_cost ELSE 0 END), 0) as total_spent,
+        AVG(CASE WHEN r.rating IS NOT NULL THEN r.rating ELSE NULL END) as rating,
+        MAX(b.created_at) as last_booking_date
+      FROM users u
+      INNER JOIN bookings b ON u.id = b.customer_id
+      LEFT JOIN reviews r ON b.id = r.booking_id
+      WHERE b.planner_id = $1
+      GROUP BY u.id, u.full_name, u.email, u.phone_number, u.location, u.created_at
+      ORDER BY MAX(b.created_at) DESC
+    `;
+
+    const result = await pool.query(query, [plannerId]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error loading clients:", error);
+    res.status(500).json({ error: "Failed to load clients" });
+  }
+});
+
+// Get client details with bookings
+router.get(
+  "/clients/:clientId/details",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const plannerId = req.session.user.id;
+      const clientId = parseInt(req.params.clientId);
+
+      // Get client basic info
+      const clientQuery = `
+      SELECT DISTINCT
+        u.id,
+        u.full_name,
+        u.email,
+        u.phone_number,
+        u.location,
+        u.created_at,
+        COUNT(b.id) as total_bookings,
+        COALESCE(SUM(CASE WHEN b.status = 'completed' THEN b.final_cost ELSE 0 END), 0) as total_spent,
+        AVG(CASE WHEN r.rating IS NOT NULL THEN r.rating ELSE NULL END) as rating
+      FROM users u
+      INNER JOIN bookings b ON u.id = b.customer_id
+      LEFT JOIN reviews r ON b.id = r.booking_id
+      WHERE u.id = $1 AND b.planner_id = $2
+      GROUP BY u.id, u.full_name, u.email, u.phone_number, u.location, u.created_at
+    `;
+
+      const clientResult = await pool.query(clientQuery, [clientId, plannerId]);
+
+      if (clientResult.rows.length === 0) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      const client = clientResult.rows[0];
+
+      // Get client's bookings with this planner
+      const bookingsQuery = `
+      SELECT 
+        id,
+        event_type,
+        event_date,
+        event_time,
+        location,
+        status,
+        final_cost,
+        created_at
+      FROM bookings 
+      WHERE customer_id = $1 AND planner_id = $2
+      ORDER BY created_at DESC
+    `;
+
+      const bookingsResult = await pool.query(bookingsQuery, [
+        clientId,
+        plannerId,
+      ]);
+
+      client.bookings = bookingsResult.rows;
+
+      res.json(client);
+    } catch (error) {
+      console.error("Error loading client details:", error);
+      res.status(500).json({ error: "Failed to load client details" });
+    }
+  }
+);
 
 module.exports = router;
