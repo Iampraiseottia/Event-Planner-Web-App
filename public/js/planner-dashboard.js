@@ -1,11 +1,8 @@
+// planner-dashboard.js 
 document.addEventListener('DOMContentLoaded', function() {
-
     initializeDashboard();
-    
     setupEventListeners();
-    
     loadDashboardData();
-
     setupMobileNavigation();
     setupResponsiveModals();
     setupResponsiveTables();
@@ -21,6 +18,7 @@ let reviewsData = [];
 let currentCalendarDate = new Date();
 let currentBookingId = null;
 let scheduleData = [];
+let currentPortfolioId = null;
 
 // Initialize dashboard
 function initializeDashboard() {
@@ -64,7 +62,6 @@ async function checkAuthStatus() {
             return;
         }
         
-        // Check if user is a planner
         if (statusData.user.user_type !== 'planner') {
             console.log('User is not a planner:', statusData.user.user_type);
             showNotification('Access denied. Planner account required.', 'error');
@@ -90,12 +87,12 @@ async function checkAuthStatus() {
     }
 }
 
-// user interface with planner data
+// Update user interface with planner data
 function updateUserInterface() {
     if (currentPlanner) {
         document.getElementById('plannerName').textContent = currentPlanner.business_name || currentPlanner.full_name || 'Event Planner';
         
-        // profile form
+        // Populate profile form
         if (currentPlanner.business_name) document.getElementById('businessName').value = currentPlanner.business_name;
         if (currentPlanner.full_name) document.getElementById('ownerName').value = currentPlanner.full_name;
         if (currentPlanner.email) document.getElementById('email').value = currentPlanner.email;
@@ -110,7 +107,7 @@ function updateUserInterface() {
             document.getElementById('profileImage').src = currentPlanner.profile_image;
         }
         
-        // specializations
+        // Handle specializations
         if (currentPlanner.specializations) {
             const specializationSelect = document.getElementById('specializations');
             const specializations = Array.isArray(currentPlanner.specializations) 
@@ -122,12 +119,11 @@ function updateUserInterface() {
             });
         }
 
-        // Profile image to use the image API endpoint 
+        // Set profile image
         const profileImageElement = document.getElementById('profileImage');
         if (profileImageElement) {
             profileImageElement.src = `/api/planner/profile/image?t=${Date.now()}`;
         }
-        
     }
 }
 
@@ -148,11 +144,9 @@ function setupSidebarNavigation() {
 
 // Show specific section
 function showSection(sectionName) {
-    // Hide all sections
     const sections = document.querySelectorAll('.content-section');
     sections.forEach(section => section.classList.remove('active'));
     
-    // Show selected section
     const targetSection = document.getElementById(sectionName);
     if (targetSection) {
         targetSection.classList.add('active');
@@ -160,7 +154,6 @@ function showSection(sectionName) {
         switch(sectionName) {
             case 'bookings':
                 loadBookings();
-
                 const filterClientId = sessionStorage.getItem('filterClientId');
                 if (filterClientId) {
                     setTimeout(() => {
@@ -191,7 +184,7 @@ function showSection(sectionName) {
     }
 }
 
-// Apply client filter to bookings
+// Client filter to bookings
 function applyClientFilter(clientId) {
     const filteredBookings = bookingsData.filter(booking => 
         booking.customer_id == clientId
@@ -205,7 +198,6 @@ function applyClientFilter(clientId) {
     }
 }
 
-
 // Setup event listeners
 function setupEventListeners() {
     const logoutBtn = document.getElementById('logoutBtn3');
@@ -214,22 +206,38 @@ function setupEventListeners() {
     }
     
     // Profile form
-    document.getElementById('profileForm').addEventListener('submit', updateProfile);
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', updateProfile);
+    }
     
     // Working hours form
-    document.getElementById('workingHoursForm').addEventListener('submit', updateWorkingHours);
+    const workingHoursForm = document.getElementById('workingHoursForm');
+    if (workingHoursForm) {
+        workingHoursForm.addEventListener('submit', updateWorkingHours);
+    }
     
     // Booking filters
-    document.getElementById('statusFilter').addEventListener('change', filterBookings);
-    document.getElementById('dateFilter').addEventListener('change', filterBookings);
-    document.getElementById('bookingSearch').addEventListener('input', searchBookings);
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const bookingSearch = document.getElementById('bookingSearch');
+    
+    if (statusFilter) statusFilter.addEventListener('change', filterBookings);
+    if (dateFilter) dateFilter.addEventListener('change', filterBookings);
+    if (bookingSearch) bookingSearch.addEventListener('input', searchBookings);
     
     // Calendar navigation
-    document.getElementById('prevMonth').addEventListener('click', () => navigateCalendar(-1));
-    document.getElementById('nextMonth').addEventListener('click', () => navigateCalendar(1));
+    const prevMonth = document.getElementById('prevMonth');
+    const nextMonth = document.getElementById('nextMonth');
+    
+    if (prevMonth) prevMonth.addEventListener('click', () => navigateCalendar(-1));
+    if (nextMonth) nextMonth.addEventListener('click', () => navigateCalendar(1));
     
     // Client search
-    document.getElementById('clientSearch').addEventListener('input', searchClients);
+    const clientSearch = document.getElementById('clientSearch');
+    if (clientSearch) {
+        clientSearch.addEventListener('input', searchClients);
+    }
     
     // Portfolio filters
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -240,11 +248,41 @@ function setupEventListeners() {
         });
     });
 
-    // Profile IMage
+    // Profile image input
     const profileImageInput = document.getElementById('profileImageInput');
     if (profileImageInput) {
         profileImageInput.addEventListener('change', handleProfileImageUpload);
     }
+
+    setupPortfolioEventListeners();
+}
+
+function setupPortfolioEventListeners() {
+    // Portfolio form submission
+    const portfolioForm = document.getElementById('portfolioForm');
+    if (portfolioForm) {
+        portfolioForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            savePortfolioItem();
+        });
+    }
+
+    // Portfolio image input
+    const portfolioImageInput = document.getElementById('portfolioImage');
+    if (portfolioImageInput) {
+        portfolioImageInput.addEventListener('change', function() {
+            previewPortfolioImage(this);
+        });
+    }
+
+    // Portfolio modal save button
+   const saveButton = document.querySelector('#portfolioModal .btn-primary');
+    if (saveButton) {
+        saveButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            savePortfolioItem();
+        });
+    } 
 }
 
 // Load dashboard data
@@ -252,9 +290,8 @@ async function loadDashboardData() {
     try {
         showLoading();
         
-        // Load all dashboard data in parallel
         await Promise.all([
-            loadProfile(), // Add this to load complete profile data
+            loadProfile(),
             loadStats(),
             loadRecentActivity(),
             loadUpcomingEvents(),
@@ -268,7 +305,6 @@ async function loadDashboardData() {
         hideLoading();
     }
 }
-
 
 // Load statistics
 async function loadStats() {
@@ -286,15 +322,21 @@ async function loadStats() {
     }
 }
 
-// stats display
+// Update stats display
 function updateStatsDisplay(stats) {
-    document.getElementById('totalEvents').textContent = stats.totalEvents || 0;
-    document.getElementById('pendingEvents').textContent = stats.pendingEvents || 0;
-    document.getElementById('monthlyEarnings').textContent = `CFA ${formatNumber(stats.monthlyEarnings || 0)}`;
-    document.getElementById('averageRating').textContent = (stats.averageRating || 0).toFixed(1);
-    
-    document.getElementById('pendingBookingsBadge').textContent = stats.pendingEvents || 0;
-    document.getElementById('navNotificationCount').textContent = stats.notifications || 0;
+    const totalEvents = document.getElementById('totalEvents');
+    const pendingEvents = document.getElementById('pendingEvents');
+    const monthlyEarnings = document.getElementById('monthlyEarnings');
+    const averageRating = document.getElementById('averageRating');
+    const pendingBookingsBadge = document.getElementById('pendingBookingsBadge');
+    const navNotificationCount = document.getElementById('navNotificationCount');
+
+    if (totalEvents) totalEvents.textContent = stats.totalEvents || 0;
+    if (pendingEvents) pendingEvents.textContent = stats.pendingEvents || 0;
+    if (monthlyEarnings) monthlyEarnings.textContent = `CFA ${formatNumber(stats.monthlyEarnings || 0)}`;
+    if (averageRating) averageRating.textContent = (stats.averageRating || 0).toFixed(1);
+    if (pendingBookingsBadge) pendingBookingsBadge.textContent = stats.pendingEvents || 0;
+    if (navNotificationCount) navNotificationCount.textContent = stats.notifications || 0;
 }
 
 // Load recent activity
@@ -316,6 +358,7 @@ async function loadRecentActivity() {
 // Display recent activity
 function displayRecentActivity(activities) {
     const container = document.getElementById('recentActivityList');
+    if (!container) return;
     
     if (!activities || activities.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500">No recent activity</p>';
@@ -357,6 +400,7 @@ async function loadUpcomingEvents() {
 // Display upcoming events
 function displayUpcomingEvents(events) {
     const container = document.getElementById('upcomingEventsList');
+    if (!container) return;
     
     if (!events || events.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500">No upcoming events</p>';
@@ -380,7 +424,6 @@ async function loadBookings() {
     try {
         showLoading();
         
-        // Try the correct endpoint first
         const response = await fetch('/api/planner/bookings', {
             credentials: 'include',
             headers: {
@@ -397,7 +440,6 @@ async function loadBookings() {
         } else {
             console.error('Failed to load bookings:', response.status);
             
-            // If status is 500, try alternative endpoint
             if (response.status === 500) {
                 console.log('Trying alternative bookings endpoint...');
                 const altResponse = await fetch('/api/bookings/planner', {
@@ -423,8 +465,6 @@ async function loadBookings() {
     } catch (error) {
         console.error('Error loading bookings:', error);
         showNotification('Error loading bookings. Please try again later.', 'error');
-        
-        // Show empty state instead of error
         bookingsData = [];
         displayBookings(bookingsData);
         updateBookingStats(bookingsData);
@@ -433,11 +473,10 @@ async function loadBookings() {
     }
 }
 
-
 // Display bookings
-
 function displayBookings(bookings) {
     const container = document.getElementById('bookingsList');
+    if (!container) return;
     
     if (!bookings || bookings.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500">No bookings found</p>';
@@ -505,6 +544,635 @@ function displayBookings(bookings) {
     container.innerHTML = tableHTML;
 }
 
+// Portfolio Functions
+async function loadPortfolio() {
+    try {
+        showLoading();
+        
+        console.log("=== LOADING PORTFOLIO DEBUG ===");
+        
+        const response = await fetch('/api/planner/portfolio', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log("Portfolio response status:", response.status);
+        console.log("Portfolio response ok:", response.ok);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Portfolio data received:", data);
+        console.log("Portfolio data type:", Array.isArray(data) ? 'Array' : typeof data);
+        console.log("Portfolio data length:", Array.isArray(data) ? data.length : 'Not array');
+        
+        portfolioData = Array.isArray(data) ? data : [];
+        console.log("Processed portfolio data:", portfolioData);
+        
+        displayPortfolio(portfolioData);
+        
+    } catch (error) {
+        console.error('Error loading portfolio:', error);
+        showNotification('Error loading portfolio items. Please refresh the page.', 'error');
+        portfolioData = [];
+        displayPortfolio(portfolioData);
+    } finally {
+        hideLoading();
+    }
+}
+
+
+// Display portfolio
+function displayPortfolio(portfolio) {
+    const container = document.getElementById('portfolioGrid');
+    
+    console.log("=== DISPLAY PORTFOLIO DEBUG ===");
+    console.log("Portfolio to display:", portfolio);
+    console.log("Container element:", container);
+    
+    if (!container) {
+        console.error("Portfolio container not found!");
+        return;
+    }
+    
+    if (!portfolio || portfolio.length === 0) {
+        console.log("No portfolio items to display");
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <h3>No portfolio items found</h3>
+                <p>Add your best work to showcase to potential clients</p>
+                <button class="btn-primary" onclick="addPortfolioItem()">
+                    <i class="fas fa-plus"></i> Add First Portfolio Item
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log(`Displaying ${portfolio.length} portfolio items`);
+    
+    const portfolioHTML = portfolio.map(item => {
+        console.log("Processing item:", item.id, item.title);
+        
+        return `
+        <div class="portfolio-item" data-category="${item.category}" data-id="${item.id}">
+            <div class="portfolio-image">
+                ${item.has_image ? 
+                    `<img src="/api/planner/portfolio/${item.id}/image?t=${Date.now()}" 
+                         alt="${item.title}" 
+                         loading="lazy"
+                         onerror="this.parentElement.innerHTML='<div class=no-image-placeholder><i class=fas fa-image></i><span>Image unavailable</span></div>'; console.log('Image failed to load for item ${item.id}');">` :
+                    `<div class="no-image-placeholder">
+                        <i class="fas fa-image"></i>
+                        <span>No Image</span>
+                    </div>`
+                }
+                <div class="portfolio-overlay">
+                    <button class="overlay-btn view" onclick="viewPortfolioItem(${item.id})" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="overlay-btn edit" onclick="editPortfolioItem(${item.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="overlay-btn delete" onclick="deletePortfolioItem(${item.id})" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                ${item.is_featured ? '<div class="featured-badge"><i class="fas fa-star"></i> Featured</div>' : ''}
+            </div>
+            <div class="portfolio-content">
+                <h3 title="${item.title}">${item.title}</h3>
+                <p class="portfolio-description">${item.description || 'No description available'}</p>
+                <div class="portfolio-meta">
+                    <span class="portfolio-category">${item.category}</span>
+                    <span class="portfolio-date">${formatDate(item.created_at)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    }).join('');
+    
+    container.innerHTML = portfolioHTML;
+    console.log("Portfolio HTML set, items should be visible now");
+    
+    updateFilterCount('all');
+}
+
+// Add portfolio item
+function addPortfolioItem() {
+    currentPortfolioId = null;
+    const form = document.getElementById('portfolioForm');
+    if (form) {
+        form.reset();
+    }
+    
+    // Show modal
+    const modal = document.getElementById('portfolioModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// Save portfolio item 
+async function savePortfolioItem() {
+    console.log("=== SAVE PORTFOLIO ITEM START ===");
+    
+    const form = document.getElementById('portfolioForm');
+    if (!form) {
+        console.error('Portfolio form not found');
+        showNotification('Form not found', 'error');
+        return;
+    }
+    
+    // Get form values with better validation
+    const titleElement = document.getElementById('portfolioTitle');
+    const categoryElement = document.getElementById('portfolioCategory');
+    const descriptionElement = document.getElementById('portfolioDescription');
+    const featuredElement = document.getElementById('portfolioFeatured');
+    const imageElement = document.getElementById('portfolioImage');
+    
+    if (!titleElement || !categoryElement) {
+        console.error('Required form elements not found');
+        showNotification('Form elements missing', 'error');
+        return;
+    }
+    
+    const title = titleElement.value?.trim();
+    const category = categoryElement.value?.trim();
+    const description = descriptionElement ? descriptionElement.value?.trim() : '';
+    const isFeatured = featuredElement ? featuredElement.checked : false;
+    const imageFile = imageElement ? imageElement.files[0] : null;
+    
+    console.log("=== FORM VALIDATION DEBUG ===");
+    console.log("Title:", title);
+    console.log("Category:", category);
+    console.log("Description:", description);
+    console.log("Is Featured:", isFeatured);
+    console.log("Image file:", imageFile ? {
+        name: imageFile.name,
+        size: imageFile.size,
+        type: imageFile.type
+    } : 'None');
+    
+    // Client-side validation
+    if (!title || title.length === 0) {
+        showNotification('Please enter a title', 'error');
+        titleElement.focus();
+        return;
+    }
+    
+    if (title.length > 200) {
+        showNotification('Title must be less than 200 characters', 'error');
+        titleElement.focus();
+        return;
+    }
+    
+    if (!category || category.length === 0) {
+        showNotification('Please select a category', 'error');
+        categoryElement.focus();
+        return;
+    }
+    
+    // Image validation 
+    if (imageFile) {
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(imageFile.type.toLowerCase())) {
+            showNotification('Please select a valid image file (JPEG, PNG, or WebP)', 'error');
+            imageElement.focus();
+            return;
+        }
+        
+        if (imageFile.size > 5 * 1024 * 1024) { 
+            showNotification('Image file size must be less than 5MB', 'error');
+            imageElement.focus();
+            return;
+        }
+    }
+    
+    // Create FormData 
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('category', category);
+    formData.append('description', description);
+    formData.append('isFeatured', isFeatured);
+    
+    if (imageFile) {
+        formData.append('portfolioImage', imageFile);
+        console.log("Image file appended to FormData");
+    }
+    
+    console.log("=== REQUEST PREPARATION DEBUG ===");
+    console.log("Current portfolio ID:", currentPortfolioId);
+    console.log("FormData entries:");
+    for (let [key, value] of formData.entries()) {
+        if (key === 'portfolioImage') {
+            console.log(key + ':', value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+        } else {
+            console.log(key + ':', value);
+        }
+    }
+    
+    try {
+        showLoading();
+        
+        const url = currentPortfolioId 
+            ? `/api/planner/portfolio/${currentPortfolioId}`
+            : '/api/planner/portfolio';
+        
+        const method = currentPortfolioId ? 'PUT' : 'POST';
+        
+        console.log("=== MAKING REQUEST ===");
+        console.log("URL:", url);
+        console.log("Method:", method);
+        
+        const response = await fetch(url, {
+            method: method,
+            credentials: 'include', 
+            body: formData
+        });
+        
+        console.log("=== RESPONSE RECEIVED ===");
+        console.log("Response status:", response.status);
+        console.log("Response ok:", response.ok);
+        
+        // Parse response
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const textData = await response.text();
+            console.error("Non-JSON response:", textData);
+            throw new Error('Server returned non-JSON response');
+        }
+        
+        console.log("Response data:", data);
+        
+        if (response.ok && data.success) {
+            const action = currentPortfolioId ? 'updated' : 'added';
+            showNotification(`Portfolio item ${action} successfully!`, 'success');
+            
+            form.reset();
+            hideImagePreview();
+            closeModal();
+            
+            // Reload portfolio to show new/updated item
+            console.log("Reloading portfolio...");
+            await loadPortfolio();
+            
+        } else {
+            console.error("Server error response:", data);
+            showNotification(data.error || 'Error saving portfolio item', 'error');
+        }
+        
+    } catch (error) {
+        console.error('=== SAVE ERROR ===');
+        console.error('Error details:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showNotification('Network error. Please check your internet connection.', 'error');
+        } else if (error.message.includes('JSON')) {
+            showNotification('Server response error. Please try again.', 'error');
+        } else {
+            showNotification('Error saving portfolio item. Please try again.', 'error');
+        }
+    } finally {
+        hideLoading();
+        console.log("=== SAVE PORTFOLIO ITEM END ===");
+    }
+}
+
+
+// Edit portfolio item
+async function editPortfolioItem(id) {
+    try {
+        const response = await fetch(`/api/planner/portfolio/${id}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const item = data.portfolio;
+            
+            currentPortfolioId = id;
+            document.getElementById('portfolioModalTitle').textContent = 'Edit Portfolio Item';
+            
+            // Populate simplified form
+            document.getElementById('portfolioTitle').value = item.title || '';
+            document.getElementById('portfolioDescription').value = item.description || '';
+            document.getElementById('portfolioCategory').value = item.category || '';
+            document.getElementById('portfolioFeatured').checked = item.is_featured || false;
+            
+            // Clear any existing image preview
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            
+            document.getElementById('portfolioModal').style.display = 'block';
+        } else {
+            showNotification('Error loading portfolio item', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading portfolio item:', error);
+        showNotification('Error loading portfolio item', 'error');
+    }
+}
+
+// Delete portfolio item
+async function deletePortfolioItem(id) {
+    if (!confirm('Are you sure you want to delete this portfolio item? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch(`/api/planner/portfolio/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            showNotification('Portfolio item deleted successfully', 'success');
+            loadPortfolio();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Error deleting portfolio item', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting portfolio item:', error);
+        showNotification('Error deleting portfolio item', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// View portfolio item details
+async function viewPortfolioItem(id) {
+    try {
+        const response = await fetch(`/api/planner/portfolio/${id}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayPortfolioViewModal(data.portfolio);
+        } else {
+            showNotification('Error loading portfolio item', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading portfolio item:', error);
+        showNotification('Error loading portfolio item', 'error');
+    }
+}
+
+// Display portfolio view modal
+function displayPortfolioViewModal(item) {
+    const modalBody = document.getElementById('portfolioViewModalBody');
+    if (!modalBody) return;
+    
+    modalBody.innerHTML = `
+        <div class="portfolio-view-content">
+            <div class="portfolio-image-large">
+                ${item.has_image ? 
+                    `<img src="/api/planner/portfolio/${item.id}/image?t=${Date.now()}" alt="${item.title}">` :
+                    `<div class="no-image-large">
+                        <i class="fas fa-image"></i>
+                        <p>No image available</p>
+                    </div>`
+                }
+                ${item.is_featured ? '<div class="featured-badge large"><i class="fas fa-star"></i> Featured Work</div>' : ''}
+            </div>
+            
+            <div class="portfolio-details-grid">
+                <div class="detail-section">
+                    <h3>Portfolio Information</h3>
+                    <div class="detail-item">
+                        <label>Title:</label>
+                        <span>${item.title}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Category:</label>
+                        <span>${item.category}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created:</label>
+                        <span>${formatDate(item.created_at)}</span>
+                    </div>
+                </div>
+                
+                ${item.description ? `
+                    <div class="detail-section full-width">
+                        <h3>Description</h3>
+                        <p>${item.description}</p>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="portfolio-actions">
+                <button class="btn-primary" onclick="editPortfolioItem(${item.id}); closeModal();">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-danger" onclick="deletePortfolioItem(${item.id}); closeModal();">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const modal = document.getElementById('portfolioViewModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// Filter portfolio
+function filterPortfolio(category) {
+    const items = document.querySelectorAll('.portfolio-item');
+    
+    items.forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+            item.style.display = 'block';
+            item.style.animation = 'fadeIn 0.3s ease-in';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    updateFilterCount(category);
+}
+
+// Update filter count display
+function updateFilterCount(category) {
+    const totalItems = portfolioData.length;
+    const filteredItems = category === 'all' 
+        ? totalItems 
+        : portfolioData.filter(item => item.category === category).length;
+    
+    const sectionHeader = document.querySelector('#portfolio .section-header p');
+    if (sectionHeader) {
+        sectionHeader.textContent = `Showing ${filteredItems} of ${totalItems} portfolio items`;
+    }
+}
+
+// Preview portfolio image
+function previewPortfolioImage(input) {
+    console.log("=== IMAGE PREVIEW DEBUG ===");
+    console.log("Input element:", input);
+    console.log("Files:", input.files);
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        console.log("Selected file:", {
+            name: file.name,
+            size: file.size,
+            type: file.type
+        });
+        
+        // Enhanced validation
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type.toLowerCase())) {
+            showNotification('Please select a valid image file (JPEG, PNG, or WebP)', 'error');
+            input.value = '';
+            hideImagePreview();
+            return;
+        }
+        
+        // File size validation 
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('Image file size must be less than 5MB', 'error');
+            input.value = '';
+            hideImagePreview();
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            console.log("File read successfully, showing preview");
+            showImagePreview(e.target.result, file);
+        };
+        
+        reader.onerror = function(error) {
+            console.error("File reader error:", error);
+            showNotification('Error reading image file', 'error');
+            hideImagePreview();
+        };
+        
+        reader.readAsDataURL(file);
+    } else {
+        console.log("No file selected, hiding preview");
+        hideImagePreview();
+    }
+}
+
+
+
+// Show image preview
+function showImagePreview(imageSrc, file) {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const previewImg = document.getElementById('imagePreviewImg');
+    const previewName = document.getElementById('imagePreviewName');
+    const previewSize = document.getElementById('imagePreviewSize');
+    
+    console.log("=== SHOW IMAGE PREVIEW ===");
+    console.log("Preview elements found:", {
+        container: !!previewContainer,
+        img: !!previewImg,
+        name: !!previewName,
+        size: !!previewSize
+    });
+    
+    if (previewContainer && previewImg && previewName && previewSize) {
+        previewImg.src = imageSrc;
+        previewImg.style.cssText = `
+            max-width: 100% !important;
+            max-height: 200px !important;
+            width: auto !important;
+            height: auto !important;
+            border-radius: 8px !important;
+            object-fit: cover !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        `;
+        
+        previewName.textContent = file.name;
+        previewName.style.cssText = `
+            font-size: 0.9rem !important;
+            color: var(--gray-600) !important;
+            margin: 8px 0 4px 0 !important;
+            font-weight: 500 !important;
+        `;
+        
+        previewSize.textContent = `Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+        previewSize.style.cssText = `
+            font-size: 0.8rem !important;
+            color: var(--gray-500) !important;
+            margin: 4px 0 12px 0 !important;
+        `;
+        
+        previewContainer.style.display = 'block';
+        previewContainer.style.opacity = '0';
+        previewContainer.style.transition = 'opacity 0.3s ease';
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+            previewContainer.style.opacity = '1';
+        });
+        
+        console.log("Image preview shown successfully");
+    } else {
+        console.error("Preview elements not found in DOM");
+    }
+}
+
+
+
+// Hide image preview
+function hideImagePreview() {
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    if (previewContainer) {
+        previewContainer.style.opacity = '0';
+        setTimeout(() => {
+            previewContainer.style.display = 'none';
+        }, 300);
+    }
+}
+
+
+// Remove image preview
+function removeImagePreview() {
+    console.log("=== REMOVE IMAGE PREVIEW ===");
+    
+    const imageInput = document.getElementById('portfolioImage');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    
+    if (imageInput) {
+        imageInput.value = '';
+        console.log("Image input cleared");
+    }
+    
+    if (previewContainer) {
+        previewContainer.style.opacity = '0';
+        setTimeout(() => {
+            previewContainer.style.display = 'none';
+        }, 300);
+        console.log("Preview container hidden");
+    }
+    
+    showNotification('Image removed', 'info');
+}
 
 
 // Delete booking 
@@ -539,23 +1207,28 @@ async function deleteBooking(bookingId) {
     }
 }
 
-
+// Filter bookings
 function filterBookings() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const dateFilter = document.getElementById('dateFilter').value;
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    
+    if (!statusFilter || !dateFilter) return;
+    
+    const statusValue = statusFilter.value;
+    const dateValue = dateFilter.value;
     
     let filteredBookings = [...bookingsData];
     
     // Filter by status
-    if (statusFilter !== 'all') {
+    if (statusValue !== 'all') {
         filteredBookings = filteredBookings.filter(booking => 
-            booking.status.toLowerCase() === statusFilter.toLowerCase()
+            booking.status.toLowerCase() === statusValue.toLowerCase()
         );
     }
     
     // Filter by date (month)
-    if (dateFilter) {
-        const filterMonth = dateFilter.substring(0, 7); 
+    if (dateValue) {
+        const filterMonth = dateValue.substring(0, 7); 
         filteredBookings = filteredBookings.filter(booking => 
             booking.event_date.substring(0, 7) === filterMonth
         );
@@ -564,10 +1237,12 @@ function filterBookings() {
     displayBookings(filteredBookings);
 }
 
-
 // Search bookings 
 function searchBookings() {
-    const searchTerm = document.getElementById('bookingSearch').value.toLowerCase();
+    const searchInput = document.getElementById('bookingSearch');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
     
     if (!searchTerm) {
         displayBookings(bookingsData);
@@ -575,26 +1250,28 @@ function searchBookings() {
     }
     
     const filteredBookings = bookingsData.filter(booking => 
-        booking.customer_name.toLowerCase().includes(searchTerm) ||
-        booking.event_type.toLowerCase().includes(searchTerm) ||
-        booking.location.toLowerCase().includes(searchTerm) ||
-        booking.category.toLowerCase().includes(searchTerm)
+        (booking.customer_name && booking.customer_name.toLowerCase().includes(searchTerm)) ||
+        (booking.event_type && booking.event_type.toLowerCase().includes(searchTerm)) ||
+        (booking.location && booking.location.toLowerCase().includes(searchTerm)) ||
+        (booking.category && booking.category.toLowerCase().includes(searchTerm))
     );
     
     displayBookings(filteredBookings);
 }
 
-
-
-// booking stats
+// Update booking stats
 function updateBookingStats(bookings) {
     const pendingCount = bookings.filter(b => b.status.toLowerCase() === 'pending').length;
     const confirmedCount = bookings.filter(b => b.status.toLowerCase() === 'confirmed').length;
     const completedCount = bookings.filter(b => b.status.toLowerCase() === 'completed').length;
     
-    document.getElementById('pendingCount').textContent = pendingCount;
-    document.getElementById('confirmedCount').textContent = confirmedCount;
-    document.getElementById('completedCount').textContent = completedCount;
+    const pendingCountEl = document.getElementById('pendingCount');
+    const confirmedCountEl = document.getElementById('confirmedCount');
+    const completedCountEl = document.getElementById('completedCount');
+    
+    if (pendingCountEl) pendingCountEl.textContent = pendingCount;
+    if (confirmedCountEl) confirmedCountEl.textContent = confirmedCount;
+    if (completedCountEl) completedCountEl.textContent = completedCount;
 }
 
 // Show booking details
@@ -624,13 +1301,12 @@ async function showBookingDetails(bookingId) {
     }
 }
 
-
 // Display booking modal
 function displayBookingModal(booking) {
-
     currentBookingId = booking.id;
     
     const modalBody = document.getElementById('bookingModalBody');
+    if (!modalBody) return;
     
     modalBody.innerHTML = `
         <div class="booking-detail-grid">
@@ -720,10 +1396,13 @@ function displayBookingModal(booking) {
         </div>
     `;
     
-    document.getElementById('bookingModal').style.display = 'block';
+    const modal = document.getElementById('bookingModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
 }
 
-
+// Accept/Reject booking from modal
 function acceptBookingFromModal() {
     if (currentBookingId) {
         acceptBooking(currentBookingId);
@@ -739,7 +1418,6 @@ function rejectBookingFromModal() {
         showNotification('Invalid booking ID', 'error');
     }
 }
-
 
 // Accept booking
 async function acceptBooking(bookingId) {
@@ -815,17 +1493,16 @@ async function rejectBooking(bookingId) {
     }
 }
 
-
-
-// Setup calendar
+// Calendar Functions
 function setupCalendar() {
     generateCalendar();
 }
 
-// Generate calendar
 function generateCalendar() {
     const calendar = document.getElementById('calendar');
     const monthHeader = document.getElementById('currentMonth');
+    
+    if (!calendar || !monthHeader) return;
     
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
@@ -867,7 +1544,6 @@ function generateCalendar() {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         
-        // Calendar day clickable
         dayElement.style.cursor = 'pointer';
         dayElement.addEventListener('click', () => {
             const clickedDate = new Date(year, month, day);
@@ -879,7 +1555,6 @@ function generateCalendar() {
         dayNumber.textContent = day;
         dayElement.appendChild(dayNumber);
         
-        // Check if it's today
         const isToday = year === today.getFullYear() && 
                        month === today.getMonth() && 
                        day === today.getDate();
@@ -891,11 +1566,17 @@ function generateCalendar() {
         const dayEvents = document.createElement('div');
         dayEvents.className = 'day-events';
         
-        // Specific day
         const dayDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const eventsForDay = scheduleData.filter(event => {
-            const eventDate = event.event_date.split('T')[0]; 
-            return eventDate === dayDate && event.status === 'confirmed';
+            // Handle timezone
+            const eventDate = new Date(event.event_date);
+            const calendarDate = new Date(year, month, day);
+            
+            // Compare dates 
+            const eventLocalDate = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+            const calendarLocalDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), calendarDate.getDate());
+            
+            return eventLocalDate.getTime() === calendarLocalDate.getTime() && event.status === 'confirmed';
         });
         
         if (eventsForDay.length > 0) {
@@ -917,7 +1598,6 @@ function generateCalendar() {
             dayElement.appendChild(eventIndicator);
         }
         
-        // Event indicators 
         eventsForDay.forEach((event, index) => {
             if (index < 3) { 
                 const eventDot = document.createElement('div');
@@ -935,7 +1615,6 @@ function generateCalendar() {
             }
         });
         
-        // Show "+X more" if there are more than 3 events
         if (eventsForDay.length > 3) {
             const moreText = document.createElement('small');
             moreText.textContent = `+${eventsForDay.length - 3} more`;
@@ -951,7 +1630,6 @@ function generateCalendar() {
         dayElement.appendChild(dayEvents);
         calendar.appendChild(dayElement);
         
-        // Auto-show today's events if this is today's date
         if (isToday && eventsForDay.length > 0) {
             setTimeout(() => {
                 const todayDate = new Date(year, month, day);
@@ -960,13 +1638,12 @@ function generateCalendar() {
         }
     }
 }
-// Navigate calendar
+
 function navigateCalendar(direction) {
     currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
     loadSchedule(); 
 }
 
-// Get month name
 function getMonthName(monthIndex) {
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -1019,64 +1696,6 @@ async function loadSchedule() {
     }
 }
 
-const eventIndicatorStyles = `
-    .calendar-day {
-        position: relative;
-        min-height: 60px;
-        border: 1px solid var(--gray-200);
-        padding: 8px;
-        background: white;
-        transition: all 0.2s ease;
-    }
-    
-    .calendar-day.has-events {
-        background: #f8f9ff;
-        border-color: var(--primary-color);
-    }
-    
-    .calendar-day.today {
-        background: var(--primary-color);
-        color: white;
-        font-weight: bold;
-    }
-    
-    .calendar-day.today.has-events {
-        background: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.3);
-    }
-    
-    .calendar-day:hover {
-        background: var(--gray-50);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .calendar-day.today:hover {
-        background: var(--primary-color);
-        opacity: 0.9;
-    }
-    
-    .event-indicator {
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-`;
-
-if (!document.getElementById('calendar-event-styles')) {
-    const styleSheet = document.createElement('style');
-    styleSheet.id = 'calendar-event-styles';
-    styleSheet.textContent = eventIndicatorStyles;
-    document.head.appendChild(styleSheet);
-}
-
-
-
-// Schedule for a specific day
 function showDaySchedule(date) {
     const dateString = date.toISOString().split('T')[0];
     const eventsForDay = scheduleData.filter(event => {
@@ -1087,15 +1706,18 @@ function showDaySchedule(date) {
     displayDaySchedule(eventsForDay, date);
 }
 
-// Day schedule
 function displayDaySchedule(events, date) {
     const container = document.getElementById('todaySchedule');
     const scheduleTitle = document.querySelector('.schedule-list h3');
     
-    // Update title based on selected date
+    if (!container) return;
+    
     const today = new Date();
     const isToday = date.toDateString() === today.toDateString();
-    scheduleTitle.textContent = isToday ? "Today's Schedule" : `Schedule for ${formatDate(date)}`;
+    
+    if (scheduleTitle) {
+        scheduleTitle.textContent = isToday ? "Today's Schedule" : `Schedule for ${formatDate(date)}`;
+    }
     
     if (!events || events.length === 0) {
         const dateText = isToday ? 'today' : formatDate(date);
@@ -1103,7 +1725,6 @@ function displayDaySchedule(events, date) {
         return;
     }
     
-    // Sort events by time
     events.sort((a, b) => {
         const timeA = a.event_time || '00:00';
         const timeB = b.event_time || '00:00';
@@ -1126,7 +1747,6 @@ function displayDaySchedule(events, date) {
     `).join('');
 }
 
-// Format time
 function formatTime(timeString) {
     if (!timeString) return 'Time TBD';
     
@@ -1141,7 +1761,6 @@ function formatTime(timeString) {
     }
 }
 
-// Show detailed event information
 function showEventDetails(eventId) {
     const event = scheduleData.find(e => e.id === eventId);
     if (!event) return;
@@ -1149,10 +1768,9 @@ function showEventDetails(eventId) {
     showNotification(`Event: ${event.event_type} with ${event.customer_name}`, 'info');
 }
 
-
-// Display today's schedule
 function displayTodaySchedule(schedule) {
     const container = document.getElementById('todaySchedule');
+    if (!container) return;
     
     if (!schedule || schedule.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500">No events scheduled for today</p>';
@@ -1172,7 +1790,6 @@ function displayTodaySchedule(schedule) {
 }
 
 // Load clients
-
 async function loadClients() {
     try {
         showLoading();
@@ -1200,10 +1817,10 @@ async function loadClients() {
     }
 }
 
-
 // Display clients
 function displayClients(clients) {
     const container = document.getElementById('clientsList');
+    if (!container) return;
     
     if (!clients || clients.length === 0) {
         container.innerHTML = `
@@ -1264,76 +1881,150 @@ function displayClients(clients) {
     `).join('');
 }
 
-
-
-
 // View client bookings 
 function viewClientBookings(clientId) {
-    // Store client filter
     sessionStorage.setItem('filterClientId', clientId);
     showSection('bookings');
     
     const menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(mi => mi.classList.remove('active'));
-    document.querySelector('[data-section="bookings"]').classList.add('active');
+    const bookingsMenuItem = document.querySelector('[data-section="bookings"]');
+    if (bookingsMenuItem) {
+        bookingsMenuItem.classList.add('active');
+    }
 }
 
+// Search clients
+function searchClients() {
+    const searchInput = document.getElementById('clientSearch');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayClients(clientsData);
+        return;
+    }
+    
+    const filteredClients = clientsData.filter(client => 
+        (client.full_name && client.full_name.toLowerCase().includes(searchTerm)) ||
+        (client.email && client.email.toLowerCase().includes(searchTerm)) ||
+        (client.phone_number && client.phone_number.toLowerCase().includes(searchTerm)) ||
+        (client.location && client.location.toLowerCase().includes(searchTerm))
+    );
+    
+    displayClients(filteredClients);
+}
 
+// Contact functions
+function contactClient(phoneNumber) {
+    if (phoneNumber && phoneNumber !== 'undefined') {
+        window.location.href = `tel:${phoneNumber}`;
+    }
+}
 
+function emailClient(email) {
+    if (email && email !== 'undefined') {
+        window.location.href = `mailto:${email}`;
+    }
+}
 
-// Load portfolio
-async function loadPortfolio() {
+// Show client details modal
+async function showClientDetails(clientId) {
     try {
-        const response = await fetch('/api/planner/portfolio', {
+        showLoading();
+        
+        const response = await fetch(`/api/planner/clients/${clientId}/details`, {
             credentials: 'include'
         });
         
         if (response.ok) {
-            portfolioData = await response.json();
-            displayPortfolio(portfolioData);
+            const clientDetails = await response.json();
+            displayClientDetailsModal(clientDetails);
+        } else {
+            showNotification('Error loading client details', 'error');
         }
     } catch (error) {
-        console.error('Error loading portfolio:', error);
+        console.error('Error loading client details:', error);
+        showNotification('Error loading client details', 'error');
+    } finally {
+        hideLoading();
     }
 }
 
-// Display portfolio
-function displayPortfolio(portfolio) {
-    const container = document.getElementById('portfolioGrid');
+// Display client details modal
+function displayClientDetailsModal(client) {
+    const modalBody = document.getElementById('clientModalBody');
+    if (!modalBody) return;
     
-    if (!portfolio || portfolio.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500">No portfolio items found</p>';
-        return;
-    }
-    
-    container.innerHTML = portfolio.map(item => `
-        <div class="portfolio-item" data-category="${item.category}">
-            <div class="portfolio-image">
-                <img src="${item.image_url || '/img/default-portfolio.jpg'}" alt="${item.title}">
-                <div class="portfolio-overlay">
-                    <i class="fas fa-eye"></i>
+    modalBody.innerHTML = `
+        <div class="client-detail-grid">
+            <div class="detail-section">
+                <h3>Contact Information</h3>
+                <div class="detail-item">
+                    <label>Name:</label>
+                    <span>${client.full_name || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Email:</label>
+                    <span>${client.email || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Phone:</label>
+                    <span>${client.phone_number || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Location:</label>
+                    <span>${client.location || 'N/A'}</span>
                 </div>
             </div>
-            <div class="portfolio-content">
-                <h3>${item.title}</h3>
-                <p>${item.description}</p>
-                <span class="portfolio-category">${item.category}</span>
+            
+            <div class="detail-section">
+                <h3>Booking Statistics</h3>
+                <div class="detail-item">
+                    <label>Total Bookings:</label>
+                    <span>${client.total_bookings || 0}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Total Spent:</label>
+                    <span>CFA ${formatNumber(client.total_spent || 0)}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Average Rating:</label>
+                    <span>${client.rating ? parseFloat(client.rating).toFixed(1) + ' stars' : 'Not rated yet'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Client Since:</label>
+                    <span>${formatDate(client.created_at)}</span>
+                </div>
             </div>
+            
+            ${client.bookings && client.bookings.length > 0 ? `
+                <div class="detail-section full-width">
+                    <h3>Recent Bookings</h3>
+                    <div class="bookings-list-small">
+                        ${client.bookings.slice(0, 5).map(booking => `
+                            <div class="booking-item-small">
+                                <div class="booking-info">
+                                    <strong>${booking.event_type}</strong>
+                                    <span>${formatDate(booking.event_date)}</span>
+                                </div>
+                                <div class="booking-status">
+                                    <span class="booking-status ${booking.status.toLowerCase().replace(' ', '-')}">${booking.status}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${client.bookings.length > 5 ? `<p><em>+${client.bookings.length - 5} more bookings...</em></p>` : ''}
+                    </div>
+                </div>
+            ` : ''}
         </div>
-    `).join('');
-}
-
-// Filter portfolio
-function filterPortfolio(category) {
-    const items = document.querySelectorAll('.portfolio-item');
+    `;
     
-    items.forEach(item => {
-        if (category === 'all' || item.dataset.category === category) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
+    const modal = document.getElementById('clientModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
 }
 
 // Load earnings
@@ -1354,9 +2045,13 @@ async function loadEarnings() {
 
 // Display earnings
 function displayEarnings(earnings) {
-    document.getElementById('totalEarnings').textContent = `CFA ${formatNumber(earnings.total || 0)}`;
-    document.getElementById('monthlyEarnings2').textContent = `CFA ${formatNumber(earnings.thisMonth || 0)}`;
-    document.getElementById('pendingPayments').textContent = `CFA ${formatNumber(earnings.pending || 0)}`;
+    const totalEarningsEl = document.getElementById('totalEarnings');
+    const monthlyEarnings2El = document.getElementById('monthlyEarnings2');
+    const pendingPaymentsEl = document.getElementById('pendingPayments');
+    
+    if (totalEarningsEl) totalEarningsEl.textContent = `CFA ${formatNumber(earnings.total || 0)}`;
+    if (monthlyEarnings2El) monthlyEarnings2El.textContent = `CFA ${formatNumber(earnings.thisMonth || 0)}`;
+    if (pendingPaymentsEl) pendingPaymentsEl.textContent = `CFA ${formatNumber(earnings.pending || 0)}`;
     
     displayTransactions(earnings.transactions || []);
 }
@@ -1364,6 +2059,7 @@ function displayEarnings(earnings) {
 // Display transactions
 function displayTransactions(transactions) {
     const container = document.getElementById('transactionsList');
+    if (!container) return;
     
     if (!transactions || transactions.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500">No transactions found</p>';
@@ -1422,22 +2118,29 @@ async function loadReviews() {
 
 // Display reviews
 function displayReviews(reviews) {
-    // overall rating
     const overallRating = reviews.overall || { rating: 0, total: 0 };
-    document.getElementById('overallRating').textContent = overallRating.rating.toFixed(1);
-    document.getElementById('totalReviews').textContent = `${overallRating.total} reviews`;
     
-    // stars
+    const overallRatingEl = document.getElementById('overallRating');
+    const totalReviewsEl = document.getElementById('totalReviews');
     const starsContainer = document.getElementById('overallStars');
-    starsContainer.innerHTML = generateStars(overallRating.rating);
     
-    // rating breakdown
+    if (overallRatingEl) overallRatingEl.textContent = overallRating.rating.toFixed(1);
+    if (totalReviewsEl) totalReviewsEl.textContent = `${overallRating.total} reviews`;
+    if (starsContainer) starsContainer.innerHTML = generateStars(overallRating.rating);
+    
+    // Rating breakdown
     const breakdown = reviews.breakdown || {};
-    document.getElementById('five-star-count').textContent = breakdown['5'] || 0;
-    document.getElementById('four-star-count').textContent = breakdown['4'] || 0;
-    document.getElementById('three-star-count').textContent = breakdown['3'] || 0;
-    document.getElementById('two-star-count').textContent = breakdown['2'] || 0;
-    document.getElementById('one-star-count').textContent = breakdown['1'] || 0;
+    const fiveStarEl = document.getElementById('five-star-count');
+    const fourStarEl = document.getElementById('four-star-count');
+    const threeStarEl = document.getElementById('three-star-count');
+    const twoStarEl = document.getElementById('two-star-count');
+    const oneStarEl = document.getElementById('one-star-count');
+    
+    if (fiveStarEl) fiveStarEl.textContent = breakdown['5'] || 0;
+    if (fourStarEl) fourStarEl.textContent = breakdown['4'] || 0;
+    if (threeStarEl) threeStarEl.textContent = breakdown['3'] || 0;
+    if (twoStarEl) twoStarEl.textContent = breakdown['2'] || 0;
+    if (oneStarEl) oneStarEl.textContent = breakdown['1'] || 0;
     
     displayIndividualReviews(reviews.reviews || []);
 }
@@ -1445,6 +2148,7 @@ function displayReviews(reviews) {
 // Display individual reviews
 function displayIndividualReviews(reviews) {
     const container = document.getElementById('reviewsList');
+    if (!container) return;
     
     if (!reviews || reviews.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500">No reviews yet</p>';
@@ -1500,7 +2204,7 @@ function setupCharts() {
     console.log('Charts setup placeholder');
 }
 
-// Profile and form functions
+// Profile Functions
 function setupProfileImageUpload() {
     const profileImage = document.querySelector('.profile-image');
     const fileInput = document.getElementById('profileImageInput');
@@ -1542,7 +2246,10 @@ async function handleProfileImageUpload(event) {
         
         if (response.ok) {
             const result = await response.json();
-            document.getElementById('profileImage').src = result.imageUrl;
+            const profileImg = document.getElementById('profileImage');
+            if (profileImg) {
+                profileImg.src = `/api/planner/profile/image?t=${Date.now()}`;
+            }
             showNotification('Profile image updated successfully', 'success');
         } else {
             throw new Error('Upload failed');
@@ -1555,19 +2262,15 @@ async function handleProfileImageUpload(event) {
     }
 }
 
-
-// Form validation and other handlers
-
+// Form handlers
 function setupFormHandlers() {
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         const inputs = form.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
-
             input.addEventListener('blur', validateInput);
             
             input.addEventListener('input', function() {
-
                 if (this.classList.contains('error')) {
                     this.classList.remove('error');
                 }
@@ -1576,8 +2279,7 @@ function setupFormHandlers() {
     });
 }
 
-
-// UpdateProfile 
+// Update profile
 async function updateProfile(event) {
     event.preventDefault();
     
@@ -1585,11 +2287,13 @@ async function updateProfile(event) {
     const profileData = Object.fromEntries(formData.entries());
     
     const specializationSelect = document.getElementById('specializations');
-    const specializations = Array.from(specializationSelect.selectedOptions)
-        .map(option => option.value)
-        .filter(value => value && value.trim() !== ''); 
-    
-    profileData.specializations = specializations.length > 0 ? specializations : [];
+    if (specializationSelect) {
+        const specializations = Array.from(specializationSelect.selectedOptions)
+            .map(option => option.value)
+            .filter(value => value && value.trim() !== ''); 
+        
+        profileData.specializations = specializations.length > 0 ? specializations : [];
+    }
     
     // Validate required fields
     if (!profileData.businessName || !profileData.ownerName || !profileData.email || 
@@ -1598,7 +2302,6 @@ async function updateProfile(event) {
         showNotification('Please fill in all required fields', 'error');
         return;
     }
-
 
     // Validate numeric fields
     const basePrice = parseFloat(profileData.basePrice);
@@ -1613,7 +2316,6 @@ async function updateProfile(event) {
         return;
     }
     
-    // Convert to numbers before sending
     profileData.basePrice = basePrice;
     profileData.experience = experience;
     
@@ -1637,11 +2339,8 @@ async function updateProfile(event) {
         console.log("Response from server:", data);
         
         if (response.ok) {
-
             currentPlanner = data.planner;
-            
             updateUserInterface();
-            
             showNotification('Profile updated successfully', 'success');
         } else {
             showNotification(data.error || 'Error updating profile', 'error');
@@ -1653,7 +2352,6 @@ async function updateProfile(event) {
         hideLoading();
     }
 }
-
 
 // Load profile data
 async function loadProfile() {
@@ -1667,7 +2365,6 @@ async function loadProfile() {
             const data = await response.json();
             currentPlanner = data.planner;
             
-            // Update session user data
             if (currentPlanner) {
                 Object.assign(currentPlanner, {
                     business_name: data.planner.business_name,
@@ -1686,28 +2383,33 @@ async function loadProfile() {
     }
 }
 
-
-
-// PopulateProfileForm 
+// Populate profile form 
 function populateProfileForm() {
     if (!currentPlanner) return;
     
-    // Basic user info
-    if (currentPlanner.business_name) document.getElementById('businessName').value = currentPlanner.business_name;
-    if (currentPlanner.full_name) document.getElementById('ownerName').value = currentPlanner.full_name;
-    if (currentPlanner.email) document.getElementById('email').value = currentPlanner.email;
-    if (currentPlanner.phone_number) document.getElementById('phone').value = currentPlanner.phone_number;
-    if (currentPlanner.location) document.getElementById('location').value = currentPlanner.location;
-    if (currentPlanner.home_address) document.getElementById('homeAddress').value = currentPlanner.home_address;
+    const businessNameEl = document.getElementById('businessName');
+    const ownerNameEl = document.getElementById('ownerName');
+    const emailEl = document.getElementById('email');
+    const phoneEl = document.getElementById('phone');
+    const locationEl = document.getElementById('location');
+    const homeAddressEl = document.getElementById('homeAddress');
+    const bioEl = document.getElementById('bio');
+    const basePriceEl = document.getElementById('basePrice');
+    const experienceEl = document.getElementById('experience');
+    const profileImageEl = document.getElementById('profileImage');
     
-    // Planner specific info
-    if (currentPlanner.bio) document.getElementById('bio').value = currentPlanner.bio;
-    if (currentPlanner.base_price) document.getElementById('basePrice').value = currentPlanner.base_price;
-    if (currentPlanner.experience) document.getElementById('experience').value = currentPlanner.experience;
+    if (currentPlanner.business_name && businessNameEl) businessNameEl.value = currentPlanner.business_name;
+    if (currentPlanner.full_name && ownerNameEl) ownerNameEl.value = currentPlanner.full_name;
+    if (currentPlanner.email && emailEl) emailEl.value = currentPlanner.email;
+    if (currentPlanner.phone_number && phoneEl) phoneEl.value = currentPlanner.phone_number;
+    if (currentPlanner.location && locationEl) locationEl.value = currentPlanner.location;
+    if (currentPlanner.home_address && homeAddressEl) homeAddressEl.value = currentPlanner.home_address;
+    if (currentPlanner.bio && bioEl) bioEl.value = currentPlanner.bio;
+    if (currentPlanner.base_price && basePriceEl) basePriceEl.value = currentPlanner.base_price;
+    if (currentPlanner.experience && experienceEl) experienceEl.value = currentPlanner.experience;
     
-    // Profile image
-    if (currentPlanner.profile_image) {
-        document.getElementById('profileImage').src = currentPlanner.profile_image;
+    if (currentPlanner.profile_image && profileImageEl) {
+        profileImageEl.src = currentPlanner.profile_image;
     }
     
     // Handle specializations properly
@@ -1719,13 +2421,15 @@ function populateProfileForm() {
                 : []);
         
         const selectElement = document.getElementById('specializations');
-        Array.from(selectElement.options).forEach(option => {
-            option.selected = specializations.includes(option.value);
-        });
+        if (selectElement) {
+            Array.from(selectElement.options).forEach(option => {
+                option.selected = specializations.includes(option.value);
+            });
+        }
     }
 }
 
-
+// Update working hours
 async function updateWorkingHours(event) {
     event.preventDefault();
     
@@ -1771,8 +2475,6 @@ async function updateWorkingHours(event) {
         hideLoading();
     }
 }
-
-
 
 // Utility functions 
 function formatNumber(num) {
@@ -1842,15 +2544,12 @@ function generateStars(rating) {
     return stars;
 }
 
-
 function showLoading() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) {
         overlay.style.display = 'flex';
     }
 }
-
-
 
 function hideLoading() {
     const overlay = document.getElementById('loadingOverlay');
@@ -1860,7 +2559,6 @@ function hideLoading() {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     let notification = document.getElementById('notification');
     if (!notification) {
         notification = document.createElement('div');
@@ -1879,7 +2577,6 @@ function showNotification(message, type = 'info') {
         document.body.appendChild(notification);
     }
     
-    // Set notification style based on type
     const colors = {
         success: '#28a745',
         error: '#dc3545',
@@ -1900,25 +2597,20 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-
-
-
+// Modal handlers
 function setupModalHandlers() {
-    // Close modal when clicking the X button
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('close')) {
             closeModal();
         }
     });
     
-    // Close modal when clicking outside
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
             closeModal();
         }
     });
     
-    // Close modal with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeModal();
@@ -1926,50 +2618,63 @@ function setupModalHandlers() {
     });
 }
 
+// Updated closeModal function to clear image preview
+
+// Update the closeModal function to clear new form classes
 function closeModal() {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         modal.style.display = 'none';
     });
-    // Clear the current booking ID when modal is closed
-
+    
+    const form = document.getElementById('portfolioForm');
+    if (form) {
+        form.reset();
+        // Clear any validation states
+        const inputs = form.querySelectorAll('.portfolio-input-field');
+        inputs.forEach(input => {
+            input.classList.remove('error');
+        });
+    }
+    
+    // Clear image preview
+    hideImagePreview();
     
     currentBookingId = null;
+    currentPortfolioId = null;
 }
 
-
-
-function setupModalHandlers() {
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('close')) {
-            closeModal();
-        }
+// Add form validation for the new classes
+function validatePortfolioForm() {
+    const title = document.getElementById('portfolioTitle');
+    const category = document.getElementById('portfolioCategory');
+    
+    let isValid = true;
+    
+    // Clear previous validation states
+    document.querySelectorAll('.portfolio-input-field').forEach(field => {
+        field.classList.remove('error');
     });
     
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('modal')) {
-            closeModal();
-        }
-    });
+    if (!title.value.trim()) {
+        title.classList.add('error');
+        showNotification('Please enter a title', 'error');
+        title.focus();
+        isValid = false;
+    }
     
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
-}
-
-function closeModal() {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        modal.style.display = 'none';
-    });
+    if (!category.value.trim()) {
+        category.classList.add('error');
+        showNotification('Please select a category', 'error');
+        category.focus();
+        isValid = false;
+    }
+    
+    return isValid;
 }
 
 
-
-
-// Sidebar Toggle FunctionaliTy
+// Mobile navigation
 function setupMobileNavigation() {
     const mobileToggle = document.getElementById('mobileToggle');
     const sidebar = document.querySelector('.sidebar');
@@ -1977,7 +2682,6 @@ function setupMobileNavigation() {
     
     if (!mobileToggle || !sidebar || !sidebarOverlay) return;
     
-    // Toggle sidebar on mobile
     mobileToggle.addEventListener('click', function() {
         sidebar.classList.toggle('active');
         sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
@@ -1991,7 +2695,7 @@ function setupMobileNavigation() {
             icon.classList.add('fa-bars');
         }
     });
-        // Close sidebar when clicking overlay
+    
     sidebarOverlay.addEventListener('click', function() {
         sidebar.classList.remove('active');
         sidebarOverlay.style.display = 'none';
@@ -2001,7 +2705,6 @@ function setupMobileNavigation() {
         icon.classList.add('fa-bars');
     });
     
-    // Close sidebar when clicking menu item on mobile
     const menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -2016,7 +2719,6 @@ function setupMobileNavigation() {
         });
     });
     
-        // Handle window resize
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
             sidebar.classList.remove('active');
@@ -2029,9 +2731,7 @@ function setupMobileNavigation() {
     });
 }
 
-
-
-  function setupResponsiveModals() {
+function setupResponsiveModals() {
     const modals = document.querySelectorAll('.modal');
     
     modals.forEach(modal => {
@@ -2044,7 +2744,6 @@ function setupMobileNavigation() {
         });
     });
     
-    // Touch handling for mobile modal close
     let startY = 0;
     modals.forEach(modal => {
         modal.addEventListener('touchstart', function(e) {
@@ -2061,7 +2760,6 @@ function setupMobileNavigation() {
         });
     });
 }
-
 
 function setupResponsiveTables() {
     const tables = document.querySelectorAll('.bookings-table, .transactions-table');
@@ -2111,13 +2809,7 @@ async function logout3() {
     }
 }
 
-
-
-
-
-
-
-// Validate Input 
+// Validate input 
 function validateInput(event) {
     const input = event.target;
     const value = input.value.trim();
@@ -2150,7 +2842,6 @@ function validateInput(event) {
     }
 }
 
-
 // Helper functions for validation
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -2162,171 +2853,28 @@ function isValidPhone(phone) {
     return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
 }
 
-
-
-
-
-
-
-// Stat card clicking to showing content
+// Navigate to section from stat cards
 function navigateToSection(sectionName) {
-
-  showSection(sectionName);
-  
-   const sidebarMenuItems = document.querySelectorAll('.sidebar .menu-item');
-  sidebarMenuItems.forEach(item => {
-    item.classList.remove('active');
-    if (item.dataset.section === sectionName) {
-      item.classList.add('active');
-    } 
-  });
-}
-
-
-
-
-// Search clients (updated to work with real data)
-function searchClients() {
-    const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+    showSection(sectionName);
     
-    if (!searchTerm) {
-        displayClients(clientsData);
-        return;
-    }
-    
-    const filteredClients = clientsData.filter(client => 
-        (client.full_name && client.full_name.toLowerCase().includes(searchTerm)) ||
-        (client.email && client.email.toLowerCase().includes(searchTerm)) ||
-        (client.phone_number && client.phone_number.toLowerCase().includes(searchTerm)) ||
-        (client.location && client.location.toLowerCase().includes(searchTerm))
-    );
-    
-    displayClients(filteredClients);
+    const sidebarMenuItems = document.querySelectorAll('.sidebar .menu-item');
+    sidebarMenuItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.section === sectionName) {
+            item.classList.add('active');
+        } 
+    });
 }
 
-
-
-
-function contactClient(phoneNumber) {
-    window.location.href = `tel:${phoneNumber}`;
-}
-
-function emailClient(email) {
-    window.location.href = `mailto:${email}`;
-}
-
-// Show client details modal
-async function showClientDetails(clientId) {
-    try {
-        showLoading();
-        
-        // Get client details with their bookings
-        const response = await fetch(`/api/planner/clients/${clientId}/details`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const clientDetails = await response.json();
-            displayClientDetailsModal(clientDetails);
-        } else {
-            showNotification('Error loading client details', 'error');
-        }
-    } catch (error) {
-        console.error('Error loading client details:', error);
-        showNotification('Error loading client details', 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-
-
-// Display client details modal
-function displayClientDetailsModal(client) {
-    const modalBody = document.getElementById('clientModalBody');
-    
-    modalBody.innerHTML = `
-        <div class="client-detail-grid">
-            <div class="detail-section">
-                <h3>Contact Information</h3>
-                <div class="detail-item">
-                    <label>Name:</label>
-                    <span>${client.full_name || 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Email:</label>
-                    <span>${client.email || 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Phone:</label>
-                    <span>${client.phone_number || 'N/A'}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Location:</label>
-                    <span>${client.location || 'N/A'}</span>
-                </div>
-            </div>
-            
-            <div class="detail-section">
-                <h3>Booking Statistics</h3>
-                <div class="detail-item">
-                    <label>Total Bookings:</label>
-                    <span>${client.total_bookings || 0}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Total Spent:</label>
-                    <span>CFA ${formatNumber(client.total_spent || 0)}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Average Rating:</label>
-                    <span>${client.rating ? parseFloat(client.rating).toFixed(1) + ' stars' : 'Not rated yet'}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Client Since:</label>
-                    <span>${formatDate(client.created_at)}</span>
-                </div>
-            </div>
-            
-            ${client.bookings && client.bookings.length > 0 ? `
-                <div class="detail-section full-width">
-                    <h3>Recent Bookings</h3>
-                    <div class="bookings-list-small">
-                        ${client.bookings.slice(0, 5).map(booking => `
-                            <div class="booking-item-small">
-                                <div class="booking-info">
-                                    <strong>${booking.event_type}</strong>
-                                    <span>${formatDate(booking.event_date)}</span>
-                                </div>
-                                <div class="booking-status">
-                                    <span class="booking-status ${booking.status.toLowerCase().replace(' ', '-')}">${booking.status}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                        ${client.bookings.length > 5 ? `<p><em>+${client.bookings.length - 5} more bookings...</em></p>` : ''}
-                    </div>
-                </div>
-            ` : ''}
-        </div>
-    `;
-    
-    document.getElementById('clientModal').style.display = 'block';
-}
-
-
-
-
-function addPortfolioItem() {
-    document.getElementById('portfolioModal').style.display = 'block';
-}
-
-function savePortfolioItem() {
-    console.log('Save portfolio item');
-    closeModal();
-}
-
+// Additional helper functions
 function blockDate() {
-    const date = document.getElementById('blockDate').value;
-    const reason = document.getElementById('blockReason').value;
+    const dateInput = document.getElementById('blockDate');
+    const reasonInput = document.getElementById('blockReason');
+    
+    if (!dateInput) return;
+    
+    const date = dateInput.value;
+    const reason = reasonInput ? reasonInput.value : '';
     
     if (!date) {
         showNotification('Please select a date to block', 'error');
@@ -2336,8 +2884,8 @@ function blockDate() {
     console.log('Block date:', date, 'Reason:', reason);
     showNotification('Date blocked successfully', 'success');
     
-    document.getElementById('blockDate').value = '';
-    document.getElementById('blockReason').value = '';
+    dateInput.value = '';
+    if (reasonInput) reasonInput.value = '';
 }
 
 function exportBookings() {
@@ -2346,47 +2894,68 @@ function exportBookings() {
 }
 
 function resetForm() {
+    const profileForm = document.getElementById('profileForm');
+    if (!profileForm) return;
+    
     if (confirm('Are you sure you want to reset the form? All changes will be lost.')) {
-        document.getElementById('profileForm').reset();
+        profileForm.reset();
         populateProfileForm(); 
     }
 }
 
-
-
-
-// handle Profile Image Upload
-async function handleProfileImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        return;
+// Calendar event indicator styles
+const eventIndicatorStyles = `
+    .calendar-day {
+        position: relative;
+        min-height: 60px;
+        border: 1px solid var(--gray-200);
+        padding: 8px;
+        background: white;
+        transition: all 0.2s ease;
     }
-
-    const formData = new FormData();
-    formData.append('profileImage', file); 
-
-    try {
-        showLoading();
-        const response = await fetch('/api/planner/profile/upload-image', {
-            method: 'POST',
-            credentials: 'include',
-            body: formData, 
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Profile image uploaded successfully', 'success');
-            
-            document.getElementById('profileImage').src = `/api/planner/profile/image?t=${Date.now()}`;
-            
-        } else {
-            showNotification(data.error || 'Error uploading image', 'error');
-        }
-    } catch (error) {
-        console.error('Error uploading profile image:', error);
-        showNotification('Failed to upload image', 'error');
-    } finally {
-        hideLoading();
+    
+    .calendar-day.has-events {
+        background: #f8f9ff;
+        border-color: var(--primary-color);
     }
+    
+    .calendar-day.today {
+        background: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .calendar-day.today.has-events {
+        background: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.3);
+    }
+    
+    .calendar-day:hover {
+        background: var(--gray-50);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .calendar-day.today:hover {
+        background: var(--primary-color);
+        opacity: 0.9;
+    }
+    
+    .event-indicator {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+`;
+
+
+if (!document.getElementById('calendar-event-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'calendar-event-styles';
+    styleSheet.textContent = eventIndicatorStyles;
+    document.head.appendChild(styleSheet);
 }

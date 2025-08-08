@@ -523,7 +523,156 @@
           </div>
 
           <div id="portfolioGrid" class="portfolio-grid">
-            <!-- Portfolio items space to contain loaded items from database -->
+            <div id="portfolioModal" class="modal">
+              <div class="modal-content portfolio-modal-content">
+                <div class="modal-header">
+                  <h2 id="portfolioModalTitle">Add Portfolio Item</h2>
+                  <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                  <form
+                    id="portfolioForm"
+                    class="portfolio-modal-form"
+                    enctype="multipart/form-data"
+                  >
+                    <div class="portfolio-form-group">
+                      <label for="portfolioTitle" class="portfolio-form-label"
+                        >Title*</label
+                      >
+                      <input
+                        type="text"
+                        id="portfolioTitle"
+                        style="height: 1000px !important;"
+                        class="portfolio-input-field"
+                        name="title"
+                        placeholder="Title e.g Chief Prinzo, 30th Birthday Celebrations"
+                        required
+                      />
+                    </div>
+
+                    <div class="portfolio-form-group">
+                      <label
+                        for="portfolioCategory"
+                        class="portfolio-form-label"
+                        >Category*</label
+                      >
+                      <select
+                        id="portfolioCategory"
+                        name="category"
+                        class="portfolio-input-field"
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        <option value="wedding">Wedding</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="anniversary">Anniversary</option>
+                        <option value="funeral">Memorial/Funerals</option>
+                        <option value="corporate">Corporate</option>
+                        <option value="social">Social Gathering</option>
+                        <option value="gala">Gala Events</option>
+                        <option value="award">Award Ceremony</option>
+                        <option value="outreach">Outreach Events</option>
+                        <option value="others">Others</option>
+                      </select>
+                    </div>
+
+                    <div class="portfolio-form-group full-width">
+                      <label
+                        for="portfolioDescription"
+                        class="portfolio-form-label"
+                        >Description</label
+                      >
+                      <textarea
+                        id="portfolioDescription"
+                        class="portfolio-input-field portfolio-textarea"
+                        name="description"
+                        rows="4"
+                        placeholder="Describe your work, services provided, special features, etc."
+                      ></textarea>
+                    </div>
+
+                    <div class="portfolio-form-group full-width">
+                      <label for="portfolioImage" class="portfolio-form-label"
+                        >Portfolio Image</label
+                      >
+                      <input
+                        type="file"
+                        id="portfolioImage"
+                        class="portfolio-input-field portfolio-image-input"
+                        name="portfolioImage"
+                        accept="image/*"
+                        onchange="previewPortfolioImage(this)"
+                      />
+                      <small class="portfolio-form-help"
+                        >Upload a high-quality image showcasing your work (Max
+                        5MB)</small
+                      >
+
+                      <!-- Image preview container -->
+                      <div
+                        id="imagePreviewContainer"
+                        style="display: none; margin-top: 15px"
+                      >
+                        <div class="image-preview-wrapper">
+                          <img id="imagePreviewImg" />
+                          <div style="margin-top: 10px">
+                            <p id="imagePreviewName"></p>
+                            <p id="imagePreviewSize"></p>
+                            <button
+                              type="button"
+                              onclick="removeImagePreview()"
+                              class="image-preview-remove-btn"
+                            >
+                              <i class="fas fa-times"></i> Remove Image
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="portfolio-form-group full-width">
+                      <label class="portfolio-checkbox-label">
+                        <input
+                          type="checkbox"
+                          id="portfolioFeatured"
+                          name="isFeatured"
+                          class="portfolio-checkbox"
+                        />
+                        <span>Mark as featured work</span>
+                      </label>
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn-secondary"
+                    onclick="closeModal()"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-primary"
+                    onclick="savePortfolioItem()"
+                  >
+                    Save Portfolio Item
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="portfolioViewModal" class="modal">
+              <div class="modal-content large">
+                <div class="modal-header">
+                  <h2>Portfolio Item Details</h2>
+                  <span class="close">&times;</span>
+                </div>
+                <div class="modal-body" id="portfolioViewModalBody">
+                  <!-- Content will be populated by JavaScript -->
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
