@@ -12,13 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
 let currentPlanner = null;
 let bookingsData = [];
 let clientsData = [];
-let portfolioData = [];
 let earningsData = [];
 let reviewsData = [];
 let currentCalendarDate = new Date();
 let currentBookingId = null;
 let scheduleData = [];
-let currentPortfolioId = null;
 
 // Initialize dashboard
 function initializeDashboard() {
@@ -164,13 +162,12 @@ function showSection(sectionName) {
                 break;
             case 'schedule':
                 loadSchedule();
+                loadBlockedDates();
                 break;
             case 'clients':
                 loadClients();
                 break;
-            case 'portfolio':
-                loadPortfolio();
-                break;
+           
             case 'earnings':
                 loadEarnings();
                 break;
@@ -180,9 +177,15 @@ function showSection(sectionName) {
             case 'analytics':
                 loadAnalytics();
                 break;
+            case 'availability':
+                loadWorkingHours();
+                loadBlockedDates();
+                break;
         }
     }
 }
+
+
 
 // Client filter to bookings
 function applyClientFilter(clientId) {
@@ -238,15 +241,7 @@ function setupEventListeners() {
     if (clientSearch) {
         clientSearch.addEventListener('input', searchClients);
     }
-    
-    // Portfolio filters
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            filterPortfolio(this.dataset.filter);
-        });
-    });
+   
 
     // Profile image input
     const profileImageInput = document.getElementById('profileImageInput');
@@ -254,36 +249,9 @@ function setupEventListeners() {
         profileImageInput.addEventListener('change', handleProfileImageUpload);
     }
 
-    setupPortfolioEventListeners();
 }
 
-function setupPortfolioEventListeners() {
-    // Portfolio form submission
-    const portfolioForm = document.getElementById('portfolioForm');
-    if (portfolioForm) {
-        portfolioForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            savePortfolioItem();
-        });
-    }
 
-    // Portfolio image input
-    const portfolioImageInput = document.getElementById('portfolioImage');
-    if (portfolioImageInput) {
-        portfolioImageInput.addEventListener('change', function() {
-            previewPortfolioImage(this);
-        });
-    }
-
-    // Portfolio modal save button
-   const saveButton = document.querySelector('#portfolioModal .btn-primary');
-    if (saveButton) {
-        saveButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            savePortfolioItem();
-        });
-    } 
-}
 
 // Load dashboard data
 async function loadDashboardData() {
@@ -544,635 +512,6 @@ function displayBookings(bookings) {
     container.innerHTML = tableHTML;
 }
 
-// Portfolio Functions
-async function loadPortfolio() {
-    try {
-        showLoading();
-        
-        console.log("=== LOADING PORTFOLIO DEBUG ===");
-        
-        const response = await fetch('/api/planner/portfolio', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        console.log("Portfolio response status:", response.status);
-        console.log("Portfolio response ok:", response.ok);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log("Portfolio data received:", data);
-        console.log("Portfolio data type:", Array.isArray(data) ? 'Array' : typeof data);
-        console.log("Portfolio data length:", Array.isArray(data) ? data.length : 'Not array');
-        
-        portfolioData = Array.isArray(data) ? data : [];
-        console.log("Processed portfolio data:", portfolioData);
-        
-        displayPortfolio(portfolioData);
-        
-    } catch (error) {
-        console.error('Error loading portfolio:', error);
-        showNotification('Error loading portfolio items. Please refresh the page.', 'error');
-        portfolioData = [];
-        displayPortfolio(portfolioData);
-    } finally {
-        hideLoading();
-    }
-}
-
-
-// Display portfolio
-function displayPortfolio(portfolio) {
-    const container = document.getElementById('portfolioGrid');
-    
-    console.log("=== DISPLAY PORTFOLIO DEBUG ===");
-    console.log("Portfolio to display:", portfolio);
-    console.log("Container element:", container);
-    
-    if (!container) {
-        console.error("Portfolio container not found!");
-        return;
-    }
-    
-    if (!portfolio || portfolio.length === 0) {
-        console.log("No portfolio items to display");
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-images"></i>
-                </div>
-                <h3>No portfolio items found</h3>
-                <p>Add your best work to showcase to potential clients</p>
-                <button class="btn-primary" onclick="addPortfolioItem()">
-                    <i class="fas fa-plus"></i> Add First Portfolio Item
-                </button>
-            </div>
-        `;
-        return;
-    }
-    
-    console.log(`Displaying ${portfolio.length} portfolio items`);
-    
-    const portfolioHTML = portfolio.map(item => {
-        console.log("Processing item:", item.id, item.title);
-        
-        return `
-        <div class="portfolio-item" data-category="${item.category}" data-id="${item.id}">
-            <div class="portfolio-image">
-                ${item.has_image ? 
-                    `<img src="/api/planner/portfolio/${item.id}/image?t=${Date.now()}" 
-                         alt="${item.title}" 
-                         loading="lazy"
-                         onerror="this.parentElement.innerHTML='<div class=no-image-placeholder><i class=fas fa-image></i><span>Image unavailable</span></div>'; console.log('Image failed to load for item ${item.id}');">` :
-                    `<div class="no-image-placeholder">
-                        <i class="fas fa-image"></i>
-                        <span>No Image</span>
-                    </div>`
-                }
-                <div class="portfolio-overlay">
-                    <button class="overlay-btn view" onclick="viewPortfolioItem(${item.id})" title="View Details">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="overlay-btn edit" onclick="editPortfolioItem(${item.id})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="overlay-btn delete" onclick="deletePortfolioItem(${item.id})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                ${item.is_featured ? '<div class="featured-badge"><i class="fas fa-star"></i> Featured</div>' : ''}
-            </div>
-            <div class="portfolio-content">
-                <h3 title="${item.title}">${item.title}</h3>
-                <p class="portfolio-description">${item.description || 'No description available'}</p>
-                <div class="portfolio-meta">
-                    <span class="portfolio-category">${item.category}</span>
-                    <span class="portfolio-date">${formatDate(item.created_at)}</span>
-                </div>
-            </div>
-        </div>
-    `;
-    }).join('');
-    
-    container.innerHTML = portfolioHTML;
-    console.log("Portfolio HTML set, items should be visible now");
-    
-    updateFilterCount('all');
-}
-
-// Add portfolio item
-function addPortfolioItem() {
-    currentPortfolioId = null;
-    const form = document.getElementById('portfolioForm');
-    if (form) {
-        form.reset();
-    }
-    
-    // Show modal
-    const modal = document.getElementById('portfolioModal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
-}
-
-// Save portfolio item 
-async function savePortfolioItem() {
-    console.log("=== SAVE PORTFOLIO ITEM START ===");
-    
-    const form = document.getElementById('portfolioForm');
-    if (!form) {
-        console.error('Portfolio form not found');
-        showNotification('Form not found', 'error');
-        return;
-    }
-    
-    // Get form values with better validation
-    const titleElement = document.getElementById('portfolioTitle');
-    const categoryElement = document.getElementById('portfolioCategory');
-    const descriptionElement = document.getElementById('portfolioDescription');
-    const featuredElement = document.getElementById('portfolioFeatured');
-    const imageElement = document.getElementById('portfolioImage');
-    
-    if (!titleElement || !categoryElement) {
-        console.error('Required form elements not found');
-        showNotification('Form elements missing', 'error');
-        return;
-    }
-    
-    const title = titleElement.value?.trim();
-    const category = categoryElement.value?.trim();
-    const description = descriptionElement ? descriptionElement.value?.trim() : '';
-    const isFeatured = featuredElement ? featuredElement.checked : false;
-    const imageFile = imageElement ? imageElement.files[0] : null;
-    
-    console.log("=== FORM VALIDATION DEBUG ===");
-    console.log("Title:", title);
-    console.log("Category:", category);
-    console.log("Description:", description);
-    console.log("Is Featured:", isFeatured);
-    console.log("Image file:", imageFile ? {
-        name: imageFile.name,
-        size: imageFile.size,
-        type: imageFile.type
-    } : 'None');
-    
-    // Client-side validation
-    if (!title || title.length === 0) {
-        showNotification('Please enter a title', 'error');
-        titleElement.focus();
-        return;
-    }
-    
-    if (title.length > 200) {
-        showNotification('Title must be less than 200 characters', 'error');
-        titleElement.focus();
-        return;
-    }
-    
-    if (!category || category.length === 0) {
-        showNotification('Please select a category', 'error');
-        categoryElement.focus();
-        return;
-    }
-    
-    // Image validation 
-    if (imageFile) {
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        if (!allowedTypes.includes(imageFile.type.toLowerCase())) {
-            showNotification('Please select a valid image file (JPEG, PNG, or WebP)', 'error');
-            imageElement.focus();
-            return;
-        }
-        
-        if (imageFile.size > 5 * 1024 * 1024) { 
-            showNotification('Image file size must be less than 5MB', 'error');
-            imageElement.focus();
-            return;
-        }
-    }
-    
-    // Create FormData 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('category', category);
-    formData.append('description', description);
-    formData.append('isFeatured', isFeatured);
-    
-    if (imageFile) {
-        formData.append('portfolioImage', imageFile);
-        console.log("Image file appended to FormData");
-    }
-    
-    console.log("=== REQUEST PREPARATION DEBUG ===");
-    console.log("Current portfolio ID:", currentPortfolioId);
-    console.log("FormData entries:");
-    for (let [key, value] of formData.entries()) {
-        if (key === 'portfolioImage') {
-            console.log(key + ':', value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
-        } else {
-            console.log(key + ':', value);
-        }
-    }
-    
-    try {
-        showLoading();
-        
-        const url = currentPortfolioId 
-            ? `/api/planner/portfolio/${currentPortfolioId}`
-            : '/api/planner/portfolio';
-        
-        const method = currentPortfolioId ? 'PUT' : 'POST';
-        
-        console.log("=== MAKING REQUEST ===");
-        console.log("URL:", url);
-        console.log("Method:", method);
-        
-        const response = await fetch(url, {
-            method: method,
-            credentials: 'include', 
-            body: formData
-        });
-        
-        console.log("=== RESPONSE RECEIVED ===");
-        console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
-        
-        // Parse response
-        let data;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            const textData = await response.text();
-            console.error("Non-JSON response:", textData);
-            throw new Error('Server returned non-JSON response');
-        }
-        
-        console.log("Response data:", data);
-        
-        if (response.ok && data.success) {
-            const action = currentPortfolioId ? 'updated' : 'added';
-            showNotification(`Portfolio item ${action} successfully!`, 'success');
-            
-            form.reset();
-            hideImagePreview();
-            closeModal();
-            
-            // Reload portfolio to show new/updated item
-            console.log("Reloading portfolio...");
-            await loadPortfolio();
-            
-        } else {
-            console.error("Server error response:", data);
-            showNotification(data.error || 'Error saving portfolio item', 'error');
-        }
-        
-    } catch (error) {
-        console.error('=== SAVE ERROR ===');
-        console.error('Error details:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            showNotification('Network error. Please check your internet connection.', 'error');
-        } else if (error.message.includes('JSON')) {
-            showNotification('Server response error. Please try again.', 'error');
-        } else {
-            showNotification('Error saving portfolio item. Please try again.', 'error');
-        }
-    } finally {
-        hideLoading();
-        console.log("=== SAVE PORTFOLIO ITEM END ===");
-    }
-}
-
-
-// Edit portfolio item
-async function editPortfolioItem(id) {
-    try {
-        const response = await fetch(`/api/planner/portfolio/${id}`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const item = data.portfolio;
-            
-            currentPortfolioId = id;
-            document.getElementById('portfolioModalTitle').textContent = 'Edit Portfolio Item';
-            
-            // Populate simplified form
-            document.getElementById('portfolioTitle').value = item.title || '';
-            document.getElementById('portfolioDescription').value = item.description || '';
-            document.getElementById('portfolioCategory').value = item.category || '';
-            document.getElementById('portfolioFeatured').checked = item.is_featured || false;
-            
-            // Clear any existing image preview
-            const previewContainer = document.getElementById('imagePreviewContainer');
-            if (previewContainer) {
-                previewContainer.style.display = 'none';
-            }
-            
-            document.getElementById('portfolioModal').style.display = 'block';
-        } else {
-            showNotification('Error loading portfolio item', 'error');
-        }
-    } catch (error) {
-        console.error('Error loading portfolio item:', error);
-        showNotification('Error loading portfolio item', 'error');
-    }
-}
-
-// Delete portfolio item
-async function deletePortfolioItem(id) {
-    if (!confirm('Are you sure you want to delete this portfolio item? This action cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        showLoading();
-        
-        const response = await fetch(`/api/planner/portfolio/${id}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            showNotification('Portfolio item deleted successfully', 'success');
-            loadPortfolio();
-        } else {
-            const error = await response.json();
-            showNotification(error.error || 'Error deleting portfolio item', 'error');
-        }
-    } catch (error) {
-        console.error('Error deleting portfolio item:', error);
-        showNotification('Error deleting portfolio item', 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-// View portfolio item details
-async function viewPortfolioItem(id) {
-    try {
-        const response = await fetch(`/api/planner/portfolio/${id}`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            displayPortfolioViewModal(data.portfolio);
-        } else {
-            showNotification('Error loading portfolio item', 'error');
-        }
-    } catch (error) {
-        console.error('Error loading portfolio item:', error);
-        showNotification('Error loading portfolio item', 'error');
-    }
-}
-
-// Display portfolio view modal
-function displayPortfolioViewModal(item) {
-    const modalBody = document.getElementById('portfolioViewModalBody');
-    if (!modalBody) return;
-    
-    modalBody.innerHTML = `
-        <div class="portfolio-view-content">
-            <div class="portfolio-image-large">
-                ${item.has_image ? 
-                    `<img src="/api/planner/portfolio/${item.id}/image?t=${Date.now()}" alt="${item.title}">` :
-                    `<div class="no-image-large">
-                        <i class="fas fa-image"></i>
-                        <p>No image available</p>
-                    </div>`
-                }
-                ${item.is_featured ? '<div class="featured-badge large"><i class="fas fa-star"></i> Featured Work</div>' : ''}
-            </div>
-            
-            <div class="portfolio-details-grid">
-                <div class="detail-section">
-                    <h3>Portfolio Information</h3>
-                    <div class="detail-item">
-                        <label>Title:</label>
-                        <span>${item.title}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Category:</label>
-                        <span>${item.category}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Created:</label>
-                        <span>${formatDate(item.created_at)}</span>
-                    </div>
-                </div>
-                
-                ${item.description ? `
-                    <div class="detail-section full-width">
-                        <h3>Description</h3>
-                        <p>${item.description}</p>
-                    </div>
-                ` : ''}
-            </div>
-            
-            <div class="portfolio-actions">
-                <button class="btn-primary" onclick="editPortfolioItem(${item.id}); closeModal();">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn-danger" onclick="deletePortfolioItem(${item.id}); closeModal();">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </div>
-        </div>
-    `;
-    
-    const modal = document.getElementById('portfolioViewModal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
-}
-
-// Filter portfolio
-function filterPortfolio(category) {
-    const items = document.querySelectorAll('.portfolio-item');
-    
-    items.forEach(item => {
-        if (category === 'all' || item.dataset.category === category) {
-            item.style.display = 'block';
-            item.style.animation = 'fadeIn 0.3s ease-in';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-    
-    updateFilterCount(category);
-}
-
-// Update filter count display
-function updateFilterCount(category) {
-    const totalItems = portfolioData.length;
-    const filteredItems = category === 'all' 
-        ? totalItems 
-        : portfolioData.filter(item => item.category === category).length;
-    
-    const sectionHeader = document.querySelector('#portfolio .section-header p');
-    if (sectionHeader) {
-        sectionHeader.textContent = `Showing ${filteredItems} of ${totalItems} portfolio items`;
-    }
-}
-
-// Preview portfolio image
-function previewPortfolioImage(input) {
-    console.log("=== IMAGE PREVIEW DEBUG ===");
-    console.log("Input element:", input);
-    console.log("Files:", input.files);
-    
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        console.log("Selected file:", {
-            name: file.name,
-            size: file.size,
-            type: file.type
-        });
-        
-        // Enhanced validation
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        if (!allowedTypes.includes(file.type.toLowerCase())) {
-            showNotification('Please select a valid image file (JPEG, PNG, or WebP)', 'error');
-            input.value = '';
-            hideImagePreview();
-            return;
-        }
-        
-        // File size validation 
-        if (file.size > 5 * 1024 * 1024) {
-            showNotification('Image file size must be less than 5MB', 'error');
-            input.value = '';
-            hideImagePreview();
-            return;
-        }
-        
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            console.log("File read successfully, showing preview");
-            showImagePreview(e.target.result, file);
-        };
-        
-        reader.onerror = function(error) {
-            console.error("File reader error:", error);
-            showNotification('Error reading image file', 'error');
-            hideImagePreview();
-        };
-        
-        reader.readAsDataURL(file);
-    } else {
-        console.log("No file selected, hiding preview");
-        hideImagePreview();
-    }
-}
-
-
-
-// Show image preview
-function showImagePreview(imageSrc, file) {
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    const previewImg = document.getElementById('imagePreviewImg');
-    const previewName = document.getElementById('imagePreviewName');
-    const previewSize = document.getElementById('imagePreviewSize');
-    
-    console.log("=== SHOW IMAGE PREVIEW ===");
-    console.log("Preview elements found:", {
-        container: !!previewContainer,
-        img: !!previewImg,
-        name: !!previewName,
-        size: !!previewSize
-    });
-    
-    if (previewContainer && previewImg && previewName && previewSize) {
-        previewImg.src = imageSrc;
-        previewImg.style.cssText = `
-            max-width: 100% !important;
-            max-height: 200px !important;
-            width: auto !important;
-            height: auto !important;
-            border-radius: 8px !important;
-            object-fit: cover !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-        `;
-        
-        previewName.textContent = file.name;
-        previewName.style.cssText = `
-            font-size: 0.9rem !important;
-            color: var(--gray-600) !important;
-            margin: 8px 0 4px 0 !important;
-            font-weight: 500 !important;
-        `;
-        
-        previewSize.textContent = `Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
-        previewSize.style.cssText = `
-            font-size: 0.8rem !important;
-            color: var(--gray-500) !important;
-            margin: 4px 0 12px 0 !important;
-        `;
-        
-        previewContainer.style.display = 'block';
-        previewContainer.style.opacity = '0';
-        previewContainer.style.transition = 'opacity 0.3s ease';
-        
-        // Trigger animation
-        requestAnimationFrame(() => {
-            previewContainer.style.opacity = '1';
-        });
-        
-        console.log("Image preview shown successfully");
-    } else {
-        console.error("Preview elements not found in DOM");
-    }
-}
-
-
-
-// Hide image preview
-function hideImagePreview() {
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    if (previewContainer) {
-        previewContainer.style.opacity = '0';
-        setTimeout(() => {
-            previewContainer.style.display = 'none';
-        }, 300);
-    }
-}
-
-
-// Remove image preview
-function removeImagePreview() {
-    console.log("=== REMOVE IMAGE PREVIEW ===");
-    
-    const imageInput = document.getElementById('portfolioImage');
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    
-    if (imageInput) {
-        imageInput.value = '';
-        console.log("Image input cleared");
-    }
-    
-    if (previewContainer) {
-        previewContainer.style.opacity = '0';
-        setTimeout(() => {
-            previewContainer.style.display = 'none';
-        }, 300);
-        console.log("Preview container hidden");
-    }
-    
-    showNotification('Image removed', 'info');
-}
 
 
 // Delete booking 
@@ -2620,59 +1959,18 @@ function setupModalHandlers() {
 
 // Updated closeModal function to clear image preview
 
-// Update the closeModal function to clear new form classes
 function closeModal() {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         modal.style.display = 'none';
     });
-    
-    const form = document.getElementById('portfolioForm');
-    if (form) {
-        form.reset();
-        // Clear any validation states
-        const inputs = form.querySelectorAll('.portfolio-input-field');
-        inputs.forEach(input => {
-            input.classList.remove('error');
-        });
-    }
+   
     
     // Clear image preview
     hideImagePreview();
     
     currentBookingId = null;
-    currentPortfolioId = null;
 }
-
-// Add form validation for the new classes
-function validatePortfolioForm() {
-    const title = document.getElementById('portfolioTitle');
-    const category = document.getElementById('portfolioCategory');
-    
-    let isValid = true;
-    
-    // Clear previous validation states
-    document.querySelectorAll('.portfolio-input-field').forEach(field => {
-        field.classList.remove('error');
-    });
-    
-    if (!title.value.trim()) {
-        title.classList.add('error');
-        showNotification('Please enter a title', 'error');
-        title.focus();
-        isValid = false;
-    }
-    
-    if (!category.value.trim()) {
-        category.classList.add('error');
-        showNotification('Please select a category', 'error');
-        category.focus();
-        isValid = false;
-    }
-    
-    return isValid;
-}
-
 
 // Mobile navigation
 function setupMobileNavigation() {
@@ -2866,27 +2164,160 @@ function navigateToSection(sectionName) {
     });
 }
 
-// Additional helper functions
-function blockDate() {
+
+// Block date 
+async function blockDate() {
     const dateInput = document.getElementById('blockDate');
     const reasonInput = document.getElementById('blockReason');
     
-    if (!dateInput) return;
+    if (!dateInput) {
+        showNotification('Date input not found', 'error');
+        return;
+    }
     
     const date = dateInput.value;
-    const reason = reasonInput ? reasonInput.value : '';
+    const reason = reasonInput ? reasonInput.value.trim() : '';
     
     if (!date) {
         showNotification('Please select a date to block', 'error');
         return;
     }
     
-    console.log('Block date:', date, 'Reason:', reason);
-    showNotification('Date blocked successfully', 'success');
+    // Check if date is in the past
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
-    dateInput.value = '';
-    if (reasonInput) reasonInput.value = '';
+    if (selectedDate < today) {
+        showNotification('Cannot block dates in the past', 'error');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/planner/blocked-dates', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ date, reason })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Date blocked successfully', 'success');
+            
+            dateInput.value = '';
+            if (reasonInput) reasonInput.value = '';
+            
+            loadBlockedDates();
+        } else {
+            showNotification(data.error || 'Error blocking date', 'error');
+        }
+    } catch (error) {
+        console.error('Error blocking date:', error);
+        showNotification('Error blocking date', 'error');
+    } finally {
+        hideLoading();
+    }
 }
+
+
+// Load blocked dates
+async function loadBlockedDates() {
+    try {
+        const response = await fetch('/api/planner/blocked-dates', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const blockedDates = await response.json();
+            displayBlockedDates(blockedDates);
+        } else {
+            console.error('Failed to load blocked dates:', response.status);
+            displayBlockedDates([]);
+        }
+    } catch (error) {
+        console.error('Error loading blocked dates:', error);
+        displayBlockedDates([]);
+    }
+}
+
+
+
+
+// Display blocked dates
+function displayBlockedDates(blockedDates) {
+    const container = document.getElementById('blockedDatesList');
+    if (!container) return;
+    
+    if (!blockedDates || blockedDates.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500">No blocked dates</p>';
+        return;
+    }
+    
+    // Sort by date
+    blockedDates.sort((a, b) => new Date(a.blocked_date) - new Date(b.blocked_date));
+    
+    container.innerHTML = blockedDates.map(blockedDate => `
+        <div class="blocked-date-item">
+            <div class="blocked-date-info">
+                <div class="blocked-date-date">
+                    <i class="fas fa-calendar-times"></i>
+                    ${formatDate(blockedDate.blocked_date)}
+                </div>
+                ${blockedDate.reason ? `
+                    <div class="blocked-date-reason">
+                        <i class="fas fa-comment"></i>
+                        ${blockedDate.reason}
+                    </div>
+                ` : ''}
+                <div class="blocked-date-created">
+                    <small class="text-gray-500">
+                        <i class="fas fa-clock"></i>
+                        Blocked ${formatTimeAgo(blockedDate.created_at)}
+                    </small>
+                </div>
+            </div>
+            <div class="blocked-date-actions">
+                <button class="action-btn-sm delete" onclick="removeBlockedDate(${blockedDate.id})" title="Remove Block">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Remove blocked date
+async function removeBlockedDate(blockedDateId) {
+    if (!confirm('Are you sure you want to unblock this date?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/planner/blocked-dates/${blockedDateId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Date unblocked successfully', 'success');
+            loadBlockedDates();
+        } else {
+            showNotification(data.error || 'Error removing blocked date', 'error');
+        }
+    } catch (error) {
+        console.error('Error removing blocked date:', error);
+        showNotification('Error removing blocked date', 'error');
+    }
+}
+
+
 
 function exportBookings() {
     console.log('Export bookings');
@@ -2952,10 +2383,61 @@ const eventIndicatorStyles = `
     }
 `;
 
-
+// Calender styles
 if (!document.getElementById('calendar-event-styles')) {
     const styleSheet = document.createElement('style');
     styleSheet.id = 'calendar-event-styles';
     styleSheet.textContent = eventIndicatorStyles;
     document.head.appendChild(styleSheet);
+}
+
+
+
+// Load working hours
+async function loadWorkingHours() {
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/planner/working-hours', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const workingHours = await response.json();
+            populateWorkingHoursForm(workingHours);
+        } else {
+            console.log('No working hours found, using defaults');
+        }
+    } catch (error) {
+        console.error('Error loading working hours:', error);
+    } finally {
+        hideLoading();
+    }
+}
+
+// Populate the working hours form
+function populateWorkingHoursForm(workingHours) {
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    
+    days.forEach(day => {
+        const checkbox = document.querySelector(`input[name="${day}"]`);
+        const startInput = document.querySelector(`input[name="${day}-start"]`);
+        const endInput = document.querySelector(`input[name="${day}-end"]`);
+        
+        if (workingHours[day]) {
+            const dayData = workingHours[day];
+            
+            if (checkbox) {
+                checkbox.checked = dayData.is_available;
+            }
+            
+            if (startInput && dayData.start_time) {
+                startInput.value = dayData.start_time;
+            }
+            
+            if (endInput && dayData.end_time) {
+                endInput.value = dayData.end_time;
+            }
+        }
+    });
 }
