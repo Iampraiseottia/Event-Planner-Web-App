@@ -13,32 +13,83 @@ const upload = require("../utils/fileUpload");
 const router = express.Router();
 
 // Get planner statistics
+// Get planner statistics
+// Update the planner stats route in routes/planner.js
+
+// Get planner statistics
 router.get("/stats", requireAuth, requirePlanner, async (req, res) => {
   try {
     const plannerId = req.session.user.id;
 
+    // Extract price from category string
+    const extractPriceFromCategory = (category) => {
+      if (!category) return 0;
+
+      const priceMap = {
+        "Platinum ~ 2.5M": 2500000,
+        "Diamond ~ 1.5M": 1500000,
+        "Gold ~ 1.0M": 1000000,
+        "Bronze ~ 800K": 800000,
+        "Silver ~ 500K": 500000,
+        "High Class ~ 250K": 250000,
+        "Normal Class ~ 120K": 120000,
+        "Lowest Class ~ 80K": 80000,
+      };
+
+      return priceMap[category] || 0;
+    };
+
     const statsQuery = `
-            SELECT 
-                COUNT(*) as total_events,
-                COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_events,
-                COALESCE(SUM(CASE WHEN status = 'completed' AND EXTRACT(MONTH FROM completed_at) = EXTRACT(MONTH FROM CURRENT_DATE) THEN final_cost ELSE 0 END), 0) as monthly_earnings,
-                (SELECT average_rating FROM planners WHERE user_id = $1) as average_rating,
-                COUNT(CASE WHEN is_read = false THEN 1 END) as notifications
-            FROM bookings b
-            LEFT JOIN notifications n ON n.user_id = $1
-            WHERE b.planner_id = $1
-        `;
+      SELECT 
+        COUNT(*) as total_events,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_events,
+        -- Monthly earnings from confirmed and completed bookings (these are paid)
+        array_agg(CASE 
+          WHEN status IN ('confirmed', 'completed') 
+          AND EXTRACT(MONTH FROM event_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+          AND EXTRACT(YEAR FROM event_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+          THEN category 
+          ELSE NULL 
+        END) as monthly_categories,
+        (SELECT average_rating FROM planners WHERE user_id = $1) as average_rating
+      FROM bookings b
+      WHERE b.planner_id = $1 AND b.deleted_at IS NULL
+    `;
 
-    const result = await pool.query(statsQuery, [plannerId]);
-    const stats = result.rows[0];
+    // Separate query for notifications
+    const notificationQuery = `
+      SELECT COUNT(*) as notification_count
+      FROM notifications 
+      WHERE user_id = $1 AND is_read = false AND deleted_at IS NULL
+    `;
 
-    res.json({
-      totalEvents: parseInt(stats.total_events),
-      pendingEvents: parseInt(stats.pending_events),
-      monthlyEarnings: parseFloat(stats.monthly_earnings) || 0,
+    const [statsResult, notificationResult] = await Promise.all([
+      pool.query(statsQuery, [plannerId]),
+      pool.query(notificationQuery, [plannerId]),
+    ]);
+
+    const stats = statsResult.rows[0];
+    const notifications = notificationResult.rows[0];
+
+    // Calculate monthly earnings from categories
+    let monthlyEarnings = 0;
+    if (stats.monthly_categories && Array.isArray(stats.monthly_categories)) {
+      monthlyEarnings = stats.monthly_categories
+        .filter((category) => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    const responseData = {
+      totalEvents: parseInt(stats.total_events) || 0,
+      pendingEvents: parseInt(stats.pending_events) || 0,
+      monthlyEarnings: monthlyEarnings,
       averageRating: parseFloat(stats.average_rating) || 0,
-      notifications: parseInt(stats.notifications) || 0,
-    });
+      notifications: parseInt(notifications.notification_count) || 0,
+    };
+
+    console.log("Stats calculation debug:", responseData);
+
+    res.json(responseData);
   } catch (error) {
     console.error("Error loading planner stats:", error);
     res.status(500).json({ error: "Failed to load statistics" });
@@ -844,6 +895,240 @@ router.get("/working-hours", requireAuth, requirePlanner, async (req, res) => {
   } catch (error) {
     console.error("Error loading working hours:", error);
     res.status(500).json({ error: "Failed to load working hours" });
+  }
+});
+
+// Get earnings data
+router.get("/earnings", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+
+    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+
+    // Extract price from category string
+    const extractPriceFromCategory = (category) => {
+      if (!category) return 0;
+
+      const priceMap = {
+        "Platinum ~ 2.5M": 2500000,
+        "Diamond ~ 1.5M": 1500000,
+        "Gold ~ 1.0M": 1000000,
+        "Bronze ~ 800K": 800000,
+        "Silver ~ 500K": 500000,
+        "High Class ~ 250K": 250000,
+        "Normal Class ~ 120K": 120000,
+        "Lowest Class ~ 80K": 80000,
+      };
+
+      return priceMap[category] || 0;
+    };
+
+    // Total earnings (all confirmed and completed bookings)
+    const totalEarningsQuery = `
+      SELECT 
+        array_agg(CASE WHEN status IN ('confirmed', 'completed') THEN category ELSE NULL END) as confirmed_categories
+      FROM bookings 
+      WHERE planner_id = $1 AND status IN ('confirmed', 'completed') AND deleted_at IS NULL
+    `;
+
+    // This month's earnings (confirmed and completed bookings)
+    const thisMonthQuery = `
+      SELECT 
+        array_agg(CASE WHEN status IN ('confirmed', 'completed') THEN category ELSE NULL END) as monthly_categories
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status IN ('confirmed', 'completed')
+      AND EXTRACT(YEAR FROM event_date) = $2
+      AND EXTRACT(MONTH FROM event_date) = $3
+      AND deleted_at IS NULL
+    `;
+
+    // Previous month's earnings
+    const previousMonthQuery = `
+      SELECT 
+        array_agg(CASE WHEN status IN ('confirmed', 'completed') THEN category ELSE NULL END) as previous_categories
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status IN ('confirmed', 'completed')
+      AND EXTRACT(YEAR FROM event_date) = $2
+      AND EXTRACT(MONTH FROM event_date) = $3
+      AND deleted_at IS NULL
+    `;
+
+    // Pending payments (only pending bookings)
+    const pendingQuery = `
+      SELECT 
+        array_agg(CASE WHEN status = 'pending' THEN category ELSE NULL END) as pending_categories
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status = 'pending'
+      AND deleted_at IS NULL
+    `;
+
+    // Recent transactions (last 10 confirmed/completed bookings)
+    const transactionsQuery = `
+      SELECT b.*, u.full_name as customer_name
+      FROM bookings b
+      JOIN users u ON b.customer_id = u.id
+      WHERE b.planner_id = $1 
+      AND b.status IN ('confirmed', 'completed')
+      AND b.deleted_at IS NULL
+      ORDER BY b.event_date DESC
+      LIMIT 10
+    `;
+
+    // Monthly trends for current year (confirmed/completed bookings)
+    const trendsQuery = `
+      SELECT 
+        EXTRACT(YEAR FROM event_date) as year,
+        EXTRACT(MONTH FROM event_date) as month,
+        array_agg(CASE WHEN status IN ('confirmed', 'completed') THEN category ELSE NULL END) as trend_categories,
+        COUNT(*) as bookings_count
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status IN ('confirmed', 'completed')
+      AND EXTRACT(YEAR FROM event_date) = $2
+      AND deleted_at IS NULL
+      GROUP BY EXTRACT(YEAR FROM event_date), EXTRACT(MONTH FROM event_date)
+      ORDER BY month
+    `;
+
+    // Execute all queries
+    const [
+      totalResult,
+      thisMonthResult,
+      previousMonthResult,
+      pendingResult,
+      transactionsResult,
+      trendsResult,
+    ] = await Promise.all([
+      pool.query(totalEarningsQuery, [plannerId]),
+      pool.query(thisMonthQuery, [plannerId, currentYear, currentMonth]),
+      pool.query(previousMonthQuery, [plannerId, previousYear, previousMonth]),
+      pool.query(pendingQuery, [plannerId]),
+      pool.query(transactionsQuery, [plannerId]),
+      pool.query(trendsQuery, [plannerId, currentYear]),
+    ]);
+
+    // Calculate total earnings from categories
+    let totalEarnings = 0;
+    if (
+      totalResult.rows[0].confirmed_categories &&
+      Array.isArray(totalResult.rows[0].confirmed_categories)
+    ) {
+      totalEarnings = totalResult.rows[0].confirmed_categories
+        .filter((category) => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    // Calculate this month's earnings
+    let thisMonthEarnings = 0;
+    if (
+      thisMonthResult.rows[0].monthly_categories &&
+      Array.isArray(thisMonthResult.rows[0].monthly_categories)
+    ) {
+      thisMonthEarnings = thisMonthResult.rows[0].monthly_categories
+        .filter((category) => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    // Calculate previous month's earnings
+    let previousMonthEarnings = 0;
+    if (
+      previousMonthResult.rows[0].previous_categories &&
+      Array.isArray(previousMonthResult.rows[0].previous_categories)
+    ) {
+      previousMonthEarnings = previousMonthResult.rows[0].previous_categories
+        .filter((category) => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    // Calculate pending payments
+    let pendingPayments = 0;
+    if (
+      pendingResult.rows[0].pending_categories &&
+      Array.isArray(pendingResult.rows[0].pending_categories)
+    ) {
+      pendingPayments = pendingResult.rows[0].pending_categories
+        .filter((category) => category !== null)
+        .reduce((sum, category) => sum + extractPriceFromCategory(category), 0);
+    }
+
+    // Calculate monthly change percentage
+    let monthlyChange = 0;
+    if (previousMonthEarnings > 0) {
+      monthlyChange =
+        ((thisMonthEarnings - previousMonthEarnings) / previousMonthEarnings) *
+        100;
+    } else if (thisMonthEarnings > 0) {
+      monthlyChange = 100; 
+    }
+
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const monthlyTrends = trendsResult.rows.map((row) => {
+      let trendEarnings = 0;
+      if (row.trend_categories && Array.isArray(row.trend_categories)) {
+        trendEarnings = row.trend_categories
+          .filter((category) => category !== null)
+          .reduce(
+            (sum, category) => sum + extractPriceFromCategory(category),
+            0
+          );
+      }
+
+      return {
+        month: monthNames[row.month - 1],
+        year: parseInt(row.year),
+        earnings: trendEarnings,
+        bookings: parseInt(row.bookings_count) || 0,
+      };
+    });
+
+    const enhancedTransactions = transactionsResult.rows.map((transaction) => ({
+      ...transaction,
+      calculated_amount: extractPriceFromCategory(transaction.category),
+    }));
+
+    const earningsData = {
+      total: totalEarnings,
+      thisMonth: thisMonthEarnings,
+      previous: previousMonthEarnings,
+      pending: pendingPayments,
+      monthlyChange: parseFloat(monthlyChange.toFixed(1)),
+      transactions: enhancedTransactions,
+      monthlyTrends: monthlyTrends,
+    };
+
+    console.log("Enhanced earnings calculation:", {
+      totalEarnings: earningsData.total,
+      thisMonth: earningsData.thisMonth,
+      pending: earningsData.pending,
+      transactionCount: earningsData.transactions.length,
+    });
+
+    res.json(earningsData);
+  } catch (error) {
+    console.error("Error loading earnings:", error);
+    res.status(500).json({ error: "Failed to load earnings data" });
   }
 });
 

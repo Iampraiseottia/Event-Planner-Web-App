@@ -254,6 +254,7 @@ function setupEventListeners() {
 
 
 // Load dashboard data
+// Modify the loadDashboardData function to include earnings
 async function loadDashboardData() {
     try {
         showLoading();
@@ -263,7 +264,8 @@ async function loadDashboardData() {
             loadStats(),
             loadRecentActivity(),
             loadUpcomingEvents(),
-            loadBookings()
+            loadBookings(),
+            loadEarnings() // Add this line
         ]);
         
     } catch (error) {
@@ -1369,6 +1371,8 @@ function displayClientDetailsModal(client) {
 // Load earnings
 async function loadEarnings() {
     try {
+        showLoading();
+        
         const response = await fetch('/api/planner/earnings', {
             credentials: 'include'
         });
@@ -1376,13 +1380,96 @@ async function loadEarnings() {
         if (response.ok) {
             earningsData = await response.json();
             displayEarnings(earningsData);
+            updateDashboardEarnings(earningsData); 
+        } else {
+            console.error('Failed to load earnings:', response.status);
+            showNotification('Error loading earnings data', 'error');
         }
     } catch (error) {
         console.error('Error loading earnings:', error);
+        showNotification('Error loading earnings data', 'error');
+    } finally {
+        hideLoading();
     }
 }
 
-// Display earnings
+
+// Display earnings chart
+function displayEarningsChart(monthlyTrends) {
+    const chartContainer = document.getElementById('earningsChart');
+    if (!chartContainer) {
+        console.log('Earnings chart container not found');
+        return;
+    }
+    
+    const currentYear = new Date().getFullYear();
+    
+    const allMonths = [
+        { name: 'Jan', index: 1 },
+        { name: 'Feb', index: 2 },
+        { name: 'Mar', index: 3 },
+        { name: 'Apr', index: 4 },
+        { name: 'May', index: 5 },
+        { name: 'Jun', index: 6 },
+        { name: 'Jul', index: 7 },
+        { name: 'Aug', index: 8 },
+        { name: 'Sep', index: 9 },
+        { name: 'Oct', index: 10 },
+        { name: 'Nov', index: 11 },
+        { name: 'Dec', index: 12 }
+    ];
+    
+    // Map of existing data
+    const trendsMap = {};
+    if (monthlyTrends && Array.isArray(monthlyTrends)) {
+        monthlyTrends.forEach(trend => {
+            if (trend.year === currentYear) {
+                trendsMap[trend.month] = trend.earnings;
+            }
+        });
+    }
+    
+    // Complete data for all 12 months
+    const completeData = allMonths.map(month => {
+        const earnings = trendsMap[month.name] || 0;
+        return {
+            month: month.name,
+            earnings: earnings,
+            hasEarnings: earnings > 0
+        };
+    });
+    
+    // Calculate max earnings for proper scaling
+    const maxEarnings = Math.max(...completeData.map(data => data.earnings), 100000); 
+    
+    chartContainer.innerHTML = `
+        <div class="earnings-chart-content">
+            <div class="chart-title">
+                <h4>Monthly Earnings Trend - ${currentYear}</h4>
+            </div>
+            <div class="chart-bars">
+                ${completeData.map(data => {
+                    const percentage = maxEarnings > 0 ? Math.max((data.earnings / maxEarnings) * 100, 3) : 3;
+                    const barClass = data.hasEarnings ? 'chart-bar has-earnings' : 'chart-bar no-earnings';
+                    
+                    return `
+                        <div class="chart-bar-container">
+                            <div class="${barClass}" 
+                                 style="height: ${percentage}%;" 
+                                 title="${data.month} ${currentYear}: CFA ${formatNumber(data.earnings)}">
+                            </div>
+                            <div class="chart-label">${data.month}</div>
+                            <div class="chart-value">CFA ${data.earnings > 0 ? formatNumber(data.earnings) : '0'}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+
+// Display Earnings
 function displayEarnings(earnings) {
     const totalEarningsEl = document.getElementById('totalEarnings');
     const monthlyEarnings2El = document.getElementById('monthlyEarnings2');
@@ -1392,10 +1479,129 @@ function displayEarnings(earnings) {
     if (monthlyEarnings2El) monthlyEarnings2El.textContent = `CFA ${formatNumber(earnings.thisMonth || 0)}`;
     if (pendingPaymentsEl) pendingPaymentsEl.textContent = `CFA ${formatNumber(earnings.pending || 0)}`;
     
+    // Update the monthly change indicator
+    const monthlyChangeEl = document.querySelector('#earnings .change');
+    if (monthlyChangeEl && earnings.monthlyChange !== undefined) {
+        const changePercent = earnings.monthlyChange;
+        const isPositive = changePercent >= 0;
+        
+        monthlyChangeEl.className = `change ${isPositive ? 'positive' : 'negative'}`;
+        monthlyChangeEl.innerHTML = `${isPositive ? '+' : ''}${Math.abs(changePercent).toFixed(1)}% from last month`;
+    }
+    
     displayTransactions(earnings.transactions || []);
+    
+    displayEarningsChart(earnings.monthlyTrends || []);
 }
 
-// Display transactions
+// CSS styles for the earnings chart 
+const chartStyles = `
+    .earnings-chart {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+    
+    .earnings-chart h4 {
+        margin-bottom: 20px;
+        color: var(--text-primary);
+        text-align: center;
+    }
+    
+    .chart-bars {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        height: 200px;
+        gap: 10px;
+        padding: 0 10px;
+        border-bottom: 2px solid var(--gray-300);
+    }
+    
+    .chart-bar-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+    }
+    
+    .chart-bar {
+        width: 100%;
+        min-height: 5px;
+        max-width: 40px;
+        background: var(--primary-color);
+        border-radius: 4px 4px 0 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 5px;
+    }
+    
+    .chart-bar:hover {
+        opacity: 0.8;
+        transform: translateY(-2px);
+    }
+    
+    .chart-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-top: 5px;
+    }
+    
+    .chart-value {
+        font-size: 10px;
+        color: var(--text-muted);
+        text-align: center;
+        word-break: break-word;
+    }
+    
+    @media (max-width: 768px) {
+        .chart-bars {
+            height: 150px;
+        }
+        
+        .chart-label {
+            font-size: 10px;
+        }
+        
+        .chart-value {
+            font-size: 8px;
+        }
+    }
+`;
+
+if (!document.getElementById('earnings-chart-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'earnings-chart-styles';
+    styleSheet.textContent = chartStyles;
+    document.head.appendChild(styleSheet);
+}
+
+
+// Update dashboard earnings card
+function updateDashboardEarnings(earnings) {
+    const dashboardEarningsEl = document.getElementById('monthlyEarnings');
+    const dashboardChangeEl = document.querySelector('.stat-card[data-section="earnings"] .stat-change');
+    
+    if (dashboardEarningsEl) {
+        dashboardEarningsEl.textContent = `CFA ${formatNumber(earnings.thisMonth || 0)}`;
+    }
+    
+    if (dashboardChangeEl && earnings.monthlyChange !== undefined) {
+        const changePercent = earnings.monthlyChange;
+        const isPositive = changePercent >= 0;
+        
+        dashboardChangeEl.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
+        dashboardChangeEl.textContent = `${isPositive ? '+' : ''}${Math.abs(changePercent).toFixed(1)}% from last month`;
+    }
+}
+
+
+
+// Updated displayTransactions 
 function displayTransactions(transactions) {
     const container = document.getElementById('transactionsList');
     if (!container) return;
@@ -1412,32 +1618,52 @@ function displayTransactions(transactions) {
                     <th>Date</th>
                     <th>Client</th>
                     <th>Event</th>
+                    <th>Category</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Payment Status</th>
                 </tr>
             </thead>
             <tbody>
-                ${transactions.map(transaction => `
-                    <tr>
-                        <td>${formatDate(transaction.date)}</td>
-                        <td>${transaction.client_name}</td>
-                        <td>${transaction.event_type}</td>
-                        <td class="transaction-amount ${transaction.amount > 0 ? 'positive' : 'negative'}">
-                            CFA ${formatNumber(Math.abs(transaction.amount))}
-                        </td>
-                        <td>
-                            <span class="booking-status ${transaction.status.toLowerCase()}">
-                                ${transaction.status}
-                            </span>
-                        </td>
-                    </tr>
-                `).join('')}
+                ${transactions.map(transaction => {
+                    const amount = transaction.calculated_amount || 0;
+                    
+                    // Determine payment status based on booking status
+                    const isPaid = transaction.status === 'confirmed' || transaction.status === 'completed';
+                    const paymentStatus = isPaid ? 'Paid' : 'Pending';
+                    const paymentClass = isPaid ? 'paid' : 'pending';
+                    
+                    return `
+                        <tr>
+                            <td>${formatDate(transaction.event_date)}</td>
+                            <td>${transaction.customer_name}</td>
+                            <td>${transaction.event_type}</td>
+                            <td>
+                                <span class="category-badge">${transaction.category}</span>
+                            </td>
+                            <td class="transaction-amount ${isPaid ? 'positive' : 'pending'}">
+                                CFA ${formatNumber(amount)}
+                            </td>
+                            <td>
+                                <span class="booking-status ${transaction.status.toLowerCase().replace(' ', '-')}">
+                                    ${transaction.status}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="payment-status ${paymentClass}">
+                                    ${paymentStatus}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
             </tbody>
         </table>
     `;
     
     container.innerHTML = tableHTML;
 }
+
 
 // Load reviews
 async function loadReviews() {
