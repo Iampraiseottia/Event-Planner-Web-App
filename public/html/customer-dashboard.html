@@ -88,6 +88,10 @@
             <i class="fas fa-headset"></i>
             <span>Support</span>
           </button>
+          <button class="menu-item" data-section="reviews">
+            <i class="fas fa-star"></i>
+            <span>My Reviews</span>
+          </button>
         </div>
       </aside>
 
@@ -390,7 +394,10 @@
               <div class="support-option">
                 <i class="fas fa-comments"></i>
                 <h3>Live Chat</h3>
-                <p>Chat with our support team in real-time through the purple icon found in the bottom right of the page</p>
+                <p>
+                  Chat with our support team in real-time through the purple
+                  icon found in the bottom right of the page
+                </p>
                 <!-- <button class="btn-primary">Start Chat</button> -->
               </div>
               <div class="support-option">
@@ -470,6 +477,20 @@
             </div>
           </div>
         </section>
+
+        <!-- Review and Rating  -->
+        <section id="reviews" class="content-section">
+          <div class="section-header">
+            <h1>My Reviews</h1>
+            <p>Reviews you've left for event planners</p>
+          </div>
+
+          <div class="reviews-container">
+            <div id="reviewsList" class="reviews-grid">
+              <!-- Reviews will be loaded here -->
+            </div>
+          </div>
+        </section>
       </main>
     </div>
 
@@ -488,6 +509,19 @@
           <button class="btn-primary" id="contactPlannerBtn">
             Contact Planner
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Leave a Review</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body" id="reviewModalBody">
+          <!-- Review form will be loaded here -->
         </div>
       </div>
     </div>
@@ -575,6 +609,5 @@
       })();
     </script>
     <!--End of Tawk.to Script-->
-
   </body>
 </html>

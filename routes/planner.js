@@ -13,10 +13,6 @@ const upload = require("../utils/fileUpload");
 const router = express.Router();
 
 // Get planner statistics
-// Get planner statistics
-// Update the planner stats route in routes/planner.js
-
-// Get planner statistics
 router.get("/stats", requireAuth, requirePlanner, async (req, res) => {
   try {
     const plannerId = req.session.user.id;
