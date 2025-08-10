@@ -165,7 +165,6 @@ router.get("/:id", requireAuth, async (req, res) => {
     }
 
     // Check if user has permission to view this booking
-    // This now uses the planner_id, which is more robust than planner_name
     if (
       req.session.user.user_type === "customer" &&
       booking.customer_id !== req.session.user.id
@@ -267,7 +266,6 @@ router.put("/:id", requireAuth, async (req, res) => {
         });
       }
     } else if (req.session.user.user_type === "planner") {
-      // Added a check for planners to ensure they can only update their own bookings
       if (booking.planner_id !== req.session.user.id) {
         return res.status(403).json({
           error: "You can only update your own bookings",
@@ -369,7 +367,6 @@ router.delete("/:id", requireAuth, async (req, res) => {
         });
       }
     } else if (req.session.user.user_type === "planner") {
-      // Now using planner_id for permission check
       if (booking.planner_id !== req.session.user.id) {
         return res.status(403).json({
           error: "You can only delete your own bookings",

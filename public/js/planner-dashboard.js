@@ -1,4 +1,4 @@
-// planner-dashboard.js 
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
     setupEventListeners();
@@ -1787,6 +1787,8 @@ function displayIndividualReviews(reviews) {
 // Load analytics
 async function loadAnalytics() {
     try {
+        showLoading();
+        
         const response = await fetch('/api/planner/analytics', {
             credentials: 'include'
         });
@@ -1794,16 +1796,554 @@ async function loadAnalytics() {
         if (response.ok) {
             const analytics = await response.json();
             displayAnalytics(analytics);
+        } else {
+            console.error('Failed to load analytics:', response.status);
+            displayAnalytics(getDefaultAnalytics());
         }
     } catch (error) {
         console.error('Error loading analytics:', error);
+        displayAnalytics(getDefaultAnalytics());
+    } finally {
+        hideLoading();
     }
+}
+
+// Default analytics data
+function getDefaultAnalytics() {
+    return {
+        satisfaction: {
+            rate: 0,
+            averageRating: 0,
+            repeatClientRate: 0
+        },
+        bookingTrends: [],
+        eventTypes: [],
+        revenueGrowth: { data: [] },
+        insights: {
+            bookingGrowth: 0,
+            averageRating: 0,
+            averageResponseHours: 0
+        }
+    };
 }
 
 // Display analytics
 function displayAnalytics(analytics) {
-    console.log('Analytics data:', analytics);
+    updateSatisfactionMetrics(analytics.satisfaction);
+    
+    createBookingTrendsChart(analytics.bookingTrends);
+    createEventTypesChart(analytics.eventTypes);
+    createRevenueGrowthChart(analytics.revenueGrowth.data);
+    
+    updatePerformanceInsights(analytics.insights);
 }
+
+// Update satisfaction metrics
+function updateSatisfactionMetrics(satisfaction) {
+    const satisfactionRateEl = document.querySelector('.satisfaction-metrics .metric:nth-child(1) .metric-value');
+    const averageRatingEl = document.querySelector('.satisfaction-metrics .metric:nth-child(2) .metric-value');
+    const repeatClientsEl = document.querySelector('.satisfaction-metrics .metric:nth-child(3) .metric-value');
+    
+    if (satisfactionRateEl) satisfactionRateEl.textContent = `${satisfaction.rate}%`;
+    if (averageRatingEl) averageRatingEl.textContent = `${satisfaction.averageRating.toFixed(1)}/5`;
+    if (repeatClientsEl) repeatClientsEl.textContent = `${satisfaction.repeatClientRate}%`;
+}
+
+// Create booking trends chart
+function createBookingTrendsChart(trendsData) {
+    const canvas = document.getElementById('bookingTrendsChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const labels = trendsData.map(item => `${item.month} ${item.year}`);
+    const bookings = trendsData.map(item => item.bookings);
+    
+    // Clear previous chart
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawLineChart(ctx, {
+        labels,
+        data: bookings,
+        color: '#3B82F6',
+        title: 'Monthly Bookings',
+        width: canvas.width,
+        height: canvas.height
+    });
+}
+
+// Create event types chart (pie chart)
+function createEventTypesChart(eventTypesData) {
+    const canvas = document.getElementById('eventTypesChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Clear previous chart
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    
+    drawPieChart(ctx, {
+        data: eventTypesData,
+        colors,
+        width: canvas.width,
+        height: canvas.height
+    });
+}
+
+// Create revenue growth chart
+function createRevenueGrowthChart(revenueData) {
+    const canvas = document.getElementById('revenueGrowthChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const labels = revenueData.map(item => `${item.month}`);
+    const revenue = revenueData.map(item => item.revenue);
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawBarChart(ctx, {
+        labels,
+        data: revenue,
+        color: '#10B981',
+        title: 'Monthly Revenue',
+        width: canvas.width,
+        height: canvas.height,
+        formatValue: (value) => `CFA ${formatNumber(value)}`
+    });
+}
+
+// Update performance insights
+function updatePerformanceInsights(insights) {
+    const insightsList = document.querySelector('.insights-list');
+    if (!insightsList) return;
+    
+    // Generate insights based on data
+    const insightItems = [];
+    
+    // Booking growth insight
+    if (insights.bookingGrowth > 0) {
+        insightItems.push({
+            type: 'positive',
+            icon: 'fa-trend-up',
+            title: 'Booking Increase',
+            message: `Your bookings increased by ${insights.bookingGrowth}% compared to last month`
+        });
+    } else if (insights.bookingGrowth < 0) {
+        insightItems.push({
+            type: 'warning',
+            icon: 'fa-trend-down',
+            title: 'Booking Decrease',
+            message: `Your bookings decreased by ${Math.abs(insights.bookingGrowth)}% compared to last month`
+        });
+    }
+    
+    // Rating insight
+    if (insights.averageRating >= 4.5) {
+        insightItems.push({
+            type: 'positive',
+            icon: 'fa-star',
+            title: 'Excellent Ratings',
+            message: `Your average rating is ${insights.averageRating.toFixed(1)} stars - keep up the great work!`
+        });
+    } else if (insights.averageRating >= 4.0) {
+        insightItems.push({
+            type: 'info',
+            icon: 'fa-star',
+            title: 'Good Ratings',
+            message: `Your average rating is ${insights.averageRating.toFixed(1)} stars`
+        });
+    }
+    
+    // Response time insight
+    if (insights.averageResponseHours > 24) {
+        insightItems.push({
+            type: 'warning',
+            icon: 'fa-clock',
+            title: 'Response Time',
+            message: 'Consider improving response time to booking inquiries'
+        });
+    } else if (insights.averageResponseHours < 2) {
+        insightItems.push({
+            type: 'positive',
+            icon: 'fa-bolt',
+            title: 'Quick Response',
+            message: 'Great job on responding quickly to booking requests!'
+        });
+    }
+    
+    // Default insights if no data
+    if (insightItems.length === 0) {
+        insightItems.push({
+            type: 'info',
+            icon: 'fa-info-circle',
+            title: 'Getting Started',
+            message: 'Complete more bookings to see detailed insights about your business performance'
+        });
+    }
+    
+    insightsList.innerHTML = insightItems.map(item => `
+        <div class="insight-item ${item.type}">
+            <i class="fas ${item.icon}"></i>
+            <div>
+                <h4>${item.title}</h4>
+                <p>${item.message}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update satisfaction metrics
+function updateSatisfactionMetrics(satisfaction) {
+    const satisfactionRateEl = document.querySelector('.satisfaction-metrics .metric:nth-child(1) .metric-value');
+    const averageRatingEl = document.querySelector('.satisfaction-metrics .metric:nth-child(2) .metric-value');
+    const repeatClientsEl = document.querySelector('.satisfaction-metrics .metric:nth-child(3) .metric-value');
+    
+    if (satisfactionRateEl) satisfactionRateEl.textContent = `${satisfaction.rate}%`;
+    if (averageRatingEl) averageRatingEl.textContent = `${satisfaction.averageRating.toFixed(1)}/5`;
+    if (repeatClientsEl) repeatClientsEl.textContent = `${satisfaction.repeatClientRate}%`;
+}
+
+// Create booking trends chart
+function createBookingTrendsChart(trendsData) {
+    const canvas = document.getElementById('bookingTrendsChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const labels = trendsData.map(item => `${item.month} ${item.year}`);
+    const bookings = trendsData.map(item => item.bookings);
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawLineChart(ctx, {
+        labels,
+        data: bookings,
+        color: '#3B82F6',
+        title: 'Monthly Bookings',
+        width: canvas.width,
+        height: canvas.height
+    });
+}
+
+
+// Line Chart Drawing Function
+function drawLineChart(ctx, options) {
+    const { labels, data, color, width, height } = options;
+    const padding = 40;
+    const chartWidth = width - (padding * 2);
+    const chartHeight = height - (padding * 2);
+    
+    if (data.length === 0) return;
+    
+    const maxValue = Math.max(...data, 1);
+    const minValue = Math.min(...data, 0);
+    const valueRange = maxValue - minValue || 1;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw axes
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    
+    // X-axis
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+    
+    // Y-axis
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.stroke();
+    
+    // Draw grid lines
+    ctx.strokeStyle = '#F3F4F6';
+    ctx.lineWidth = 0.5;
+    
+    // Horizontal grid lines
+    for (let i = 1; i <= 4; i++) {
+        const y = padding + (chartHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
+    
+    // Draw line
+    if (data.length > 1) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        const stepX = chartWidth / (data.length - 1);
+        
+        data.forEach((value, index) => {
+            const x = padding + (stepX * index);
+            const y = height - padding - ((value - minValue) / valueRange) * chartHeight;
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        
+        ctx.stroke();
+        
+        // Draw data points
+        ctx.fillStyle = color;
+        data.forEach((value, index) => {
+            const x = padding + (stepX * index);
+            const y = height - padding - ((value - minValue) / valueRange) * chartHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    }
+    
+    // Draw labels
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    
+    const labelStep = Math.ceil(labels.length / 6);
+    labels.forEach((label, index) => {
+        if (index % labelStep === 0) {
+            const x = padding + (chartWidth / (labels.length - 1)) * index;
+            ctx.fillText(label, x, height - 10);
+        }
+    });
+    
+    // Draw Y-axis labels
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const value = minValue + (valueRange / 4) * (4 - i);
+        const y = padding + (chartHeight / 4) * i;
+        ctx.fillText(Math.round(value).toString(), padding - 10, y + 4);
+    }
+}
+
+// Create event types chart (pie chart)
+function createEventTypesChart(eventTypesData) {
+    const canvas = document.getElementById('eventTypesChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    
+    drawPieChart(ctx, {
+        data: eventTypesData,
+        colors,
+        width: canvas.width,
+        height: canvas.height
+    });
+}
+
+// Create revenue growth chart
+function createRevenueGrowthChart(revenueData) {
+    const canvas = document.getElementById('revenueGrowthChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const labels = revenueData.map(item => `${item.month}`);
+    const revenue = revenueData.map(item => item.revenue);
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawBarChart(ctx, {
+        labels,
+        data: revenue,
+        color: '#10B981',
+        title: 'Monthly Revenue',
+        width: canvas.width,
+        height: canvas.height,
+        formatValue: (value) => `CFA ${formatNumber(value)}`
+    });
+}
+
+// Update performance insights
+function updatePerformanceInsights(insights) {
+    const insightsList = document.querySelector('.insights-list');
+    if (!insightsList) return;
+    
+    const insightItems = [];
+    
+    // Booking growth insight
+    if (insights.bookingGrowth > 0) {
+        insightItems.push({
+            type: 'positive',
+            icon: 'fa-trend-up',
+            title: 'Booking Increase',
+            message: `Your bookings increased by ${insights.bookingGrowth}% compared to last month`
+        });
+    } else if (insights.bookingGrowth < 0) {
+        insightItems.push({
+            type: 'warning',
+            icon: 'fa-trend-down',
+            title: 'Booking Decrease',
+            message: `Your bookings decreased by ${Math.abs(insights.bookingGrowth)}% compared to last month`
+        });
+    }
+    
+    // Rating insight
+    if (insights.averageRating >= 4.5) {
+        insightItems.push({
+            type: 'positive',
+            icon: 'fa-star',
+            title: 'Excellent Ratings',
+            message: `Your average rating is ${insights.averageRating.toFixed(1)} stars - keep up the great work!`
+        });
+    } else if (insights.averageRating >= 4.0) {
+        insightItems.push({
+            type: 'info',
+            icon: 'fa-star',
+            title: 'Good Ratings',
+            message: `Your average rating is ${insights.averageRating.toFixed(1)} stars`
+        });
+    }
+    
+    // Response time insight
+    if (insights.averageResponseHours > 24) {
+        insightItems.push({
+            type: 'warning',
+            icon: 'fa-clock',
+            title: 'Response Time',
+            message: 'Consider improving response time to booking inquiries'
+        });
+    } else if (insights.averageResponseHours < 2) {
+        insightItems.push({
+            type: 'positive',
+            icon: 'fa-bolt',
+            title: 'Quick Response',
+            message: 'Great job on responding quickly to booking requests!'
+        });
+    }
+    
+    // Default insights if no data
+    if (insightItems.length === 0) {
+        insightItems.push({
+            type: 'info',
+            icon: 'fa-info-circle',
+            title: 'Getting Started',
+            message: 'Complete more bookings to see detailed insights about your business performance'
+        });
+    }
+    
+    insightsList.innerHTML = insightItems.map(item => `
+        <div class="insight-item ${item.type}">
+            <i class="fas ${item.icon}"></i>
+            <div>
+                <h4>${item.title}</h4>
+                <p>${item.message}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+
+
+
+function drawPieChart(ctx, options) {
+    const { data, colors, width, height } = options;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 3;
+    
+    if (data.length === 0) return;
+    
+    const total = data.reduce((sum, item) => sum + item.count, 0);
+    
+    let currentAngle = -Math.PI / 2; 
+    
+    data.forEach((item, index) => {
+        const sliceAngle = (item.count / total) * 2 * Math.PI;
+        const color = colors[index % colors.length];
+        
+        // Draw slice
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw label
+        const labelAngle = currentAngle + sliceAngle / 2;
+        const labelX = centerX + Math.cos(labelAngle) * (radius + 20);
+        const labelY = centerY + Math.sin(labelAngle) * (radius + 20);
+        
+        ctx.fillStyle = '#374151';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${item.event_type}`, labelX, labelY);
+        ctx.fillText(`${item.percentage}%`, labelX, labelY + 15);
+        
+        currentAngle += sliceAngle;
+    });
+}
+
+function drawBarChart(ctx, options) {
+    const { labels, data, color, width, height, formatValue } = options;
+    const padding = 40;
+    const chartWidth = width - (padding * 2);
+    const chartHeight = height - (padding * 2);
+    
+    if (data.length === 0) return;
+    
+    const maxValue = Math.max(...data, 1);
+    const barWidth = chartWidth / data.length * 0.6;
+    const barSpacing = chartWidth / data.length;
+    
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    
+    // X-axis
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+    
+    // Y-axis
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.stroke();
+    
+    // Draw bars
+    ctx.fillStyle = color;
+    data.forEach((value, index) => {
+        const barHeight = (value / maxValue) * chartHeight;
+        const x = padding + (index * barSpacing) + (barSpacing - barWidth) / 2;
+        const y = height - padding - barHeight;
+        
+        ctx.fillRect(x, y, barWidth, barHeight);
+        
+        // Draw value on top of bar
+        ctx.fillStyle = '#374151';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        const displayValue = formatValue ? formatValue(value) : value.toString();
+        ctx.fillText(displayValue, x + barWidth / 2, y - 5);
+        
+        ctx.fillStyle = color;
+    });
+    
+    // Draw labels
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    
+    labels.forEach((label, index) => {
+        const x = padding + (index * barSpacing) + barSpacing / 2;
+        ctx.fillText(label, x, height - 10);
+    });
+}
+
 
 // Setup charts 
 function setupCharts() {

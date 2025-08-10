@@ -9,7 +9,6 @@ router.post("/register", async (req, res) => {
   try {
     const { full_name, email, phone_number, password, user_type } = req.body;
 
-    // Validate required fields
     if (!full_name || !email || !password) {
       return res.status(400).json({
         error: "Full name, email, and password are required",
@@ -204,7 +203,6 @@ router.put("/profile", requireAuth, async (req, res) => {
     const { full_name, email, phone_number } = req.body;
     const userId = req.session.user.id;
 
-    // Validate required fields
     if (!full_name || !email) {
       return res.status(400).json({
         error: "Full name and email are required",

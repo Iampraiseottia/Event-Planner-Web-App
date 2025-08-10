@@ -1,5 +1,5 @@
 
-// Authentication middleware using sessions
+// Authentication using sessions
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.user) {
     return next();
@@ -26,7 +26,7 @@ const requireCustomer = (req, res, next) => {
 };
 
 
-// Also check your requirePlanner middleware - it should look like this:
+//  check require Planner 
 const requirePlanner = (req, res, next) => {
   console.log("=== REQUIRE PLANNER DEBUG ===");
   console.log("User from session:", req.session?.user);

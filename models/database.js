@@ -49,7 +49,6 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
-// Export a query function that uses the pool
 module.exports = {
   query: (text, params) => {
     console.log('EXECUTING QUERY:', text, params || '');

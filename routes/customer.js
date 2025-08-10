@@ -1,4 +1,3 @@
-// routes/customer.js
 const express = require("express");
 const { requireAuth, requireCustomer } = require("../middleware/auth");
 const Booking = require("../models/Booking");
@@ -121,7 +120,7 @@ router.get("/bookings", requireAuth, requireCustomer, async (req, res) => {
     console.error("Error loading bookings:", error);
     res.status(500).json({
       error: "Failed to load bookings",
-      bookings: [], // Return empty array as fallback
+      bookings: [], 
     });
   }
 });
@@ -400,7 +399,6 @@ router.put("/profile", requireAuth, requireCustomer, async (req, res) => {
       return res.status(400).json({ error: "Invalid phone number format" });
     }
 
-    // Update user in database
     const updatedUser = await User.update(userId, profileData);
 
     if (!updatedUser) {
@@ -554,7 +552,7 @@ router.post("/reviews", requireAuth, requireCustomer, async (req, res) => {
       });
     }
 
-    // Create review - removed updated_at, only use created_at
+    // Create review 
     const insertQuery = `
       INSERT INTO reviews (booking_id, customer_id, planner_id, rating, comment, created_at)
       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)

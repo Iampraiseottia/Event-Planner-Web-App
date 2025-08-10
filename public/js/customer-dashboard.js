@@ -1,4 +1,3 @@
-// customer-dashboard.js 
 document.addEventListener("DOMContentLoaded", function () {
   initializeDashboard();
 
@@ -59,7 +58,6 @@ async function checkAuthStatus() {
 function updateUserInterface() {
   if (!currentUser) return;
 
-  // Update welcome message
   const customerNameEl = document.getElementById("customerName");
   if (customerNameEl) {
     customerNameEl.textContent = currentUser.full_name || "Customer";

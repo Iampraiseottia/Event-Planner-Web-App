@@ -1,4 +1,3 @@
-// routes/planner.js 
 const express = require("express");
 const {
   requireAuth,
@@ -1062,7 +1061,7 @@ router.get("/earnings", requireAuth, requirePlanner, async (req, res) => {
         ((thisMonthEarnings - previousMonthEarnings) / previousMonthEarnings) *
         100;
     } else if (thisMonthEarnings > 0) {
-      monthlyChange = 100; 
+      monthlyChange = 100;
     }
 
     const monthNames = [
@@ -1179,28 +1178,28 @@ router.get("/reviews", requireAuth, requirePlanner, async (req, res) => {
     const [overallResult, breakdownResult, reviewsResult] = await Promise.all([
       pool.query(overallQuery, [plannerId]),
       pool.query(breakdownQuery, [plannerId]),
-      pool.query(reviewsQuery, [plannerId])
+      pool.query(reviewsQuery, [plannerId]),
     ]);
 
     const overall = overallResult.rows[0];
     const breakdown = {};
-    
+
     for (let i = 1; i <= 5; i++) {
       breakdown[i.toString()] = 0;
     }
-    
+
     // Fill in actual counts
-    breakdownResult.rows.forEach(row => {
+    breakdownResult.rows.forEach((row) => {
       breakdown[row.rating.toString()] = parseInt(row.count);
     });
 
     const responseData = {
       overall: {
         rating: parseFloat(overall.average_rating) || 0,
-        total: parseInt(overall.total_reviews) || 0
+        total: parseInt(overall.total_reviews) || 0,
       },
       breakdown: breakdown,
-      reviews: reviewsResult.rows
+      reviews: reviewsResult.rows,
     };
 
     res.json(responseData);
@@ -1210,5 +1209,258 @@ router.get("/reviews", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
+// Get analytics data
+router.get("/analytics", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+
+    // Extract price from category
+    const extractPriceFromCategory = (category) => {
+      if (!category) return 0;
+      const priceMap = {
+        "Platinum ~ 2.5M": 2500000,
+        "Diamond ~ 1.5M": 1500000,
+        "Gold ~ 1.0M": 1000000,
+        "Bronze ~ 800K": 800000,
+        "Silver ~ 500K": 500000,
+        "High Class ~ 250K": 250000,
+        "Normal Class ~ 120K": 120000,
+        "Lowest Class ~ 80K": 80000,
+      };
+      return priceMap[category] || 0;
+    };
+
+    // Booking trends for the last 12 months
+    const bookingTrendsQuery = `
+      SELECT 
+        EXTRACT(YEAR FROM event_date) as year,
+        EXTRACT(MONTH FROM event_date) as month,
+        COUNT(*) as bookings_count,
+        array_agg(CASE WHEN status IN ('confirmed', 'completed') THEN category ELSE NULL END) as revenue_categories
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND event_date >= CURRENT_DATE - INTERVAL '12 months'
+      AND deleted_at IS NULL
+      GROUP BY EXTRACT(YEAR FROM event_date), EXTRACT(MONTH FROM event_date)
+      ORDER BY year, month
+    `;
+
+    // Event types distribution
+    const eventTypesQuery = `
+      SELECT 
+        event_type,
+        COUNT(*) as count,
+        ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 1) as percentage
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status IN ('confirmed', 'completed', 'pending')
+      AND deleted_at IS NULL
+      GROUP BY event_type
+      ORDER BY count DESC
+    `;
+
+    // Client satisfaction metrics
+    const satisfactionQuery = `
+      SELECT 
+        COUNT(r.id) as total_reviews,
+        AVG(r.rating) as average_rating,
+        COUNT(CASE WHEN r.rating >= 4 THEN 1 END) as satisfied_reviews,
+        COUNT(DISTINCT b.customer_id) as total_clients,
+        COUNT(DISTINCT CASE 
+          WHEN client_bookings.booking_count > 1 THEN b.customer_id 
+          ELSE NULL 
+        END) as repeat_clients
+      FROM bookings b
+      LEFT JOIN reviews r ON b.id = r.booking_id
+      LEFT JOIN (
+        SELECT customer_id, COUNT(*) as booking_count
+        FROM bookings 
+        WHERE planner_id = $1 AND deleted_at IS NULL
+        GROUP BY customer_id
+      ) client_bookings ON b.customer_id = client_bookings.customer_id
+      WHERE b.planner_id = $1 AND b.deleted_at IS NULL
+    `;
+
+    // Revenue growth comparison (current vs previous month)
+    const revenueGrowthQuery = `
+      SELECT 
+        CASE 
+          WHEN EXTRACT(YEAR FROM event_date) = $2 AND EXTRACT(MONTH FROM event_date) = $3 
+          THEN 'current_month'
+          WHEN EXTRACT(YEAR FROM event_date) = $4 AND EXTRACT(MONTH FROM event_date) = $5 
+          THEN 'previous_month'
+        END as period,
+        array_agg(CASE WHEN status IN ('confirmed', 'completed') THEN category ELSE NULL END) as revenue_categories,
+        COUNT(CASE WHEN status IN ('confirmed', 'completed') THEN 1 END) as completed_bookings
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND ((EXTRACT(YEAR FROM event_date) = $2 AND EXTRACT(MONTH FROM event_date) = $3) 
+           OR (EXTRACT(YEAR FROM event_date) = $4 AND EXTRACT(MONTH FROM event_date) = $5))
+      AND deleted_at IS NULL
+      GROUP BY period
+    `;
+
+    // Performance insights data
+    const insightsQuery = `
+      SELECT 
+        AVG(EXTRACT(EPOCH FROM (b.updated_at - b.created_at))/3600) as avg_response_hours,
+        COUNT(CASE WHEN b.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as recent_bookings,
+        COUNT(CASE WHEN b.created_at >= CURRENT_DATE - INTERVAL '60 days' 
+                   AND b.created_at < CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as previous_period_bookings
+      FROM bookings b
+      WHERE b.planner_id = $1 AND b.deleted_at IS NULL
+    `;
+
+    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+
+    // Execute all queries
+    const [
+      trendsResult,
+      eventTypesResult,
+      satisfactionResult,
+      revenueResult,
+      insightsResult,
+    ] = await Promise.all([
+      pool.query(bookingTrendsQuery, [plannerId]),
+      pool.query(eventTypesQuery, [plannerId]),
+      pool.query(satisfactionQuery, [plannerId]),
+      pool.query(revenueGrowthQuery, [
+        plannerId,
+        currentYear,
+        currentMonth,
+        previousYear,
+        previousMonth,
+      ]),
+      pool.query(insightsQuery, [plannerId]),
+    ]);
+
+    // Process booking trends
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const bookingTrends = trendsResult.rows.map((row) => {
+      let revenue = 0;
+      if (row.revenue_categories && Array.isArray(row.revenue_categories)) {
+        revenue = row.revenue_categories
+          .filter((category) => category !== null)
+          .reduce(
+            (sum, category) => sum + extractPriceFromCategory(category),
+            0
+          );
+      }
+
+      return {
+        month: monthNames[row.month - 1],
+        year: parseInt(row.year),
+        bookings: parseInt(row.bookings_count) || 0,
+        revenue: revenue,
+      };
+    });
+
+    const eventTypes = eventTypesResult.rows;
+
+    // Process satisfaction metrics
+    const satisfaction = satisfactionResult.rows[0];
+    const satisfactionRate =
+      satisfaction.total_reviews > 0
+        ? Math.round(
+            (satisfaction.satisfied_reviews / satisfaction.total_reviews) * 100
+          )
+        : 0;
+    const repeatClientRate =
+      satisfaction.total_clients > 0
+        ? Math.round(
+            (satisfaction.repeat_clients / satisfaction.total_clients) * 100
+          )
+        : 0;
+
+    // Process revenue growth
+    let currentMonthRevenue = 0;
+    let previousMonthRevenue = 0;
+
+    revenueResult.rows.forEach((row) => {
+      let revenue = 0;
+      if (row.revenue_categories && Array.isArray(row.revenue_categories)) {
+        revenue = row.revenue_categories
+          .filter((category) => category !== null)
+          .reduce(
+            (sum, category) => sum + extractPriceFromCategory(category),
+            0
+          );
+      }
+
+      if (row.period === "current_month") {
+        currentMonthRevenue = revenue;
+      } else if (row.period === "previous_month") {
+        previousMonthRevenue = revenue;
+      }
+    });
+
+    const revenueGrowthPercentage =
+      previousMonthRevenue > 0
+        ? Math.round(
+            ((currentMonthRevenue - previousMonthRevenue) /
+              previousMonthRevenue) *
+              100
+          )
+        : currentMonthRevenue > 0
+        ? 100
+        : 0;
+
+    const revenueGrowthData = bookingTrends.slice(-6);
+
+    // Process insights
+    const insights = insightsResult.rows[0];
+    const bookingGrowth =
+      insights.previous_period_bookings > 0
+        ? Math.round(
+            ((insights.recent_bookings - insights.previous_period_bookings) /
+              insights.previous_period_bookings) *
+              100
+          )
+        : insights.recent_bookings > 0
+        ? 100
+        : 0;
+
+    const analyticsData = {
+      bookingTrends,
+      eventTypes,
+      satisfaction: {
+        rate: satisfactionRate,
+        averageRating: parseFloat(satisfaction.average_rating) || 0,
+        repeatClientRate,
+      },
+      revenueGrowth: {
+        percentage: revenueGrowthPercentage,
+        data: revenueGrowthData,
+      },
+      insights: {
+        bookingGrowth,
+        averageRating: parseFloat(satisfaction.average_rating) || 0,
+        averageResponseHours: parseFloat(insights.avg_response_hours) || 0,
+      },
+    };
+
+    res.json(analyticsData);
+  } catch (error) {
+    console.error("Error loading analytics:", error);
+    res.status(500).json({ error: "Failed to load analytics data" });
+  }
+});
 
 module.exports = router;
