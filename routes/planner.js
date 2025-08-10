@@ -1,4 +1,4 @@
-// routes/planner.js
+// routes/planner.js 
 const express = require("express");
 const {
   requireAuth,
@@ -1127,5 +1127,88 @@ router.get("/earnings", requireAuth, requirePlanner, async (req, res) => {
     res.status(500).json({ error: "Failed to load earnings data" });
   }
 });
+
+// Get planner reviews
+router.get("/reviews", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+
+    // Iverall rating and total reviews
+    const overallQuery = `
+      SELECT 
+        COALESCE(AVG(r.rating), 0) as average_rating,
+        COUNT(r.id) as total_reviews
+      FROM reviews r
+      INNER JOIN bookings b ON r.booking_id = b.id
+      WHERE b.planner_id = $1 AND b.deleted_at IS NULL
+    `;
+
+    // Rating breakdown (count of each star rating)
+    const breakdownQuery = `
+      SELECT 
+        r.rating,
+        COUNT(*) as count
+      FROM reviews r
+      INNER JOIN bookings b ON r.booking_id = b.id
+      WHERE b.planner_id = $1 AND b.deleted_at IS NULL
+      GROUP BY r.rating
+      ORDER BY r.rating DESC
+    `;
+
+    // Individual reviews with booking and customer details
+    const reviewsQuery = `
+      SELECT 
+        r.id,
+        r.rating,
+        r.comment,
+        r.created_at,
+        b.id as booking_id,
+        b.event_type,
+        b.event_date,
+        b.location,
+        b.status as booking_status,
+        u.full_name as customer_name,
+        u.id as customer_id
+      FROM reviews r
+      INNER JOIN bookings b ON r.booking_id = b.id
+      INNER JOIN users u ON b.customer_id = u.id
+      WHERE b.planner_id = $1 AND b.deleted_at IS NULL
+      ORDER BY r.created_at DESC
+    `;
+
+    const [overallResult, breakdownResult, reviewsResult] = await Promise.all([
+      pool.query(overallQuery, [plannerId]),
+      pool.query(breakdownQuery, [plannerId]),
+      pool.query(reviewsQuery, [plannerId])
+    ]);
+
+    const overall = overallResult.rows[0];
+    const breakdown = {};
+    
+    for (let i = 1; i <= 5; i++) {
+      breakdown[i.toString()] = 0;
+    }
+    
+    // Fill in actual counts
+    breakdownResult.rows.forEach(row => {
+      breakdown[row.rating.toString()] = parseInt(row.count);
+    });
+
+    const responseData = {
+      overall: {
+        rating: parseFloat(overall.average_rating) || 0,
+        total: parseInt(overall.total_reviews) || 0
+      },
+      breakdown: breakdown,
+      reviews: reviewsResult.rows
+    };
+
+    res.json(responseData);
+  } catch (error) {
+    console.error("Error loading reviews:", error);
+    res.status(500).json({ error: "Failed to load reviews" });
+  }
+});
+
 
 module.exports = router;

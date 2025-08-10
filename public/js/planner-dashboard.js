@@ -1668,6 +1668,8 @@ function displayTransactions(transactions) {
 // Load reviews
 async function loadReviews() {
     try {
+        showLoading();
+        
         const response = await fetch('/api/planner/reviews', {
             credentials: 'include'
         });
@@ -1675,9 +1677,15 @@ async function loadReviews() {
         if (response.ok) {
             reviewsData = await response.json();
             displayReviews(reviewsData);
+        } else {
+            console.error('Failed to load reviews:', response.status);
+            displayReviews({ overall: { rating: 0, total: 0 }, breakdown: {}, reviews: [] });
         }
     } catch (error) {
         console.error('Error loading reviews:', error);
+        displayReviews({ overall: { rating: 0, total: 0 }, breakdown: {}, reviews: [] });
+    } finally {
+        hideLoading();
     }
 }
 
@@ -1693,22 +1701,30 @@ function displayReviews(reviews) {
     if (totalReviewsEl) totalReviewsEl.textContent = `${overallRating.total} reviews`;
     if (starsContainer) starsContainer.innerHTML = generateStars(overallRating.rating);
     
-    // Rating breakdown
+    // Rating breakdown with dynamic progress bars
     const breakdown = reviews.breakdown || {};
-    const fiveStarEl = document.getElementById('five-star-count');
-    const fourStarEl = document.getElementById('four-star-count');
-    const threeStarEl = document.getElementById('three-star-count');
-    const twoStarEl = document.getElementById('two-star-count');
-    const oneStarEl = document.getElementById('one-star-count');
-    
-    if (fiveStarEl) fiveStarEl.textContent = breakdown['5'] || 0;
-    if (fourStarEl) fourStarEl.textContent = breakdown['4'] || 0;
-    if (threeStarEl) threeStarEl.textContent = breakdown['3'] || 0;
-    if (twoStarEl) twoStarEl.textContent = breakdown['2'] || 0;
-    if (oneStarEl) oneStarEl.textContent = breakdown['1'] || 0;
+    for (let i = 1; i <= 5; i++) {
+        const countEl = document.getElementById(`${getStarWord(i)}-star-count`);
+        const progressEl = document.querySelector(`.rating-bar:nth-child(${6-i}) .fill`);
+        
+        if (countEl) countEl.textContent = breakdown[i.toString()] || 0;
+        if (progressEl) {
+            const percentage = overallRating.total > 0 
+                ? ((breakdown[i.toString()] || 0) / overallRating.total * 100) 
+                : 0;
+            progressEl.style.width = `${percentage}%`;
+        }
+    }
     
     displayIndividualReviews(reviews.reviews || []);
 }
+
+// Get star word
+function getStarWord(num) {
+    const words = ['', 'one', 'two', 'three', 'four', 'five'];
+    return words[num];
+}
+
 
 // Display individual reviews
 function displayIndividualReviews(reviews) {
@@ -1716,7 +1732,13 @@ function displayIndividualReviews(reviews) {
     if (!container) return;
     
     if (!reviews || reviews.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500">No reviews yet</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-star" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+                <h3>No reviews yet</h3>
+                <p>Customer reviews will appear here after they rate your services</p>
+            </div>
+        `;
         return;
     }
     
@@ -1725,23 +1747,42 @@ function displayIndividualReviews(reviews) {
             <div class="review-header">
                 <div class="reviewer-info">
                     <div class="reviewer-avatar">
-                        ${review.customer_name.charAt(0).toUpperCase()}
+                        ${review.customer_name ? review.customer_name.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div class="reviewer-details">
-                        <h4>${review.customer_name}</h4>
-                        <p>${review.event_type} - ${formatDate(review.event_date)}</p>
+                        <h4>${review.customer_name || 'Anonymous'}</h4>
+                        <p class="review-event-info">
+                            <i class="fas fa-calendar"></i> ${review.event_type} - ${formatDate(review.event_date)}
+                        </p>
+                        <p class="review-booking-info">
+                            <i class="fas fa-map-marker-alt"></i> ${review.location}
+                        </p>
                     </div>
                 </div>
-                <div class="review-rating">
-                    ${generateStars(review.rating)}
+                <div class="review-meta">
+                    <div class="review-rating">
+                        ${generateStars(review.rating)}
+                        <span class="rating-number">${review.rating}/5</span>
+                    </div>
+                    <div class="review-date">
+                        <small class="text-gray-500">
+                            <i class="fas fa-clock"></i> ${formatTimeAgo(review.created_at)}
+                        </small>
+                    </div>
                 </div>
             </div>
             <div class="review-content">
-                ${review.comment}
+                <p>${review.comment || 'No comment provided'}</p>
+            </div>
+            <div class="review-booking-status">
+                <span class="booking-status ${review.booking_status.toLowerCase().replace(' ', '-')}">
+                    ${review.booking_status}
+                </span>
             </div>
         </div>
     `).join('');
 }
+
 
 // Load analytics
 async function loadAnalytics() {
@@ -2091,7 +2132,7 @@ function getActivityIcon(type) {
 function generateStars(rating) {
     let stars = '';
     const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+    const hasHalfStar = rating % 1 >= 0.5;
     
     for (let i = 0; i < fullStars; i++) {
         stars += '<i class="fas fa-star"></i>';
