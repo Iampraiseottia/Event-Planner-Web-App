@@ -2565,13 +2565,6 @@ body {
     padding: 1rem;
   }
 
-  .client-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.75rem;
-  }
-
   .client-avatar {
     width: 50px;
     height: 50px;
@@ -2785,6 +2778,16 @@ body {
   width: 130% !important;
 }
 
+@media (max-width: 700px) {
+  .client-card {
+    width: 80% !important;
+  }
+
+  #clientSearch{
+    width: 85% !important;
+  }
+}
+
 .client-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
@@ -2911,10 +2914,6 @@ body {
     padding: 1rem;
   }
 
-  .client-stats {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
 
   .client-actions {
     justify-content: center;

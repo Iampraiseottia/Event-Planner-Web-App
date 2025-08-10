@@ -14,18 +14,16 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
-    "fs": "^0.0.1-security",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
-    "path": "^0.12.7",
     "pg": "^8.11.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "keywords": [
     "nodejs",
@@ -34,6 +32,6 @@
     "event-planning",
     "api"
   ],
-  "author": "Your Name",
+  "author": "Ottia Praise",
   "license": "MIT"
 }
