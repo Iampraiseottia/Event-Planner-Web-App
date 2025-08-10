@@ -796,11 +796,11 @@ function displayEventHistory(history) {
                     ${event.status === 'completed' ? `
                     <div class="review-actions">
                         ${event.rating ? `
-                            <button class="btn-sm-secondary" onclick="event.stopPropagation(); editReview(${event.id})" title="Edit your review">
+                            <button class="btn-sm-secondary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"  onclick="event.stopPropagation(); editReview(${event.id})" title="Edit your review">
                                 <i class="fas fa-edit"></i> Edit Review
                             </button>
                         ` : `
-                            <button class="btn-sm-primary" style="height: 40px !important; " onclick="event.stopPropagation(); showReviewModal(${event.id}, '${event.planner_name}', '${event.event_type}', '${event.event_date}')" title="Leave a review">
+                            <button class="btn-sm-primary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"  style="height: 40px !important; " onclick="event.stopPropagation(); showReviewModal(${event.id}, '${event.planner_name}', '${event.event_type}', '${event.event_date}')" title="Leave a review">
                                 <i class="fas fa-star"></i> Leave Review
                             </button>
                         `}
@@ -1623,12 +1623,12 @@ function displayCustomerReviews(reviews) {
         <div class="review-card">
             <div class="review-header">
                 <div class="planner-info">
-                    <h4>${review.planner_name}</h4>
+                    <h4 style="color: #8b5cf6 !important;">${review.planner_name}</h4>
                     <p>${review.event_type} - ${formatDate(review.event_date)}</p>
                 </div>
-                <div class="review-rating">
+                <div class="review-rating" style="color: rgb(255, 217, 0) !important;">
                     ${generateStars(review.rating || 0)}
-                    <span class="rating-number">${review.rating || 0}/5</span>
+                    <span class="rating-number" style="color: rgb(0, 0, 0) !important;">${review.rating || 0}/5</span>
                 </div>
             </div>
             <div class="review-content">
@@ -1639,7 +1639,7 @@ function displayCustomerReviews(reviews) {
                     Reviewed on ${formatDate(review.created_at)}
                 </small>
                 ${review.rating ? `
-                    <button class="btn-sm secondary" onclick="editReview(${review.booking_id})">
+                    <button class="btn-sm secondary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;" onclick="editReview(${review.booking_id})">
                         <i class="fas fa-edit"></i> Edit Review
                     </button>
                 ` : ''}
@@ -1860,9 +1860,9 @@ function showEditReviewModal(reviewData) {
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn-danger" onclick="deleteReview(${reviewData.booking_id})">Delete Review</button>
-                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-primary">Update Review</button>
+                    <button type="button" style="background: linear-gradient(135deg, rgb(255, 67, 67), rgb(255, 158, 158) ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"   class="btn-danger" onclick="deleteReview(${reviewData.booking_id})">Delete Review</button>
+                    <button type="button" style="background: linear-gradient(135deg, rgb(143, 141, 141), rgb(198, 198, 198) ) !important; color: #000 !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"  class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;" >Update Review</button>
                 </div>
             </form>
         </div>
