@@ -1,4 +1,4 @@
-
+// planner-dashboard.js 
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
     setupEventListeners();
@@ -17,6 +17,8 @@ let reviewsData = [];
 let currentCalendarDate = new Date();
 let currentBookingId = null;
 let scheduleData = [];
+let notificationsData = [];
+let filteredNotifications = [];
 
 // Initialize dashboard
 function initializeDashboard() {
@@ -181,10 +183,307 @@ function showSection(sectionName) {
                 loadWorkingHours();
                 loadBlockedDates();
                 break;
+            case 'notifications':
+                loadNotifications();
+                break;
         }
     }
 }
 
+
+// Load notifications
+async function loadNotifications() {
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/planner/notifications', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            notificationsData = await response.json();
+            filteredNotifications = [...notificationsData];
+            displayNotifications(filteredNotifications);
+            updateNotificationCount();
+        } else {
+            console.error('Failed to load notifications:', response.status);
+            displayNotifications([]);
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        displayNotifications([]);
+    } finally {
+        hideLoading();
+    }
+}
+
+
+
+// Display notifications
+function displayNotifications(notifications) {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+            <div class="empty-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <h3>No notifications</h3>
+                <p>You're all caught up! New notifications will appear here.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort by created_at desc, unread first
+    notifications.sort((a, b) => {
+        if (a.is_read !== b.is_read) {
+            return a.is_read ? 1 : -1;
+        }
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    container.innerHTML = notifications.map(notification => `
+        <div class="notification-item ${notification.is_read ? 'read' : 'unread'}" 
+             onclick="markAsRead(${notification.id})" 
+             data-id="${notification.id}"
+             data-type="${notification.type}">
+            
+            <div class="notification-icon ${notification.type}">
+                <i class="fas ${getNotificationIcon(notification.type)}"></i>
+            </div>
+            
+            <div class="notification-content">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                
+                <div class="notification-meta">
+                    <div class="notification-time">
+                        <i class="fas fa-clock"></i>
+                        ${formatTimeAgo(notification.created_at)}
+                    </div>
+                    <div class="notification-actions-small">
+                        ${!notification.is_read ? `
+                            <button class="notification-action-btn" onclick="event.stopPropagation(); markAsRead(${notification.id})">
+                                Mark Read
+                            </button>
+                        ` : ''}
+                        <button class="notification-action-btn delete" onclick="event.stopPropagation(); deleteNotification(${notification.id})">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            ${notification.priority ? `<div class="notification-priority ${notification.priority}"></div>` : ''}
+        </div>
+    `).join('');
+}
+
+
+// Get notification icon based on type
+function getNotificationIcon(type) {
+    const icons = {
+        'booking': 'fa-calendar-plus',
+        'payment': 'fa-dollar-sign',
+        'review': 'fa-star',
+        'system': 'fa-cog',
+        'reminder': 'fa-bell',
+        'message': 'fa-envelope',
+        'update': 'fa-info-circle'
+    };
+    return icons[type] || 'fa-bell';
+}
+
+// Update notification count in sidebar
+function updateNotificationCount() {
+    const unreadCount = notificationsData.filter(n => !n.is_read).length;
+    const countBadge = document.getElementById('notificationCount');
+    const navCountBadge = document.getElementById('navNotificationCount');
+    
+    if (countBadge) {
+        countBadge.textContent = unreadCount;
+        countBadge.classList.toggle('zero', unreadCount === 0);
+    }
+    
+    if (navCountBadge) {
+        navCountBadge.textContent = unreadCount;
+    }
+}
+
+
+// Mark notification as read
+async function markAsRead(notificationId) {
+    try {
+        const response = await fetch(`/api/planner/notifications/${notificationId}/read`, {
+            method: 'PUT',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const notification = notificationsData.find(n => n.id === notificationId);
+            if (notification) {
+                notification.is_read = true;
+            }
+            
+            const filteredNotification = filteredNotifications.find(n => n.id === notificationId);
+            if (filteredNotification) {
+                filteredNotification.is_read = true;
+            }
+            
+            displayNotifications(filteredNotifications);
+            updateNotificationCount();
+            
+            handleNotificationAction(notification);
+        } else {
+            showNotification('Error marking notification as read', 'error');
+        }
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        showNotification('Error marking notification as read', 'error');
+    }
+}
+
+// Notification action 
+function handleNotificationAction(notification) {
+    if (!notification || !notification.action_url) return;
+    
+    // Parse action URL to determine where to navigate
+    if (notification.action_url.includes('/bookings/')) {
+        const bookingId = notification.action_url.match(/\/bookings\/(\d+)/);
+        if (bookingId) {
+            showSection('bookings');
+            setTimeout(() => {
+                showBookingDetails(parseInt(bookingId[1]));
+            }, 500);
+        }
+    } else if (notification.action_url.includes('/reviews')) {
+        showSection('reviews');
+    } else if (notification.action_url.includes('/earnings')) {
+        showSection('earnings');
+    }
+}
+
+// Delete notification
+async function deleteNotification(notificationId) {
+    if (!confirm('Are you sure you want to delete this notification?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/planner/notifications/${notificationId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            notificationsData = notificationsData.filter(n => n.id !== notificationId);
+            filteredNotifications = filteredNotifications.filter(n => n.id !== notificationId);
+            
+            displayNotifications(filteredNotifications);
+            updateNotificationCount();
+            showNotification('Notification deleted', 'success');
+        } else {
+            showNotification('Error deleting notification', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        showNotification('Error deleting notification', 'error');
+    }
+}
+
+// Mark all notifications as read
+async function markAllAsRead() {
+    const unreadNotifications = notificationsData.filter(n => !n.is_read);
+    
+    if (unreadNotifications.length === 0) {
+        showNotification('All notifications are already read', 'info');
+        return;
+    }
+    
+    if (!confirm(`Mark all ${unreadNotifications.length} notifications as read?`)) {
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/planner/notifications/mark-all-read', {
+            method: 'PUT',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            notificationsData.forEach(n => n.is_read = true);
+            filteredNotifications.forEach(n => n.is_read = true);
+            
+            displayNotifications(filteredNotifications);
+            updateNotificationCount();
+            showNotification('All notifications marked as read', 'success');
+        } else {
+            showNotification('Error marking notifications as read', 'error');
+        }
+    } catch (error) {
+        console.error('Error marking all as read:', error);
+        showNotification('Error marking notifications as read', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Clear all notifications
+async function clearAllNotifications() {
+    if (notificationsData.length === 0) {
+        showNotification('No notifications to clear', 'info');
+        return;
+    }
+    
+    if (!confirm(`Delete all ${notificationsData.length} notifications? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch('/api/planner/notifications/clear-all', {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            notificationsData = [];
+            filteredNotifications = [];
+            displayNotifications([]);
+            updateNotificationCount();
+            showNotification('All notifications cleared', 'success');
+        } else {
+            showNotification('Error clearing notifications', 'error');
+        }
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        showNotification('Error clearing notifications', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+
+// Filter notifications
+function filterNotifications() {
+    const filterValue = document.getElementById('notificationFilter').value;
+    
+    if (filterValue === 'all') {
+        filteredNotifications = [...notificationsData];
+    } else if (filterValue === 'unread') {
+        filteredNotifications = notificationsData.filter(n => !n.is_read);
+    } else if (filterValue === 'read') {
+        filteredNotifications = notificationsData.filter(n => n.is_read);
+    } else {
+        filteredNotifications = notificationsData.filter(n => n.type === filterValue);
+    }
+    
+    displayNotifications(filteredNotifications);
+}
 
 
 // Client filter to bookings
@@ -254,7 +553,6 @@ function setupEventListeners() {
 
 
 // Load dashboard data
-// Modify the loadDashboardData function to include earnings
 async function loadDashboardData() {
     try {
         showLoading();
@@ -265,7 +563,8 @@ async function loadDashboardData() {
             loadRecentActivity(),
             loadUpcomingEvents(),
             loadBookings(),
-            loadEarnings() // Add this line
+            loadEarnings(),
+            loadNotifications()
         ]);
         
     } catch (error) {
@@ -275,6 +574,7 @@ async function loadDashboardData() {
         hideLoading();
     }
 }
+
 
 // Load statistics
 async function loadStats() {

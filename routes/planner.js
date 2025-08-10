@@ -1,3 +1,4 @@
+// routes/planner.js
 const express = require("express");
 const {
   requireAuth,
@@ -1462,5 +1463,338 @@ router.get("/analytics", requireAuth, requirePlanner, async (req, res) => {
     res.status(500).json({ error: "Failed to load analytics data" });
   }
 });
+
+
+// Get recent activity for planner
+router.get("/activity", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+    
+    const activityQuery = `
+      SELECT 
+        'booking' as type,
+        'New Booking Request' as title,
+        CONCAT('New ', event_type, ' booking from ', (
+          SELECT full_name FROM users WHERE id = customer_id
+        )) as description,
+        created_at
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status = 'pending'
+      AND created_at >= CURRENT_DATE - INTERVAL '7 days'
+      AND deleted_at IS NULL
+      
+      UNION ALL
+      
+      SELECT 
+        'payment' as type,
+        'Payment Received' as title,
+        CONCAT('Payment confirmed for ', event_type, ' - ', category) as description,
+        updated_at as created_at
+      FROM bookings 
+      WHERE planner_id = $1 
+      AND status IN ('confirmed', 'completed')
+      AND updated_at >= CURRENT_DATE - INTERVAL '7 days'
+      AND deleted_at IS NULL
+      
+      UNION ALL
+      
+      SELECT 
+        'review' as type,
+        'New Review Received' as title,
+        CONCAT('New review from ', (
+          SELECT u.full_name FROM users u 
+          JOIN bookings b ON u.id = b.customer_id 
+          WHERE b.id = r.booking_id
+        ), ' - ', rating, ' stars') as description,
+        r.created_at
+      FROM reviews r
+      JOIN bookings b ON r.booking_id = b.id
+      WHERE b.planner_id = $1 
+      AND r.created_at >= CURRENT_DATE - INTERVAL '7 days'
+      
+      ORDER BY created_at DESC
+      LIMIT 10
+    `;
+
+    const result = await pool.query(activityQuery, [plannerId]);
+    
+    const activities = result.rows.map(activity => ({
+      type: activity.type,
+      title: activity.title,
+      description: activity.description,
+      created_at: activity.created_at
+    }));
+
+    res.json(activities);
+  } catch (error) {
+    console.error("Error loading recent activity:", error);
+    
+    try {
+      const fallbackQuery = `
+        SELECT 
+          'booking' as type,
+          CASE 
+            WHEN status = 'pending' THEN 'Booking Request'
+            WHEN status = 'confirmed' THEN 'Booking Confirmed' 
+            WHEN status = 'completed' THEN 'Event Completed'
+            ELSE 'Booking Update'
+          END as title,
+          CONCAT(event_type, ' - ', (
+            SELECT full_name FROM users WHERE id = customer_id
+          )) as description,
+          GREATEST(created_at, updated_at) as created_at
+        FROM bookings 
+        WHERE planner_id = $1 
+        AND GREATEST(created_at, updated_at) >= CURRENT_DATE - INTERVAL '7 days'
+        AND deleted_at IS NULL
+        ORDER BY created_at DESC
+        LIMIT 5
+      `;
+      
+      const fallbackResult = await pool.query(fallbackQuery, [plannerId]);
+      res.json(fallbackResult.rows);
+    } catch (fallbackError) {
+      console.error("Fallback activity query failed:", fallbackError);
+      res.json([]); 
+    }
+  }
+});
+
+
+// Get all notifications for planner
+router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
+  try {
+    const plannerId = req.session.user.id;
+
+    const columnCheckQuery = `
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'notifications' AND column_name = 'priority'
+    `;
+    
+    const columnCheck = await pool.query(columnCheckQuery);
+    const hasPriorityColumn = columnCheck.rows.length > 0;
+    
+    const baseColumns = `
+      n.id,
+      n.title,
+      n.message,
+      n.type,
+      n.is_read,
+      n.created_at,
+      n.updated_at
+    `;
+    
+    const priorityColumn = hasPriorityColumn ? ', n.priority' : ", 'medium' as priority";
+    const actionUrlColumn = `
+      , CASE 
+          WHEN EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'notifications' AND column_name = 'action_url'
+          ) THEN n.action_url 
+          ELSE NULL 
+        END as action_url
+    `;
+
+    const query = `
+      SELECT ${baseColumns}${priorityColumn}${actionUrlColumn}
+      FROM notifications n
+      WHERE n.user_id = $1 
+      AND (n.deleted_at IS NULL OR n.deleted_at IS NOT NULL)
+      ORDER BY n.is_read ASC, n.created_at DESC
+    `;
+
+    const result = await pool.query(query, [plannerId]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error loading notifications:", error);
+    
+    if (error.code === '42P01') { 
+      console.log("Notifications table doesn't exist, returning empty array");
+      res.json([]);
+      return;
+    }
+    
+    try {
+      const fallbackQuery = `
+        SELECT 
+          id,
+          title,
+          message,
+          COALESCE(type, 'system') as type,
+          'medium' as priority,
+          is_read,
+          NULL as action_url,
+          created_at,
+          COALESCE(updated_at, created_at) as updated_at
+        FROM notifications 
+        WHERE user_id = $1
+        ORDER BY is_read ASC, created_at DESC
+      `;
+      
+      const fallbackResult = await pool.query(fallbackQuery, [plannerId]);
+      res.json(fallbackResult.rows);
+    } catch (fallbackError) {
+      console.error("Fallback notifications query failed:", fallbackError);
+      res.json([]);
+    }
+  }
+});
+
+
+// Mark notification as read
+router.put(
+  "/notifications/:id/read",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const plannerId = req.session.user.id;
+      const notificationId = parseInt(req.params.id);
+
+      const result = await pool.query(
+        `UPDATE notifications 
+       SET is_read = true, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+       RETURNING *`,
+        [notificationId, plannerId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+
+      res.json({
+        message: "Notification marked as read",
+        notification: result.rows[0],
+      });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+  }
+);
+
+// Mark all notifications as read
+router.put(
+  "/notifications/mark-all-read",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const plannerId = req.session.user.id;
+
+      const result = await pool.query(
+        `UPDATE notifications 
+       SET is_read = true, updated_at = CURRENT_TIMESTAMP 
+       WHERE user_id = $1 AND is_read = false AND deleted_at IS NULL`,
+        [plannerId]
+      );
+
+      res.json({
+        message: "All notifications marked as read",
+        count: result.rowCount,
+      });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to mark all notifications as read" });
+    }
+  }
+);
+
+// Delete notification
+router.delete(
+  "/notifications/:id",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const plannerId = req.session.user.id;
+      const notificationId = parseInt(req.params.id);
+
+      const result = await pool.query(
+        `UPDATE notifications 
+       SET deleted_at = CURRENT_TIMESTAMP 
+       WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+       RETURNING id`,
+        [notificationId, plannerId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+
+      res.json({ message: "Notification deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ error: "Failed to delete notification" });
+    }
+  }
+);
+
+// Clear all notifications
+router.delete(
+  "/notifications/clear-all",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const plannerId = req.session.user.id;
+
+      const result = await pool.query(
+        `UPDATE notifications 
+       SET deleted_at = CURRENT_TIMESTAMP 
+       WHERE user_id = $1 AND deleted_at IS NULL`,
+        [plannerId]
+      );
+
+      res.json({
+        message: "All notifications cleared",
+        count: result.rowCount,
+      });
+    } catch (error) {
+      console.error("Error clearing notifications:", error);
+      res.status(500).json({ error: "Failed to clear notifications" });
+    }
+  }
+);
+
+// Create notification
+async function createNotification(
+  userId,
+  title,
+  message,
+  type = "system",
+  priority = "medium",
+  actionUrl = null
+) {
+  try {
+    const query = `
+      INSERT INTO notifications (user_id, title, message, type, priority, action_url, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, [
+      userId,
+      title,
+      message,
+      type,
+      priority,
+      actionUrl,
+    ]);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    throw error;
+  }
+}
+
+
+
 
 module.exports = router;
