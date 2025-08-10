@@ -1,22 +1,8 @@
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-
-// Upload directory exists
-const uploadDir = path.join(__dirname, "..", "public", "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
 
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed!"), false);
-  }
-
   console.log("=== MULTER FILE FILTER ===");
   console.log("File info:", {
     fieldname: file.fieldname,
@@ -50,7 +36,7 @@ const upload = multer({
   },
 });
 
-// Error handling 
+// Error handling
 const handleMulterError = (error, req, res, next) => {
   console.error("=== MULTER ERROR ===");
   console.error("Error:", error);
