@@ -1,4 +1,3 @@
-// planner-dashboard.js 
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
     setupEventListeners();
@@ -24,7 +23,11 @@ let filteredNotifications = [];
 function initializeDashboard() {
     checkAuthStatus();
     setupSidebarNavigation();
-    setupMobileNavigation(); 
+    
+    setTimeout(() => {
+        setupMobileNavigation();
+    }, 100);
+    
     setupModalHandlers();
     setupResponsiveModals(); 
     setupProfileImageUpload();
@@ -33,6 +36,7 @@ function initializeDashboard() {
     setupCharts();
     setupResponsiveTables(); 
 }
+
 
 // Check authentication status
 async function checkAuthStatus() {
@@ -3085,53 +3089,96 @@ function setupMobileNavigation() {
     const sidebar = document.querySelector('.sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     
-    if (!mobileToggle || !sidebar || !sidebarOverlay) return;
+    // Debug logging
+    console.log('Mobile toggle:', mobileToggle);
+    console.log('Sidebar:', sidebar);
+    console.log('Sidebar overlay:', sidebarOverlay);
     
-    mobileToggle.addEventListener('click', function() {
-        sidebar.classList.toggle('active');
-        sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+    if (!mobileToggle || !sidebar || !sidebarOverlay) {
+        console.log('Missing mobile navigation elements');
+        return;
+    }
+    
+    // Remove any existing event listeners to prevent duplicates
+    mobileToggle.replaceWith(mobileToggle.cloneNode(true));
+    const newMobileToggle = document.getElementById('mobileToggle');
+    
+    newMobileToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        const icon = this.querySelector('i');
-        if (sidebar.classList.contains('active')) {
-            icon.classList.remove('fa-bars');
-            icon.classList.add('fa-times');
+        console.log('Mobile toggle clicked');
+        
+        const isActive = sidebar.classList.contains('active');
+        
+        if (isActive) {
+            // Close sidebar
+            sidebar.classList.remove('active');
+            sidebarOverlay.style.display = 'none';
+            document.body.style.overflow = '';
+            
+            const icon = newMobileToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
         } else {
+            // Open sidebar
+            sidebar.classList.add('active');
+            sidebarOverlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            const icon = newMobileToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            }
+        }
+    });
+    
+    // Close sidebar when overlay is clicked
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.remove('active');
+        sidebarOverlay.style.display = 'none';
+        document.body.style.overflow = '';
+        
+        const icon = newMobileToggle.querySelector('i');
+        if (icon) {
             icon.classList.remove('fa-times');
             icon.classList.add('fa-bars');
         }
     });
     
-    sidebarOverlay.addEventListener('click', function() {
-        sidebar.classList.remove('active');
-        sidebarOverlay.style.display = 'none';
-        
-        const icon = mobileToggle.querySelector('i');
-        icon.classList.remove('fa-times');
-        icon.classList.add('fa-bars');
-    });
-    
+    // Close sidebar when menu items are clicked on mobile
     const menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(item => {
         item.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
                 sidebarOverlay.style.display = 'none';
+                document.body.style.overflow = '';
                 
-                const icon = mobileToggle.querySelector('i');
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+                const icon = newMobileToggle.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
             }
         });
     });
     
+    // Handle window resize
     window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
+        if (window.innerWidth > 768 && sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
             sidebarOverlay.style.display = 'none';
+            document.body.style.overflow = '';
             
-            const icon = mobileToggle.querySelector('i');
-            icon.classList.remove('fa-times');
-            icon.classList.add('fa-bars');
+            const icon = newMobileToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
         }
     });
 }
@@ -3547,4 +3594,89 @@ function populateWorkingHoursForm(workingHours) {
             }
         }
     });
+}
+
+
+// Mobile Toggle 
+const mobileCSSFix = `
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        position: fixed;
+        left: 0;
+        top: 80px;
+        height: calc(100vh - 80px);
+        width: 280px;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .mobile-toggle {
+        display: block !important;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1100;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-toggle:hover {
+        background: var(--primary-dark);
+        transform: scale(1.05);
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        display: none;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-toggle {
+        display: none !important;
+    }
+    
+    .sidebar-overlay {
+        display: none !important;
+    }
+    
+    .sidebar {
+        transform: translateX(0) !important;
+        position: fixed !important;
+    }
+}
+`;
+
+if (!document.getElementById('mobile-nav-fix-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'mobile-nav-fix-styles';
+    styleSheet.textContent = mobileCSSFix;
+    document.head.appendChild(styleSheet);
 }
