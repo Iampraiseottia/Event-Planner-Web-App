@@ -2,6 +2,8 @@ const express = require("express");
 const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
 
+const pool = require("../config/database");
+
 const router = express.Router();
 
 // Register new user

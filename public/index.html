@@ -1,324 +1,495 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Welcome | EVENTIFY | Book The Best Planners</title>
 
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/header.css">
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/about.css">
-    <link rel="stylesheet" href="/css/call.css">
-    <link rel="stylesheet" href="/css/service.css">
-    <link rel="stylesheet" href="/css/team.css">
-    <link rel="stylesheet" href="/css/testimony.css">
-    <link rel="stylesheet" href="/css/contact.css">
-    <link rel="stylesheet" href="/css/newaletter.css">
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/smooth.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/header.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/about.css" />
+    <link rel="stylesheet" href="/css/call.css" />
+    <link rel="stylesheet" href="/css/service.css" />
+    <link rel="stylesheet" href="/css/team.css" />
+    <link rel="stylesheet" href="/css/testimony.css" />
+    <link rel="stylesheet" href="/css/contact.css" />
+    <link rel="stylesheet" href="/css/newaletter.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/smooth.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <!-- Icon path -->
-    <link rel="icon" href="/img/planner1.webp" style="border-radius: 50%;">
+    <link rel="icon" href="/img/planner1.webp" style="border-radius: 50%" />
 
-     <!-- Vercel Web Analytics -->
+    <!-- Vercel Web Analytics -->
     <script>
-      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments) };
+      window.va =
+        window.va ||
+        function () {
+          (window.va.q = window.va.q || []).push(arguments);
+        };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
 
-</head>
-<body>
-
+    <!-- Speed Insight Analytics -->
+    <script>
+      window.si =
+        window.si ||
+        function () {
+          (window.siq = window.siq || []).push(arguments);
+        };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+  </head>
+  <body>
     <!-------------------- Nav Bar ~ Header  ------------------------>
 
     <section id="header">
-        <div class="header-container">
-            <h1 style="user-select: none; font-size: 30px; letter-spacing: 1px; font-weight: bold;">
-                <img src="/img/event3.jpg" class="home-img" style="margin-right: 5px;"> EVENTIFY
-                <i class="fa-solid fa-x" id="close" style="cursor: pointer; visibility: hidden; margin-left: 60px;"></i>
-                <i class="fa-solid fa-bars" id="menu" style="cursor: pointer; visibility: visible;"></i>
-            </h1>
-            <nav class="nav">
-                <ul>
-                    <li class="current"><a href="#">Home</a></li>
-                    <li><a href="#about-scroll">About</a></li>
-                    <li><a href="#service-scroll">Service</a></li>
-                    <li><a href="#our-team">Team</a></li>
-                    <div class="dropdown">
-                        <li><a href="#testimony-main">Testimony</a></li>
-                        <div class="dropdown-content">
-                          <a href="#testimony-main">John Paul</a><br>
-                          <a href="#testimony-main">Ayan Trasy</a><br>
-                          <a href="#testimony-main">Nji Pekins</a>
-                        </div>
-                    </div>
-                    <li class="con"><a href="#contact-us">Contact</a></li>
-                    <button class="signIn"><a href="/html/login.html">Sign In</a></button>
-                </ul>
-            </nav>
-        </div>
+      <div class="header-container">
+        <h1
+          style="
+            user-select: none;
+            font-size: 30px;
+            letter-spacing: 1px;
+            font-weight: bold;
+          "
+        >
+          <img
+            src="/img/event3.jpg"
+            class="home-img"
+            style="margin-right: 5px"
+          />
+          EVENTIFY
+          <i
+            class="fa-solid fa-x"
+            id="close"
+            style="cursor: pointer; visibility: hidden; margin-left: 60px"
+          ></i>
+          <i
+            class="fa-solid fa-bars"
+            id="menu"
+            style="cursor: pointer; visibility: visible"
+          ></i>
+        </h1>
+        <nav class="nav">
+          <ul>
+            <li class="current"><a href="#">Home</a></li>
+            <li><a href="#about-scroll">About</a></li>
+            <li><a href="#service-scroll">Service</a></li>
+            <li><a href="#our-team">Team</a></li>
+            <div class="dropdown">
+              <li><a href="#testimony-main">Testimony</a></li>
+              <div class="dropdown-content">
+                <a href="#testimony-main">John Paul</a><br />
+                <a href="#testimony-main">Alan Tracy</a><br />
+                <a href="#testimony-main">Nji Pekins</a>
+              </div>
+            </div>
+            <li class="con"><a href="#contact-us">Contact</a></li>
+            <button class="signIn">
+              <a href="/html/login.html">Sign In</a>
+            </button>
+          </ul>
+        </nav>
+      </div>
     </section>
 
-     <!--------------------- Main Section  ------------>
+    <!--------------------- Main Section  ------------>
 
     <section id="home-content">
-        <div class="home-content-left">
-            <h1 class="Organize">Get Your Events Sorted With <span>EVENTIFY</span></h1>
-            <br>
-            <p class="difference">We handles everything! Your ultimate satisfaction, comfort, and peace are our priority, from meticulous management to seamless organizing and flawless execution.</p>
-            <br>
-            <div class="home-nav pt-2">
-                <button class="signBTN" style="margin-right: 20px;"><a href="/html/register.html">Get Started</a></button>
-                <br>
-                <button class="logbtn"><a href="/html/login.html">Sign In</a></button>
-            </div>
+      <div class="home-content-left">
+        <h1 class="Organize">
+          Get Your Events Sorted With <span>EVENTIFY</span>
+        </h1>
+        <br />
+        <p class="difference">
+          We handles everything! Your ultimate satisfaction, comfort, and peace
+          are our priority, from meticulous management to seamless organizing
+          and flawless execution.
+        </p>
+        <br />
+        <div class="home-nav pt-2">
+          <button class="signBTN" style="margin-right: 20px">
+            <a href="/html/register.html">Get Started</a>
+          </button>
+          <br />
+          <button class="logbtn"><a href="/html/login.html">Sign In</a></button>
         </div>
-
+      </div>
     </section>
-
 
     <!-- ABOUT US -->
 
     <p id="about-scroll"></p>
 
-
     <section id="About" class="pt-5 section">
-        <div class="about-heading">
-            <h2>ABOUT US</h2>
-            <div class="line">
-                <hr class="line1">
-                <hr class="line2" >
-                <hr class="line3">
-            </div>
+      <div class="about-heading">
+        <h2>ABOUT US</h2>
+        <div class="line">
+          <hr class="line1" />
+          <hr class="line2" />
+          <hr class="line3" />
         </div>
+      </div>
 
-        <div class="about-body">
-            <div class="why-us">
-                <i style="font-size: 24px;"><b>EVENTIFY</b> is an online platform which brings Customers closer to Event Planners</i>
-                <ul style="text-align: left;">
-                    <li><img src="/img/double tick.PNG" class="double"> Saves Customer the time used to follow up manual book of their events.</li>
-                    <li><img src="/img/double tick.PNG" class="double"> Give Event planners a platform to strive and showcase their work</li>
-                    <li><img src="/img/double tick.PNG" class="double"> Ensure customers make adequate and on time payments to the planners</li>
-                    <li><img src="/img/double tick.PNG" class="double"> We ensure event planners deliver on time and at a very high quality</li>
-                    <li><img src="/img/double tick.PNG" class="double"> Customers can choose the type of service they want at a an affordable price.</li>
-                </ul>
-            </div>
-            <div class="about-img">
-                <img src="/img/try.jpg" class="why-us-img">
-            </div>
+      <div class="about-body">
+        <div class="why-us">
+          <i style="font-size: 24px"
+            ><b>EVENTIFY</b> is an online platform which brings Customers closer
+            to Event Planners</i
+          >
+          <ul style="text-align: left">
+            <li>
+              <img src="/img/double tick.PNG" class="double" /> Saves Customer
+              the time used to follow up manual book of their events.
+            </li>
+            <li>
+              <img src="/img/double tick.PNG" class="double" /> Give Event
+              planners a platform to strive and showcase their work
+            </li>
+            <li>
+              <img src="/img/double tick.PNG" class="double" /> Ensure customers
+              make adequate and on time payments to the planners
+            </li>
+            <li>
+              <img src="/img/double tick.PNG" class="double" /> We ensure event
+              planners deliver on time and at a very high quality
+            </li>
+            <li>
+              <img src="/img/double tick.PNG" class="double" /> Customers can
+              choose the type of service they want at a an affordable price.
+            </li>
+          </ul>
         </div>
+        <div class="about-img">
+          <img src="/img/try.jpg" class="why-us-img" />
+        </div>
+      </div>
     </section>
 
     <!-- CALL TO ACTION  -->
 
     <section id="call-to-action" class="text-center section">
-        <h3>Call To Action</h3>
-        <div class="call">
-            <marquee direction="left">
-                <p>Don't miss these amazing opportunity brought to you by EVENTIFY</p>
-            </marquee>
-        </div>
-        <div class="to">
-            <button class="take taketo" style="margin-right: 31px;"><a href="/html/register.html">Book Your Spot</a></button>
-            <button class="take"><a href="/html/login.html">Take Your Spot</a></button>
-        </div>
+      <h3>Call To Action</h3>
+      <div class="call">
+        <marquee direction="left">
+          <p>Don't miss these amazing opportunity brought to you by EVENTIFY</p>
+        </marquee>
+      </div>
+      <div class="to">
+        <button class="take taketo" style="margin-right: 31px">
+          <a href="/html/register.html">Book Your Spot</a>
+        </button>
+        <button class="take">
+          <a href="/html/login.html">Take Your Spot</a>
+        </button>
+      </div>
     </section>
-
-
 
     <!-- SERVICE SECTION  -->
 
     <p id="service-scroll"></p>
 
-   <!-- SERVICES - Desktop Version (1200px+) -->
+    <!-- SERVICES - Desktop Version (1200px+) -->
     <section id="services-desktop" class="serviceSection services-desktop-only">
-        <div class="service-head">
-            <div class="service-title">
-                <h3>S</h3>
-                <h3>E</h3>
-                <h3>R</h3>
-                <h3>V</h3>
-                <h3>I</h3>
-                <h3>C</h3>
-                <h3>E</h3>
-            </div>
-            <p class="catch"><i><b>EVENTIFY</b></i> offers amazing and outstanding services in which you can't miss these chance to enjoy such fantabulous services.</p>
+      <div class="service-head">
+        <div class="service-title">
+          <h3>S</h3>
+          <h3>E</h3>
+          <h3>R</h3>
+          <h3>V</h3>
+          <h3>I</h3>
+          <h3>C</h3>
+          <h3>E</h3>
         </div>
-        <div class="service-body">
-            <div class="service-body-desktop">
-                <div class="service-card">
-                    <a href="/img/service1.jpg"><img src="/img/service1.jpg" class="service-img"></a>
-                    <h3 class="pt-3"><a href="index.html">Weddings Celebrations</a></h3>
-                    <p>We help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
-                </div>
-                <div class="service-card">
-                    <a href="/img/service2.jpg"><img src="/img/service2.jpg" class="service-img"></a>
-                    <h3 class="pt-3"><a href="index.html">Funeral / Memorials</a></h3>
-                    <p>At Eventify, we help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
-                </div>
-                <div class="service-card">
-                    <a href="/img/service3.jpg"><img src="/img/service3.jpg" class="service-img"></a>
-                    <h3 class="pt-3"><a href="index.html">Birthday Celebrations</a></h3>
-                    <p>Whether it's a magical kids' party or a sophisticated adult gathering, Eventify has your birthday celebration fully sorted. We handle every detail, ensuring a joyous, memorable, and stress-free experience for everyone.</p>
-                </div>
-                <div class="service-card">
-                    <a href="/img/service4.jpg"><img src="/img/service4.jpg" class="service-img"></a>
-                    <h3 class="pt-3"><a href="index.html">Anniversary Celebrations</a></h3>
-                    <p>We crafts unforgettable anniversary celebrations, whether it's your first date, a milestone dating anniversary, or your cherished wedding anniversary. We handle all management, organizing, and execution, ensuring your day is filled with joy, comfort, and peace.</p>
-                </div>
-            </div>
+        <p class="catch">
+          <i><b>EVENTIFY</b></i> offers amazing and outstanding services in
+          which you can't miss these chance to enjoy such fantabulous services.
+        </p>
+      </div>
+      <div class="service-body">
+        <div class="service-body-desktop">
+          <div class="service-card">
+            <a href="/img/service1.jpg"
+              ><img src="/img/service1.jpg" class="service-img"
+            /></a>
+            <h3 class="pt-3"><a href="index.html">Weddings Celebrations</a></h3>
+            <p>
+              We help you honor and recall the precious memories shared with
+              your loved one. In these moments of remembrance, we handle every
+              detail, allowing you to grieve peacefully and celebrate a life
+              well-lived.
+            </p>
+          </div>
+          <div class="service-card">
+            <a href="/img/service2.jpg"
+              ><img src="/img/service2.jpg" class="service-img"
+            /></a>
+            <h3 class="pt-3"><a href="index.html">Funeral / Memorials</a></h3>
+            <p>
+              At Eventify, we help you honor and recall the precious memories
+              shared with your loved one. In these moments of remembrance, we
+              handle every detail, allowing you to grieve peacefully and
+              celebrate a life well-lived.
+            </p>
+          </div>
+          <div class="service-card">
+            <a href="/img/service3.jpg"
+              ><img src="/img/service3.jpg" class="service-img"
+            /></a>
+            <h3 class="pt-3"><a href="index.html">Birthday Celebrations</a></h3>
+            <p>
+              Whether it's a magical kids' party or a sophisticated adult
+              gathering, Eventify has your birthday celebration fully sorted. We
+              handle every detail, ensuring a joyous, memorable, and stress-free
+              experience for everyone.
+            </p>
+          </div>
+          <div class="service-card">
+            <a href="/img/service4.jpg"
+              ><img src="/img/service4.jpg" class="service-img"
+            /></a>
+            <h3 class="pt-3">
+              <a href="index.html">Anniversary Celebrations</a>
+            </h3>
+            <p>
+              We crafts unforgettable anniversary celebrations, whether it's
+              your first date, a milestone dating anniversary, or your cherished
+              wedding anniversary. We handle all management, organizing, and
+              execution, ensuring your day is filled with joy, comfort, and
+              peace.
+            </p>
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- SERVICES - Mobile/Tablet Version (below 1200px) -->
     <section id="services" class="serviceSection services-mobile-tablet">
-        <div class="service-head">
-            <div class="service-title">
-                <h3>S</h3>
-                <h3>E</h3>
-                <h3>R</h3>
-                <h3>V</h3>
-                <h3>I</h3>
-                <h3>C</h3>
-                <h3>E</h3>
-            </div>
-            <p class="catch"><i><b>EVENTIFY</b></i> offers amazing and outstanding services in which you can't miss these chance to enjoy such fantabulous services.</p>
+      <div class="service-head">
+        <div class="service-title">
+          <h3>S</h3>
+          <h3>E</h3>
+          <h3>R</h3>
+          <h3>V</h3>
+          <h3>I</h3>
+          <h3>C</h3>
+          <h3>E</h3>
         </div>
-        <div class="service-body">
-            <div class="service-body-top">
-                <div class="service-body-top-one">
-                    <div class="mbappe">
-                        <a href="/img/service1.jpg"><img src="/img/service1.jpg" class="service-img"></a>
-                        <h3 class="pt-3"><a href="index.html">Weddings Celebrations</a></h3>
-                        <p>We help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
-                    </div>
-                    <div class="praise">
-                        <a href="/img/service2.jpg"><img src="/img/service2.jpg" class="service-img"></a>
-                        <h3 class="pt-3"><a href="index.html">Funeral / Memorials</a></h3>
-                        <p>At Eventify, we help you honor and recall the precious memories shared with your loved one. In these moments of remembrance, we handle every detail, allowing you to grieve peacefully and celebrate a life well-lived.</p>
-                    </div>
-                </div>
+        <p class="catch">
+          <i><b>EVENTIFY</b></i> offers amazing and outstanding services in
+          which you can't miss these chance to enjoy such fantabulous services.
+        </p>
+      </div>
+      <div class="service-body">
+        <div class="service-body-top">
+          <div class="service-body-top-one">
+            <div class="mbappe">
+              <a href="/img/service1.jpg"
+                ><img src="/img/service1.jpg" class="service-img"
+              /></a>
+              <h3 class="pt-3">
+                <a href="index.html">Weddings Celebrations</a>
+              </h3>
+              <p>
+                We help you honor and recall the precious memories shared with
+                your loved one. In these moments of remembrance, we handle every
+                detail, allowing you to grieve peacefully and celebrate a life
+                well-lived.
+              </p>
+            </div>
+            <div class="praise">
+              <a href="/img/service2.jpg"
+                ><img src="/img/service2.jpg" class="service-img"
+              /></a>
+              <h3 class="pt-3"><a href="index.html">Funeral / Memorials</a></h3>
+              <p>
+                At Eventify, we help you honor and recall the precious memories
+                shared with your loved one. In these moments of remembrance, we
+                handle every detail, allowing you to grieve peacefully and
+                celebrate a life well-lived.
+              </p>
+            </div>
+          </div>
 
-                <div class="service-body-top-one">
-                    <div class="mbappe">
-                        <a href="/img/service3.jpg"><img src="/img/service3.jpg" class="service-img"></a>
-                        <h3 class="pt-3"><a href="index.html">Birthday Celebrations</a></h3>
-                        <p>Whether it's a magical kids' party or a sophisticated adult gathering, Eventify has your birthday celebration fully sorted. We handle every detail, ensuring a joyous, memorable, and stress-free experience for everyone.</p>
-                    </div>
-                    <div class="praise">
-                        <a href="/img/service4.jpg"><img src="/img/service4.jpg" class="service-img"></a>
-                        <h3 class="pt-3"><a href="index.html">Anniversary Celebrations</a></h3>
-                        <p>We crafts unforgettable anniversary celebrations, whether it's your first date, a milestone dating anniversary, or your cherished wedding anniversary. We handle all management, organizing, and execution, ensuring your day is filled with joy, comfort, and peace.</p>
-                    </div>
-                </div>
+          <div class="service-body-top-one">
+            <div class="mbappe">
+              <a href="/img/service3.jpg"
+                ><img src="/img/service3.jpg" class="service-img"
+              /></a>
+              <h3 class="pt-3">
+                <a href="index.html">Birthday Celebrations</a>
+              </h3>
+              <p>
+                Whether it's a magical kids' party or a sophisticated adult
+                gathering, Eventify has your birthday celebration fully sorted.
+                We handle every detail, ensuring a joyous, memorable, and
+                stress-free experience for everyone.
+              </p>
             </div>
+            <div class="praise">
+              <a href="/img/service4.jpg"
+                ><img src="/img/service4.jpg" class="service-img"
+              /></a>
+              <h3 class="pt-3">
+                <a href="index.html">Anniversary Celebrations</a>
+              </h3>
+              <p>
+                We crafts unforgettable anniversary celebrations, whether it's
+                your first date, a milestone dating anniversary, or your
+                cherished wedding anniversary. We handle all management,
+                organizing, and execution, ensuring your day is filled with joy,
+                comfort, and peace.
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
     </section>
-
-
 
     <!-- TEAM SECTION  -->
 
     <p id="our-team"></p>
 
     <section id="team" class="teamSection">
-        <div class="about-heading" style="padding-top: 100px;">
-            <h2 style="text-align: center; letter-spacing: 5px; font-size: 60px;">TEAM</h2>
-            <div class="line">
-                <hr class="line1">
-                <hr class="line2">
-                <hr class="line3">
+      <div class="about-heading" style="padding-top: 100px">
+        <h2 style="text-align: center; letter-spacing: 5px; font-size: 60px">
+          TEAM
+        </h2>
+        <div class="line">
+          <hr class="line1" />
+          <hr class="line2" />
+          <hr class="line3" />
+        </div>
+      </div>
+
+      <div class="team-main">
+        <div class="team1">
+          <div class="team-img">
+            <a href="/img/me.jpg"
+              ><img src="/img/me.jpg" class="our-team-img"
+            /></a>
+          </div>
+          <div class="team-body">
+            <h3>Ottia Praise Beteck</h3>
+            <p
+              style="
+                font-size: 16.5px;
+                margin-bottom: 4px;
+                font-weight: 600;
+                color: #37517e;
+              "
+            >
+              CEO
+            </p>
+            <hr class="team-hr" />
+            <p style="font-size: 14.5px; margin-top: 10px">
+              Leads the company vision and oversees all strategic operations to
+              deliver exceptional event experiences.
+            </p>
+            <div class="social-media">
+              <a href="#" class="social-media-img">
+                <img src="/img/whatsapp.png" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/facebook.jpeg" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/ig.jpeg" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/email.png" class="social-media-img-pic" />
+              </a>
             </div>
+          </div>
         </div>
 
-        <div class="team-main">
-            <div class="team1">
-                <div class="team-img">
-                    <a href="/img/me.jpg"><img src="/img/me.jpg" class="our-team-img"></a>
-                </div>
-                <div class="team-body">
-                    <h3>Ottia Praise Beteck</h3>
-                    <p style="font-size: 16.5px; margin-bottom: 4px; font-weight: 600; color: #37517e;">CEO</p>
-                    <hr class="team-hr">
-                    <p style="font-size: 14.5px; margin-top: 10px;">
-                        Leads the company vision and oversees all strategic operations to deliver exceptional event experiences.
-                    </p>
-                    <div class="social-media">
-                        <a href="#" class="social-media-img">
-                            <img src="/img/whatsapp.png" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/facebook.jpeg" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/ig.jpeg" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/email.png" class="social-media-img-pic">
-                        </a>
-                    </div>
-                </div>
+        <div class="team1">
+          <div class="team-img">
+            <a href="/img/team-6.png">
+              <img src="/img/team-6.png" class="our-team-img" />
+            </a>
+          </div>
+          <div class="team-body">
+            <h3>Mbonge Nina Awung</h3>
+            <p
+              style="
+                margin-bottom: 4px;
+                font-size: 16.5px;
+                font-weight: 600;
+                color: #37517e;
+              "
+            >
+              Event Manager
+            </p>
+            <hr class="team-hr" />
+            <p style="font-size: 14.5px; margin-top: 10px">
+              Coordinates and manages all event logistics, ensuring seamless
+              execution from planning to completion.
+            </p>
+            <div class="social-media">
+              <a href="#" class="social-media-img">
+                <img src="/img/whatsapp.png" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/facebook.jpeg" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/ig.jpeg" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/email.png" class="social-media-img-pic" />
+              </a>
             </div>
-
-            <div class="team1">
-                <div class="team-img">
-                    <a href="/img/team-6.png">
-                        <img src="/img/team-6.png" class="our-team-img">
-                    </a>
-                </div>
-                <div class="team-body">
-                    <h3>Mbonge Nina Awung</h3>
-                    <p style="margin-bottom: 4px; font-size: 16.5px; font-weight: 600; color: #37517e;">Event Manager</p>
-                    <hr class="team-hr">
-                    <p style="font-size: 14.5px; margin-top: 10px;">
-                        Coordinates and manages all event logistics, ensuring seamless execution from planning to completion.
-                    </p>
-                    <div class="social-media">
-                        <a href="#" class="social-media-img">
-                            <img src="/img/whatsapp.png" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/facebook.jpeg" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/ig.jpeg" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/email.png" class="social-media-img-pic">
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="team1">
-                <div class="team-img">
-                    <a href="/img/team-2.jpg"><img src="/img/team-2.jpg" class="our-team-img"></a>
-                </div>
-                <div class="team-body">
-                    <h3>Serena Micheale</h3>
-                    <p style="font-size: 16.5px; margin-bottom: 4px; font-weight: 600; color: #37517e;">Chief Designer/Developer</p>
-                    <hr class="team-hr">
-                    <p style="font-size: 14.5px; margin-top: 10px;">
-                        Designs stunning event concepts and develops innovative solutions to create memorable experiences.
-                    </p>
-                    <div class="social-media">
-                        <a href="#" class="social-media-img">
-                            <img src="/img/whatsapp.png" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/facebook.jpeg" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/ig.jpeg" class="social-media-img-pic">
-                        </a>
-                        <a href="#" class="social-media-img">
-                            <img src="/img/email.png" class="social-media-img-pic">
-                        </a>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+
+        <div class="team1">
+          <div class="team-img">
+            <a href="/img/team-2.jpg"
+              ><img src="/img/team-2.jpg" class="our-team-img"
+            /></a>
+          </div>
+          <div class="team-body">
+            <h3>Serena Micheale</h3>
+            <p
+              style="
+                font-size: 16.5px;
+                margin-bottom: 4px;
+                font-weight: 600;
+                color: #37517e;
+              "
+            >
+              Chief Designer/Developer
+            </p>
+            <hr class="team-hr" />
+            <p style="font-size: 14.5px; margin-top: 10px">
+              Designs stunning event concepts and develops innovative solutions
+              to create memorable experiences.
+            </p>
+            <div class="social-media">
+              <a href="#" class="social-media-img">
+                <img src="/img/whatsapp.png" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/facebook.jpeg" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/ig.jpeg" class="social-media-img-pic" />
+              </a>
+              <a href="#" class="social-media-img">
+                <img src="/img/email.png" class="social-media-img-pic" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- TESTIMONY SECTION  -->
@@ -326,235 +497,349 @@
     <p id="testimony-main"></p>
 
     <section id="testimony" class="testimonySection">
-        <div class="service-title heart testTitle">
-            <h3 style=" padding-top: 12px !important;">T</h3>
-            <h3 style=" padding-top: 12px !important;">E</h3>
-            <h3 style=" padding-top: 12px !important;">S</h3>
-            <h3 style=" padding-top: 12px !important;">T</h3>
-            <h3 style=" padding-top: 12px !important;">I</h3>
-            <h3 style=" padding-top: 12px !important;">M</h3>
-            <h3 style=" padding-top: 12px !important;">O</h3>
-            <h3 style=" padding-top: 12px !important;">N</h3>
-            <h3 style=" padding-top: 12px !important;">Y</h3>
+      <div class="service-title heart testTitle">
+        <h3 style="padding-top: 12px !important">T</h3>
+        <h3 style="padding-top: 12px !important">E</h3>
+        <h3 style="padding-top: 12px !important">S</h3>
+        <h3 style="padding-top: 12px !important">T</h3>
+        <h3 style="padding-top: 12px !important">I</h3>
+        <h3 style="padding-top: 12px !important">M</h3>
+        <h3 style="padding-top: 12px !important">O</h3>
+        <h3 style="padding-top: 12px !important">N</h3>
+        <h3 style="padding-top: 12px !important">Y</h3>
+      </div>
+      <div class="love">
+        <div class="testimony1">
+          <div class="testimony-img">
+            <a href="/img/testimony1.png"
+              ><img src="/img/testimony1.png" class="our-team-img"
+            /></a>
+          </div>
+          <div class="testimony-p-rating">
+            <div class="testimony-p">
+              <h3><a href="#testimony-main">John Paul Snow</a></h3>
+              <p>
+                EVENTIFY is the best, it saved my time, energy and resources
+                through these amazing platform.
+              </p>
+            </div>
+            <div class="testimony-rating" style="margin-top: 10px">
+              <div class="rating"></div>
+            </div>
+          </div>
         </div>
-        <div class="love">
-            <div class="testimony1">
-                <div class="testimony-img">
-                    <a href="/img/testimony1.png"><img src="/img/testimony1.png" class="our-team-img"></a>
-                </div>
-                <div class="testimony-p-rating">
-                    <div class="testimony-p">
-                        <h3><a href="#testimony-main">John Paul Snow</a></h3>
-                        <p>EVENTIFY is the best, it saved my time, energy and resources through these amazing platform. </p>
-                    </div>
-                    <div class="testimony-rating" style="margin-top: 10px;">
-                        <div class="rating">
-                        </div>
-                    </div>
-                </div>
+        <div class="testimony2">
+          <div class="testimony-img">
+            <a href="/img/team-2.jpg"
+              ><img src="/img/team-2.jpg" class="our-team-img"
+            /></a>
+          </div>
+          <div class="testimony-p-rating">
+            <div class="testimony-p">
+              <h3 class="testimony-name">
+                <a href="#testimony-main">Beteck Tracy Ofon</a>
+              </h3>
+              <p>
+                EVENTIFY is the best at reducing the wide gap between the
+                customer and producer (event planners).
+              </p>
             </div>
-            <div class="testimony2">
-                <div class="testimony-img">
-                    <a href="/img/team-2.jpg"><img src="/img/team-2.jpg" class="our-team-img"></a>
-                </div>
-                <div class="testimony-p-rating">
-                    <div class="testimony-p">
-                        <h3 class="testimony-name"><a href="#testimony-main">Beteck Trasy Ofon</a></h3>
-                        <p>EVENTIFY is the best at reducing the wide gap between the customer and producer (event planners).</p>
-                    </div>
-                    <div class="testimony-rating" style="margin-top: 10px;">
-                        <div class="rating">
-                        </div>
-                    </div>
-                </div>
+            <div class="testimony-rating" style="margin-top: 10px">
+              <div class="rating"></div>
             </div>
-            <div class="testimony3">
-                <div class="testimony-img">
-                    <a href="/img/team-1.jpg"><img src="/img/team-1.jpg" class="our-team-img"></a>
-                </div>
-                <div class="testimony-p-rating">
-                    <div class="testimony-p">
-                        <h3 class="testimony-name"><a href="#testimony-main">Nji Pekins Ngang</a></h3>
-                        <p>EVENTIFY is the most accurate, efficient & reliable Decor / Event planning and styling platform out there</p>
-                    </div>
-                    <div class="testimony-rating" style="margin-top: 10px;">
-                        <div class="rating">
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-        <p id="contact-us"></p>
+        <div class="testimony3">
+          <div class="testimony-img">
+            <a href="/img/team-1.jpg"
+              ><img src="/img/team-1.jpg" class="our-team-img"
+            /></a>
+          </div>
+          <div class="testimony-p-rating">
+            <div class="testimony-p">
+              <h3 class="testimony-name">
+                <a href="#testimony-main">Nji Pekins Ngang</a>
+              </h3>
+              <p>
+                EVENTIFY is the most accurate, efficient & reliable Decor /
+                Event planning and styling platform out there
+              </p>
+            </div>
+            <div class="testimony-rating" style="margin-top: 10px">
+              <div class="rating"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p id="contact-us"></p>
     </section>
-
 
     <!--------------------- CONTACT  ------------------------>
 
     <section id="contact" class="contactSection">
-        <div class="about-heading pt-5">
-            <h2 style="letter-spacing: 3px; text-align: center; font-size: 50px;">CONTACT US</h2>
-            <div class="line d-flex">
-                <hr class="line1">
-                <hr class="line2">
-                <hr class="line3">
-            </div>
+      <div class="about-heading pt-5">
+        <h2 style="letter-spacing: 3px; text-align: center; font-size: 50px">
+          CONTACT US
+        </h2>
+        <div class="line d-flex">
+          <hr class="line1" />
+          <hr class="line2" />
+          <hr class="line3" />
         </div>
+      </div>
 
-        <div class="contact-main">
-            <div class="contact-main-details">
-                <div class="contact-main-details-content" style="vertical-align: top;">
-                    <a href="/img/location.PNG"><img src="/img/location.PNG" class="contact-img"></a>
-                    <div class="contact-main-details-content-main" style="margin-top: 20px;">
-                        <h3>Location:</h3>
-                        <p>
-                            Untared Malingo, Buea, South-west, Cameroon.
-                        </p>
-                    </div>
-                </div><br>
-                <div class="contact-main-details-content" >
-                    <a href="/img/email-con.PNG"><img src="/img/email-con.PNG" class="glory"></a>
-                    <div class="contact-main-details-content-main" style="margin-top: 12px;">
-                        <h3>Email:</h3>
-                        <p>
-                            <a href="mailto:ottiapraise50@gmail.com">ottiapraise50@gmail.com </a>
-
-                        </p>
-                    </div>
-                </div><br>
-                <div class="contact-main-details-content">
-                    <a href="/img/phone.PNG"><img src="/img/phone.PNG" class="jessica"></a>
-                    <div class="contact-main-details-content-main" style="margin-top: 12px;">
-                        <h3>Phone:</h3>
-                        <p>
-                            <a href="tel:+237674417261">+237 674, 417, 261 </a>
-                        </p>
-                    </div>
+      <div class="contact-main">
+        <div class="contact-main-details">
+          <div class="contact-main-details-content" style="vertical-align: top">
+            <a href="/img/location.PNG"
+              ><img src="/img/location.PNG" class="contact-img"
+            /></a>
+            <div
+              class="contact-main-details-content-main"
+              style="margin-top: 20px"
+            >
+              <h3>Location:</h3>
+              <p>Untared Malingo, Buea, South-west, Cameroon.</p>
+            </div>
+          </div>
+          <br />
+          <div class="contact-main-details-content">
+            <a href="/img/email-con.PNG"
+              ><img src="/img/email-con.PNG" class="glory"
+            /></a>
+            <div
+              class="contact-main-details-content-main"
+              style="margin-top: 12px"
+            >
+              <h3>Email:</h3>
+              <p>
+                <a href="mailto:ottiapraise50@gmail.com"
+                  >ottiapraise50@gmail.com
+                </a>
+              </p>
+            </div>
+          </div>
+          <br />
+          <div class="contact-main-details-content">
+            <a href="/img/phone.PNG"
+              ><img src="/img/phone.PNG" class="jessica"
+            /></a>
+            <div
+              class="contact-main-details-content-main"
+              style="margin-top: 12px"
+            >
+              <h3>Phone:</h3>
+              <p>
+                <a href="tel:+237674417261">+237 674, 417, 261 </a>
+              </p>
+            </div>
+          </div>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.426148631475!2d9.303791573717996!3d4.13626674629469!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10613123b50e6ff9%3A0x5cebc748ddb3786f!2sMalingo%20Junction%20Buea!5e0!3m2!1sen!2scm!4v1711582055010!5m2!1sen!2scm"
+            class="contact-pic"
+            style="border: 0"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+        <div class="contact-main-input">
+          <form action="/php/admin.php" method="post">
+            <div class="name-input">
+              <label for="admin_full_name"
+                >Your Full Name <br />
+                <input
+                  name="admin_full_name"
+                  id="admin_full_name"
+                  placeholder="Full Name"
+                  type="text"
+                  class="contact-main-input-field"
+              /></label>
+              <label for="admin_event_type"
+                >Your Event Type <br />
+                <input
+                  placeholder="Event Type"
+                  name="admin_event_type"
+                  type="text"
+                  class="contact-main-input-field"
+              /></label>
+            </div>
+            <div class="name-input">
+              <label for="admin_email"
+                >Your Email Address <br />
+                <input
+                  placeholder="Email Address"
+                  name="admin_email"
+                  type="email"
+                  class="contact-main-input-field"
+              /></label>
+              <label for="admin_phone_number"
+                >Your Phone Number <br />
+                <input
+                  name="admin_phone_number"
+                  type="number"
+                  class="contact-main-input-field"
+              /></label>
+            </div>
+            <div class="name-input">
+              <label for="admin_city_street"
+                >Your City / Town
+                <input
+                  name="admin_city_street"
+                  type="text"
+                  class="contact-main-input-field"
+                  placeholder="City / Town"
+              /></label>
+              <label for="admin_country" style="margin-left: -50px"
+                ><p class="country-title">Your Country</p>
+                <div class="country">
+                  <select
+                    id="Country"
+                    class="contact-main-input-field country-name"
+                  >
+                    <option name="admin_country" value="">
+                      Select Your Country
+                    </option>
+                    <option value="Cameroon">Cameroon</option>
+                    <option value="Ghana">Ghana</option>
+                    <option value="Benin">Benin</option>
+                    <option value="Senegal">Senegal</option>
+                    <option value="Mali">Mali</option>
+                    <option value="Morocco">Morocco</option>
+                    <option value="Sudan">Sudan</option>
+                    <option value="Nigeria">Nigeria</option>
+                    <option value="Tunisia">Tunisia</option>
+                    <option value="Burkinafaso">Burkinafaso</option>
+                  </select>
                 </div>
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.426148631475!2d9.303791573717996!3d4.13626674629469!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10613123b50e6ff9%3A0x5cebc748ddb3786f!2sMalingo%20Junction%20Buea!5e0!3m2!1sen!2scm!4v1711582055010!5m2!1sen!2scm" class="contact-pic" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+              </label>
             </div>
-            <div class="contact-main-input">
-                <form action="/php/admin.php" method="post">
-                    <div class="name-input">
-                        <label for="admin_full_name">Your Full Name <br> <input name="admin_full_name" id="admin_full_name" placeholder="Full Name" type="text" class="contact-main-input-field"></label>
-                        <label for="admin_event_type">Your Event Type <br> <input placeholder="Event Type" name="admin_event_type" type="text" class="contact-main-input-field"></label>
-                    </div>
-                    <div class="name-input">
-                        <label for="admin_email">Your Email Address <br> <input placeholder="Email Address" name="admin_email" type="email" class="contact-main-input-field"></label>
-                        <label for="admin_phone_number">Your Phone Number <br> <input name="admin_phone_number" type="number" class="contact-main-input-field"></label>
-                    </div>
-                    <div class="name-input">
-                        <label for="admin_city_street">Your City / Town <input name="admin_city_street" type="text" class="contact-main-input-field" placeholder="City / Town"></label>
-                        <label for="admin_country" style="margin-left: -50px;"><p class="country-title">Your Country</p>
-                            <div class="country">
-                                <select id="Country" class="contact-main-input-field country-name">
-                                    <option name="admin_country" value="">Select Your Country</option>
-                                    <option value="Cameroon">Cameroon</option>
-                                    <option value="Ghana">Ghana</option>
-                                    <option value="Benin">Benin</option>
-                                    <option value="Senegal">Senegal</option>
-                                    <option value="Mali">Mali</option>
-                                    <option value="Morocco">Morocco</option>
-                                    <option value="Sudan">Sudan</option>
-                                    <option value="Nigeria">Nigeria</option>
-                                    <option value="Tunisia">Tunisia</option>
-                                    <option value="Burkinafaso">Burkinafaso</option>
-                                </select>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="name-input Subject">
-                        <label for="admin_subject">Subject <br><input name="admin_subject" type="text" class="contact-main-input-field " placeholder="Subject"></label>
-                    </div>
-                    <textarea class="Message" name="admin_request" cols="92" rows="13" placeholder="
+            <div class="name-input Subject">
+              <label for="admin_subject"
+                >Subject <br /><input
+                  name="admin_subject"
+                  type="text"
+                  class="contact-main-input-field"
+                  placeholder="Subject"
+              /></label>
+            </div>
+            <textarea
+              class="Message"
+              name="admin_request"
+              cols="92"
+              rows="13"
+              placeholder="
                     Message
-                    "></textarea>
+                    "
+            ></textarea>
 
-                    <button class="send-btn one-btn" type="submit" style="cursor: pointer; margin-top: 20px;" >Send Message</button>
-                </form>
-            </div>
+            <button
+              class="send-btn one-btn"
+              type="submit"
+              style="cursor: pointer; margin-top: 20px"
+            >
+              Send Message
+            </button>
+          </form>
         </div>
+      </div>
     </section>
 
+    <!-- NEWSLETTER -->
 
-     <!-- NEWSLETTER -->
-
-     <section id="newletter" class="newsSection">
-        <h3 >Join Our NewsLetter ❤️</h3>
-        <p>Subscribe To Ease Invoice Newsletter To Be Update On Latest Developments.</p>
-        <div id="news-content">
-            <input type="email" placeholder="Enter Your Email">
-            <button class="news-btn">Subscribe</button>
-        </div>
+    <section id="newletter" class="newsSection">
+      <h3>Join Our NewsLetter ❤️</h3>
+      <p>
+        Subscribe To Ease Invoice Newsletter To Be Update On Latest
+        Developments.
+      </p>
+      <div id="news-content">
+        <input type="email" placeholder="Enter Your Email" />
+        <button class="news-btn">Subscribe</button>
+      </div>
     </section>
-
 
     <!-- FOOTER  -->
     <section id="footer" class="footerSection">
-        <div class="footer-content">
-            <div class="Ease-details" style="line-height: 1.6;">
-                <h2>EVENTIFY</h2>
-                <p>UB Junction, <br> Buea, <br> South-west, <br> Cameroon</p>
-                <p style="padding-top: 11px;"><b>Phone:</b> +237 674 417 261</p>
-                <p style="margin-top: 6px;"><b>Email:</b> ottiapraise50@gmail.com</p>
-            </div>
-            <div class="useful-links">
-                <h4>Useful Links</h4>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#clients">About</a></li>
-                    <li><a href="#service-scroll">Service</a></li>
-                    <li><a href="#our-team">Team</a></li>
-                    <li><a href="#testimony-main">Testimony</a></li>
-                    <li><a href="#contact-us">Contact</a></li>
-                </ul>
-            </div>
-            <div class="our-service">
-                <h4>Our Services</h4>
-                <ul style="line-height: 1.6;">
-                    <li><a href="#service-scroll">Wedding Celebrations</a></li>
-                    <li><a href="#service-scroll">Funeral / Memorial</a></li>
-                    <li><a href="#service-scroll">Birthday Celebrations</a></li>
-                    <li><a href="#service-scroll">Anniversaries Celebrations</a></li>
-                </ul>
-            </div>
-            <div class="our-social" style="width: 239px;">
-                <h4>Our Social Network</h4>
-                <p>You can get to EVENTIFY on social media and create a valuable network to solve or put to rest any of youur worries through</p>
-                <div class="social-img">
-                    <a href="#contact-us"><img src="/img/tweet.PNG" class="social-img-pic"></a>
-                    <a href="#contact-us"><img src="/img/fb.PNG" class="social-img-pic"></a>
-                    <a href="#contact-us"><img src="/img/instagram.PNG" class="social-img-pic"></a>
-                    <a href="#contact-us"><img src="/img/in.PNG" class="social-img-pic"></a>
-                </div>
-            </div>
+      <div class="footer-content">
+        <div class="Ease-details" style="line-height: 1.6">
+          <h2>EVENTIFY</h2>
+          <p>
+            UB Junction, <br />
+            Buea, <br />
+            South-west, <br />
+            Cameroon
+          </p>
+          <p style="padding-top: 11px"><b>Phone:</b> +237 674 417 261</p>
+          <p style="margin-top: 6px"><b>Email:</b> ottiapraise50@gmail.com</p>
         </div>
-        <div class="footer-conclude">
-            <p>@Copyright EVENTIFY, All Rights Reserved</p>
-            <p><em style="color: rgb(248, 233, 201);">Designed by:</em> <strong>Ottia Praise Beteck</strong></p>
+        <div class="useful-links">
+          <h4>Useful Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#clients">About</a></li>
+            <li><a href="#service-scroll">Service</a></li>
+            <li><a href="#our-team">Team</a></li>
+            <li><a href="#testimony-main">Testimony</a></li>
+            <li><a href="#contact-us">Contact</a></li>
+          </ul>
         </div>
+        <div class="our-service">
+          <h4>Our Services</h4>
+          <ul style="line-height: 1.6">
+            <li><a href="#service-scroll">Wedding Celebrations</a></li>
+            <li><a href="#service-scroll">Funeral / Memorial</a></li>
+            <li><a href="#service-scroll">Birthday Celebrations</a></li>
+            <li><a href="#service-scroll">Anniversaries Celebrations</a></li>
+          </ul>
+        </div>
+        <div class="our-social" style="width: 239px">
+          <h4>Our Social Network</h4>
+          <p>
+            You can get to EVENTIFY on social media and create a valuable
+            network to solve or put to rest any of youur worries through
+          </p>
+          <div class="social-img">
+            <a href="#contact-us"
+              ><img src="/img/tweet.PNG" class="social-img-pic"
+            /></a>
+            <a href="#contact-us"
+              ><img src="/img/fb.PNG" class="social-img-pic"
+            /></a>
+            <a href="#contact-us"
+              ><img src="/img/instagram.PNG" class="social-img-pic"
+            /></a>
+            <a href="#contact-us"
+              ><img src="/img/in.PNG" class="social-img-pic"
+            /></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-conclude">
+        <p>@Copyright EVENTIFY, All Rights Reserved</p>
+        <p>
+          <em style="color: rgb(248, 233, 201)">Designed by:</em>
+          <strong>Ottia Praise Beteck</strong>
+        </p>
+      </div>
     </section>
 
     <script src="/js/main.js"></script>
 
-
-
-
     <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-
-
-
-
-</body>
+    <script type="text/javascript">
+      var Tawk_API = Tawk_API || {},
+        Tawk_LoadStart = new Date();
+      (function () {
+        var s1 = document.createElement("script"),
+          s0 = document.getElementsByTagName("script")[0];
+        s1.async = true;
+        s1.src = "https://embed.tawk.to/689141d1fcd547192ddd8490/1j1rmi73k";
+        s1.charset = "UTF-8";
+        s1.setAttribute("crossorigin", "*");
+        s0.parentNode.insertBefore(s1, s0);
+      })();
+    </script>
+    <!--End of Tawk.to Script-->
+  </body>
 </html>

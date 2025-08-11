@@ -2207,3 +2207,73 @@ body {
 .logoutPhone {
   display: none;
 }
+
+
+/* Profile responsive */
+
+
+@media (min-width: 1025px) and (max-width: 1199px) {
+  #profileForm {
+    margin-left: 2% !important;
+  }
+
+  #profileForm .form-grid .form-group input,
+  #profileForm .form-grid .form-group textarea {
+    width: 70% !important;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1300px) {
+  #profileForm {
+    margin-left: 2% !important;
+  }
+
+  #profileForm .form-grid .form-group input,
+  #profileForm .form-grid .form-group textarea {
+    width: 80% !important;
+  }
+}
+
+@media (min-width: 1301px) and (max-width: 1400px) {
+  #profileForm .form-grid .form-group input,
+  #profileForm .form-grid .form-group textarea {
+    width: 90% !important;
+  }
+
+  #profileForm {
+    margin-left: 2% !important;
+  }
+}
+
+
+@media (min-width: 1401px) and (max-width: 1500px) {
+  #profileForm .form-grid .form-group input,
+  #profileForm .form-grid .form-group textarea {
+    width: 100% !important;
+  }
+
+  #profileForm {
+    margin-left: 2% !important;
+  }
+}
+
+
+@media (min-width: 1501px) and (max-width: 2100px) {
+  #profileForm .form-grid .form-group input,
+  #profileForm .form-grid .form-group textarea {
+    width: 120% !important;
+  }
+
+  #profileForm {
+    margin-left: 2% !important;
+  }
+}
+
+
+
+@media (min-width: 1701px) and (max-width: 2100px) {
+  
+  #profileForm {
+    margin-left: 14% !important;
+  }
+}

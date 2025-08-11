@@ -69,7 +69,9 @@ function updateUserInterface() {
     email: currentUser.email || "",
     phone: currentUser.phone_number || "",
     location: currentUser.location || "",
-    dateOfBirth: currentUser.date_of_birth || "",
+    dateOfBirth: currentUser.date_of_birth
+      ? formatDateForInput(currentUser.date_of_birth)
+      : "",
   };
 
   Object.entries(fields).forEach(([fieldId, value]) => {
@@ -85,30 +87,58 @@ function updateUserInterface() {
     profileImageEl.src = `/api/customer/profile/image?t=${Date.now()}`;
   }
 
-
-  // Handle preferences with proper error handling
   updatePreferencesSelect();
 }
 
+// Format Date for html
+function formatDateForInput(dateString) {
+  if (!dateString) return "";
+
+  try {
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) return "";
+
+    // Format to YYYY-MM-DD for HTML date input
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "";
+  }
+}
+
+//  Update Preferences Select
 function updatePreferencesSelect() {
   const preferencesSelect = document.getElementById("preferences");
-  if (!preferencesSelect || !currentUser.preferences) return;
+  if (!preferencesSelect) return;
 
   let preferences = [];
 
   try {
-    if (typeof currentUser.preferences === "string") {
-      if (
-        currentUser.preferences.trim() !== "" &&
-        currentUser.preferences !== "null"
-      ) {
-        preferences = JSON.parse(currentUser.preferences);
+    if (currentUser.preferences) {
+      if (typeof currentUser.preferences === "string") {
+        // Handle empty string, "null" string, or JSON string
+        const trimmed = currentUser.preferences.trim();
+        if (trimmed !== "" && trimmed !== "null" && trimmed !== "NULL") {
+          try {
+            preferences = JSON.parse(trimmed);
+          } catch (parseError) {
+            preferences = trimmed
+              .split(",")
+              .map((p) => p.trim())
+              .filter((p) => p);
+          }
+        }
+      } else if (Array.isArray(currentUser.preferences)) {
+        preferences = currentUser.preferences;
       }
-    } else if (Array.isArray(currentUser.preferences)) {
-      preferences = currentUser.preferences;
     }
-  } catch (e) {
-    console.error("Error parsing preferences:", e);
+  } catch (error) {
+    console.error("Error processing preferences:", error);
     preferences = [];
   }
 
@@ -197,7 +227,7 @@ function showSection(sectionName) {
       case "notifications":
         loadNotifications();
         break;
-      case 'reviews':
+      case "reviews":
         loadReviews();
         break;
     }
@@ -263,24 +293,30 @@ async function loadDashboardData() {
 
 // Load statistics
 function loadStats() {
-  fetch('/api/customer/stats')
-    .then(response => response.json())
-    .then(stats => {
-      document.getElementById('totalBookings').textContent = stats.totalBookings;
-      document.getElementById('upcomingEvents').textContent = stats.upcomingEvents;
-      document.getElementById('completedEvents').textContent = stats.completedEvents;
-      
-      // Format the total spent with commas and add Francs
-      const formattedAmount = new Intl.NumberFormat('en-US').format(stats.totalSpent);
-      document.getElementById('totalSpent').innerHTML = `${formattedAmount} <span>Francs</span>`;
-    })
-    .catch(error => {
-      console.error('Error loading stats:', error);
+  fetch("/api/customer/stats")
+    .then((response) => response.json())
+    .then((stats) => {
+      document.getElementById("totalBookings").textContent =
+        stats.totalBookings;
+      document.getElementById("upcomingEvents").textContent =
+        stats.upcomingEvents;
+      document.getElementById("completedEvents").textContent =
+        stats.completedEvents;
 
-      document.getElementById('totalSpent').innerHTML = '0 <span>Francs</span>';
+      // Format the total spent with commas and add Francs
+      const formattedAmount = new Intl.NumberFormat("en-US").format(
+        stats.totalSpent
+      );
+      document.getElementById(
+        "totalSpent"
+      ).innerHTML = `${formattedAmount} <span>Francs</span>`;
+    })
+    .catch((error) => {
+      console.error("Error loading stats:", error);
+
+      document.getElementById("totalSpent").innerHTML = "0 <span>Francs</span>";
     });
 }
-
 
 // Update stats display
 function updateStatsDisplay(stats) {
@@ -377,7 +413,6 @@ async function loadBookings() {
   }
 }
 
-
 // Display bookings
 function displayBookings(bookings) {
   const container = document.getElementById("bookingsList");
@@ -402,12 +437,12 @@ function displayBookings(bookings) {
                 <div>
                     <div class="booking-title">${booking.event_type}</div>
                     <div class="booking-planner">Planner: ${
-                      booking.planner_name || 'Not assigned'
+                      booking.planner_name || "Not assigned"
                     }</div>
                 </div>
-                <span class="booking-status ${booking.status?.toLowerCase() || 'pending'}">${
-                  booking.status || 'Pending'
-                }</span>
+                <span class="booking-status ${
+                  booking.status?.toLowerCase() || "pending"
+                }">${booking.status || "Pending"}</span>
             </div>
             <div class="booking-details">
                 <div class="booking-detail">
@@ -416,7 +451,7 @@ function displayBookings(bookings) {
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-clock"></i>
-                    <span>${booking.event_time || 'Time TBD'}</span>
+                    <span>${booking.event_time || "Time TBD"}</span>
                 </div>
                 <div class="booking-detail">
                     <i class="fas fa-map-marker-alt"></i>
@@ -426,18 +461,27 @@ function displayBookings(bookings) {
                     <i class="fas fa-tag"></i>
                     <span>${booking.category}</span>
                 </div>
-                ${booking.requirements ? `
+                ${
+                  booking.requirements
+                    ? `
                 <div class="booking-detail">
                     <i class="fas fa-list"></i>
-                    <span class="requirements-preview">${booking.requirements.substring(0, 50)}${booking.requirements.length > 50 ? '...' : ''}</span>
+                    <span class="requirements-preview">${booking.requirements.substring(
+                      0,
+                      50
+                    )}${booking.requirements.length > 50 ? "..." : ""}</span>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
             <div class="booking-footer">
                 <div class="booking-date-created">
                     Created: ${formatDate(booking.created_at)}
                 </div>
-                <button class="view-details-btn" onclick="event.stopPropagation(); showBookingDetails('${booking.id}')">
+                <button class="view-details-btn" onclick="event.stopPropagation(); showBookingDetails('${
+                  booking.id
+                }')">
                     View Details
                 </button>
             </div>
@@ -447,15 +491,15 @@ function displayBookings(bookings) {
     .join("");
 }
 
-
-
 // Show booking details in modal
 async function showBookingDetails(bookingId) {
   try {
     showLoading();
 
-    const localBooking = bookingsData.find(b => b.id == bookingId || b.id === bookingId);
-    
+    const localBooking = bookingsData.find(
+      (b) => b.id == bookingId || b.id === bookingId
+    );
+
     if (localBooking) {
       displayBookingModal(localBooking);
       hideLoading();
@@ -468,12 +512,14 @@ async function showBookingDetails(bookingId) {
     });
 
     if (!response.ok) {
-      const stringBooking = bookingsData.find(b => String(b.id) === String(bookingId));
+      const stringBooking = bookingsData.find(
+        (b) => String(b.id) === String(bookingId)
+      );
       if (stringBooking) {
         displayBookingModal(stringBooking);
         return;
       }
-      
+
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -481,17 +527,19 @@ async function showBookingDetails(bookingId) {
     displayBookingModal(booking);
   } catch (error) {
     console.error("Error loading booking details:", error);
-    
-    const fallbackBooking = bookingsData.find(b => 
-      String(b.id) === String(bookingId) || 
-      b.id == bookingId
+
+    const fallbackBooking = bookingsData.find(
+      (b) => String(b.id) === String(bookingId) || b.id == bookingId
     );
-    
+
     if (fallbackBooking) {
       console.log("Using fallback booking data");
       displayBookingModal(fallbackBooking);
     } else {
-      showNotification("Error loading booking details. Please try again.", "error");
+      showNotification(
+        "Error loading booking details. Please try again.",
+        "error"
+      );
     }
   } finally {
     hideLoading();
@@ -508,29 +556,33 @@ function displayBookingModal(booking) {
                 <h3>Event Information</h3>
                 <div class="detail-item">
                     <label>Event Type:</label>
-                    <span>${booking.event_type || 'N/A'}</span>
+                    <span>${booking.event_type || "N/A"}</span>
                 </div>
                 <div class="detail-item">
                     <label>Date:</label>
-                    <span>${booking.event_date ? formatDate(booking.event_date) : 'N/A'}</span>
+                    <span>${
+                      booking.event_date
+                        ? formatDate(booking.event_date)
+                        : "N/A"
+                    }</span>
                 </div>
                 <div class="detail-item">
                     <label>Time:</label>
-                    <span>${booking.event_time || 'N/A'}</span>
+                    <span>${booking.event_time || "N/A"}</span>
                 </div>
                 <div class="detail-item">
                     <label>Location:</label>
-                    <span>${booking.location || 'N/A'}</span>
+                    <span>${booking.location || "N/A"}</span>
                 </div>
                 <div class="detail-item">
                     <label>Category:</label>
-                    <span>${booking.category || 'N/A'}</span>
+                    <span>${booking.category || "N/A"}</span>
                 </div>
                 <div class="detail-item">
                     <label>Status:</label>
-                    <span class="booking-status ${(booking.status || 'pending').toLowerCase()}">${
-                      booking.status || 'Pending'
-                    }</span>
+                    <span class="booking-status ${(
+                      booking.status || "pending"
+                    ).toLowerCase()}">${booking.status || "Pending"}</span>
                 </div>
             </div>
             
@@ -538,7 +590,7 @@ function displayBookingModal(booking) {
                 <h3>Planner Information</h3>
                 <div class="detail-item">
                     <label>Planner:</label>
-                    <span>${booking.planner_name || 'Not assigned'}</span>
+                    <span>${booking.planner_name || "Not assigned"}</span>
                 </div>
                 <div class="detail-item">
                     <label>Contact:</label>
@@ -561,7 +613,9 @@ function displayBookingModal(booking) {
                     <div class="timeline-item-small">
                         <div class="timeline-date-small">Booked</div>
                         <div class="timeline-content-small">${
-                          booking.created_at ? formatDate(booking.created_at) : 'N/A'
+                          booking.created_at
+                            ? formatDate(booking.created_at)
+                            : "N/A"
                         }</div>
                     </div>
                     ${
@@ -602,7 +656,6 @@ function displayBookingModal(booking) {
       contactPlanner(booking.planner_phone, booking.planner_email);
   }
 }
-
 
 // Load upcoming events
 async function loadUpcomingEvents() {
@@ -660,100 +713,102 @@ function displayUpcomingEvents(events) {
 
 // Load event history
 function loadEventHistory() {
-    try {
-        const completedStatuses = ['completed', 'cancelled'];
-        
-        // Load reviews for completed bookings
-        const loadEventHistoryWithReviews = async () => {
-            try {
-                // Get completed bookings
-                const completedBookings = bookingsData.filter(booking => 
-                    completedStatuses.includes(booking.status?.toLowerCase())
-                );
+  try {
+    const completedStatuses = ["completed", "cancelled"];
 
-                // If no completed bookings, display empty state
-                if (completedBookings.length === 0) {
-                    eventHistoryData = [];
-                    displayEventHistory(eventHistoryData);
-                    return;
-                }
+    // Load reviews for completed bookings
+    const loadEventHistoryWithReviews = async () => {
+      try {
+        // Get completed bookings
+        const completedBookings = bookingsData.filter((booking) =>
+          completedStatuses.includes(booking.status?.toLowerCase())
+        );
 
-                // Load reviews for these bookings
-                const response = await fetch('/api/customer/reviews', {
-                    credentials: 'include'
-                });
+        // If no completed bookings, display empty state
+        if (completedBookings.length === 0) {
+          eventHistoryData = [];
+          displayEventHistory(eventHistoryData);
+          return;
+        }
 
-                let reviews = [];
-                if (response.ok) {
-                    reviews = await response.json();
-                }
+        // Load reviews for these bookings
+        const response = await fetch("/api/customer/reviews", {
+          credentials: "include",
+        });
 
-                // Combine booking data with review data
-                eventHistoryData = completedBookings.map(booking => {
-                    const review = reviews.find(r => r.booking_id == booking.id);
-                    return {
-                        ...booking,
-                        rating: review ? review.rating : null,
-                        review_comment: review ? review.comment : null,
-                        review_created_at: review ? review.created_at : null
-                    };
-                }).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
+        let reviews = [];
+        if (response.ok) {
+          reviews = await response.json();
+        }
 
-                displayEventHistory(eventHistoryData);
+        // Combine booking data with review data
+        eventHistoryData = completedBookings
+          .map((booking) => {
+            const review = reviews.find((r) => r.booking_id == booking.id);
+            return {
+              ...booking,
+              rating: review ? review.rating : null,
+              review_comment: review ? review.comment : null,
+              review_created_at: review ? review.created_at : null,
+            };
+          })
+          .sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
 
-            } catch (error) {
-                console.error('Error loading event history with reviews:', error);
-                
-                eventHistoryData = bookingsData.filter(booking => 
-                    completedStatuses.includes(booking.status?.toLowerCase())
-                ).sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
-                
-                displayEventHistory(eventHistoryData);
-            }
-        };
+        displayEventHistory(eventHistoryData);
+      } catch (error) {
+        console.error("Error loading event history with reviews:", error);
 
-        loadEventHistoryWithReviews();
+        eventHistoryData = bookingsData
+          .filter((booking) =>
+            completedStatuses.includes(booking.status?.toLowerCase())
+          )
+          .sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
 
-    } catch (error) {
-        console.error("Error loading event history:", error);
-        showNotification("Failed to load event history", "warning");
-        eventHistoryData = [];
-        displayEventHistory([]);
-    }
+        displayEventHistory(eventHistoryData);
+      }
+    };
+
+    loadEventHistoryWithReviews();
+  } catch (error) {
+    console.error("Error loading event history:", error);
+    showNotification("Failed to load event history", "warning");
+    eventHistoryData = [];
+    displayEventHistory([]);
+  }
 }
-
-
 
 // Display event history
 function displayEventHistory(history) {
-    const container = document.getElementById("eventHistoryList");
+  const container = document.getElementById("eventHistoryList");
 
-    if (!history || history.length === 0) {
-        container.innerHTML = `
+  if (!history || history.length === 0) {
+    container.innerHTML = `
             <div class="no-history">
                 <i class="fas fa-history"></i>
                 <h3>No event history</h3>
                 <p>Your completed events will appear here</p>
             </div>
         `;
-        return;
-    }
+    return;
+  }
 
-    container.innerHTML = history
-        .map(
-            (event) => `
-        <div class="history-card" onclick="showEventHistoryDetails('${event.id}')">
+  container.innerHTML = history
+    .map(
+      (event) => `
+        <div class="history-card" onclick="showEventHistoryDetails('${
+          event.id
+        }')">
             <div class="history-content">
                 <div class="history-header">
                     <h3>${event.event_type}</h3>
-                    <span class="history-status ${event.status?.toLowerCase() || 'completed'}">${
-                event.status || 'Completed'
-            }</span>
+                    <span class="history-status ${
+                      event.status?.toLowerCase() || "completed"
+                    }">${event.status || "Completed"}</span>
                 </div>
                 <div class="history-details">
                     <div class="history-detail">
                         <i class="fas fa-user-tie"></i>
-                        <span>Planner: ${event.planner_name || 'N/A'}</span>
+                        <span>Planner: ${event.planner_name || "N/A"}</span>
                     </div>
                     <div class="history-detail">
                         <i class="fas fa-calendar"></i>
@@ -761,7 +816,7 @@ function displayEventHistory(history) {
                     </div>
                     <div class="history-detail">
                         <i class="fas fa-clock"></i>
-                        <span>${event.event_time || 'N/A'}</span>
+                        <span>${event.event_time || "N/A"}</span>
                     </div>
                     <div class="history-detail">
                         <i class="fas fa-map-marker-alt"></i>
@@ -771,89 +826,115 @@ function displayEventHistory(history) {
                         <i class="fas fa-tag"></i>
                         <span>${event.category}</span>
                     </div>
-                    ${event.rating ? `
+                    ${
+                      event.rating
+                        ? `
                     <div class="history-detail">
                         <i class="fas fa-star"></i>
-                        <span>Your Rating: ${generateStars(event.rating)} (${event.rating}/5)</span>
+                        <span>Your Rating: ${generateStars(event.rating)} (${
+                            event.rating
+                          }/5)</span>
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
-                ${event.requirements ? `
+                ${
+                  event.requirements
+                    ? `
                 <div class="history-requirements">
                     <i class="fas fa-list"></i>
-                    <span>${event.requirements.substring(0, 100)}${event.requirements.length > 100 ? '...' : ''}</span>
+                    <span>${event.requirements.substring(0, 100)}${
+                        event.requirements.length > 100 ? "..." : ""
+                      }</span>
                 </div>
-                ` : ''}
+                `
+                    : ""
+                }
                 <div class="history-footer">
                     <div class="history-meta">
                         <small class="text-muted">
                             Event Date: ${formatDate(event.event_date)}
-                            ${event.completed_at ? ` | Completed: ${formatDate(event.completed_at)}` : ''}
+                            ${
+                              event.completed_at
+                                ? ` | Completed: ${formatDate(
+                                    event.completed_at
+                                  )}`
+                                : ""
+                            }
                         </small>
                     </div>
-                    ${event.status === 'completed' ? `
+                    ${
+                      event.status === "completed"
+                        ? `
                     <div class="review-actions">
-                        ${event.rating ? `
+                        ${
+                          event.rating
+                            ? `
                             <button class="btn-sm-secondary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"  onclick="event.stopPropagation(); editReview(${event.id})" title="Edit your review">
                                 <i class="fas fa-edit"></i> Edit Review
                             </button>
-                        ` : `
+                        `
+                            : `
                             <button class="btn-sm-primary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"  style="height: 40px !important; " onclick="event.stopPropagation(); showReviewModal(${event.id}, '${event.planner_name}', '${event.event_type}', '${event.event_date}')" title="Leave a review">
                                 <i class="fas fa-star"></i> Leave Review
                             </button>
-                        `}
+                        `
+                        }
                     </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                 </div>
             </div>
         </div>
     `
-        )
-        .join("");
+    )
+    .join("");
 }
-
 
 // Show event history details
 function showEventHistoryDetails(eventId) {
+  const event = eventHistoryData?.find((e) => e.id == eventId);
 
-  const event = eventHistoryData?.find(e => e.id == eventId);
-  
   if (!event) {
     showNotification("Event details not found", "error");
     return;
   }
 
   const modalBody = document.getElementById("bookingModalBody");
-  
+
   modalBody.innerHTML = `
     <div class="booking-detail-grid">
         <div class="detail-section">
             <h3>Event Information</h3>
             <div class="detail-item">
                 <label>Event Type:</label>
-                <span>${event.event_type || 'N/A'}</span>
+                <span>${event.event_type || "N/A"}</span>
             </div>
             <div class="detail-item">
                 <label>Date:</label>
-                <span>${event.event_date ? formatDate(event.event_date) : 'N/A'}</span>
+                <span>${
+                  event.event_date ? formatDate(event.event_date) : "N/A"
+                }</span>
             </div>
             <div class="detail-item">
                 <label>Time:</label>
-                <span>${event.event_time || 'N/A'}</span>
+                <span>${event.event_time || "N/A"}</span>
             </div>
             <div class="detail-item">
                 <label>Location:</label>
-                <span>${event.location || 'N/A'}</span>
+                <span>${event.location || "N/A"}</span>
             </div>
             <div class="detail-item">
                 <label>Category:</label>
-                <span>${event.category || 'N/A'}</span>
+                <span>${event.category || "N/A"}</span>
             </div>
             <div class="detail-item">
                 <label>Status:</label>
-                <span class="booking-status ${(event.status || 'completed').toLowerCase()}">${
-                  event.status || 'Completed'
-                }</span>
+                <span class="booking-status ${(
+                  event.status || "completed"
+                ).toLowerCase()}">${event.status || "Completed"}</span>
             </div>
         </div>
         
@@ -861,7 +942,7 @@ function showEventHistoryDetails(eventId) {
             <h3>Planner Information</h3>
             <div class="detail-item">
                 <label>Planner:</label>
-                <span>${event.planner_name || 'Not assigned'}</span>
+                <span>${event.planner_name || "Not assigned"}</span>
             </div>
             <div class="detail-item">
                 <label>Contact:</label>
@@ -884,7 +965,7 @@ function showEventHistoryDetails(eventId) {
                 <div class="timeline-item-small completed">
                     <div class="timeline-date-small">Booked</div>
                     <div class="timeline-content-small">${
-                      event.created_at ? formatDate(event.created_at) : 'N/A'
+                      event.created_at ? formatDate(event.created_at) : "N/A"
                     }</div>
                 </div>
                 ${
@@ -924,9 +1005,6 @@ function showEventHistoryDetails(eventId) {
 
   document.getElementById("bookingModal").style.display = "block";
 }
-
-
-
 
 // Load notifications
 async function loadNotifications() {
@@ -1012,7 +1090,7 @@ async function markAllNotificationsRead() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await loadNotifications(); 
+    await loadNotifications();
     showNotification("All notifications marked as read", "success");
   } catch (error) {
     console.error("Error marking notifications as read:", error);
@@ -1036,7 +1114,7 @@ async function clearAllNotifications() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    await loadNotifications(); 
+    await loadNotifications();
     showNotification("All notifications cleared", "success");
   } catch (error) {
     console.error("Error clearing notifications:", error);
@@ -1046,58 +1124,57 @@ async function clearAllNotifications() {
 
 // Setup profile image upload
 function setupProfileImageUpload() {
-    const profileImageSection = document.querySelector('.profile-image-section');
-    const profileImageInput = document.getElementById('profileImageInput');
-    
-    if (profileImageSection && profileImageInput) {
-        // Add a click listener to the entire profile image container
-        profileImageSection.addEventListener('click', () => {
-            profileImageInput.click();
-        });
+  const profileImageSection = document.querySelector(".profile-image-section");
+  const profileImageInput = document.getElementById("profileImageInput");
 
-        // Add a change listener to the file input to handle the upload
-        profileImageInput.addEventListener('change', handleProfileImageUpload);
-    }
+  if (profileImageSection && profileImageInput) {
+    // Add a click listener to the entire profile image container
+    profileImageSection.addEventListener("click", () => {
+      profileImageInput.click();
+    });
+
+    // Add a change listener to the file input to handle the upload
+    profileImageInput.addEventListener("change", handleProfileImageUpload);
+  }
 }
- 
 
 // Handle profile image upload
 async function handleProfileImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        return;
+  const file = event.target.files[0];
+  if (!file) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("profileImage", file);
+
+  try {
+    showLoading();
+    const response = await fetch("/api/customer/profile/upload-image", {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showNotification("Profile image uploaded successfully", "success");
+
+      // To display the new image immediately, update the source
+      const profileImageEl = document.getElementById("profileImage");
+      if (profileImageEl) {
+        profileImageEl.src = `/api/customer/profile/image?t=${Date.now()}`;
+      }
+    } else {
+      showNotification(data.error || "Error uploading image", "error");
     }
-
-    const formData = new FormData();
-    formData.append('profileImage', file);
-
-    try {
-        showLoading();
-        const response = await fetch('/api/customer/profile/upload-image', {
-            method: 'POST',
-            credentials: 'include',
-            body: formData,
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Profile image uploaded successfully', 'success');
-            
-            // To display the new image immediately, update the source
-            const profileImageEl = document.getElementById("profileImage");
-            if (profileImageEl) {
-                profileImageEl.src = `/api/customer/profile/image?t=${Date.now()}`;
-            }
-        } else {
-            showNotification(data.error || 'Error uploading image', 'error');
-        }
-    } catch (error) {
-        console.error('Error uploading profile image:', error);
-        showNotification('Failed to upload image', 'error');
-    } finally {
-        hideLoading();
-    }
+  } catch (error) {
+    console.error("Error uploading profile image:", error);
+    showNotification("Failed to upload image", "error");
+  } finally {
+    hideLoading();
+  }
 }
 
 // Setup form handlers
@@ -1135,11 +1212,17 @@ async function updateProfile(event) {
     }
   }
 
-  // Handle preferences
+  const dobValue = formData.get("dateOfBirth");
+  if (dobValue !== null) {
+    profileData.date_of_birth = dobValue.trim() || null;
+  }
+
   const selectedPreferences = formData.getAll("preferences");
   profileData.preferences = selectedPreferences.filter(
     (pref) => pref && pref.trim()
   );
+
+  console.log("Sending profile data:", profileData);
 
   try {
     showLoading();
@@ -1313,6 +1396,9 @@ function validateInput(event) {
   } else if (input.type === "tel" && value && !isValidPhone(value)) {
     isValid = false;
     errorMessage = "Please enter a valid phone number";
+  } else if (input.type === "date" && value && !isValidDate(value)) {
+    isValid = false;
+    errorMessage = "Please enter a valid date";
   }
 
   if (!isValid) {
@@ -1320,6 +1406,21 @@ function validateInput(event) {
   }
 
   return isValid;
+}
+
+function isValidDate(dateString) {
+  if (!dateString) return true;
+
+  try {
+    const date = new Date(dateString);
+    return (
+      date instanceof Date &&
+      !isNaN(date.getTime()) &&
+      dateString === date.toISOString().split("T")[0]
+    );
+  } catch (error) {
+    return false;
+  }
 }
 
 // Clear validation error
@@ -1556,102 +1657,111 @@ function setupMobileSidebar() {
   });
 }
 
-
-
-
 // Stat card clicking to showing content
 function navigateToSection(sectionName) {
-
   showSection(sectionName);
-  
-   const sidebarMenuItems = document.querySelectorAll('.sidebar .menu-item');
-  sidebarMenuItems.forEach(item => {
-    item.classList.remove('active');
+
+  const sidebarMenuItems = document.querySelectorAll(".sidebar .menu-item");
+  sidebarMenuItems.forEach((item) => {
+    item.classList.remove("active");
     if (item.dataset.section === sectionName) {
-      item.classList.add('active');
-    } 
+      item.classList.add("active");
+    }
   });
 }
 
-
-// Review and rating 
+// Review and rating
 
 async function loadReviews() {
-    try {
-        showLoading();
-        
-        const response = await fetch('/api/customer/reviews', {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const reviewsData = await response.json();
-            displayCustomerReviews(reviewsData);
-        } else {
-            console.error('Failed to load reviews:', response.status);
-            showNotification('Error loading reviews', 'error');
-            displayCustomerReviews([]);
-        }
-    } catch (error) {
-        console.error('Error loading reviews:', error);
-        showNotification('Error loading reviews', 'error');
-        displayCustomerReviews([]);
-    } finally {
-        hideLoading();
+  try {
+    showLoading();
+
+    const response = await fetch("/api/customer/reviews", {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const reviewsData = await response.json();
+      displayCustomerReviews(reviewsData);
+    } else {
+      console.error("Failed to load reviews:", response.status);
+      showNotification("Error loading reviews", "error");
+      displayCustomerReviews([]);
     }
+  } catch (error) {
+    console.error("Error loading reviews:", error);
+    showNotification("Error loading reviews", "error");
+    displayCustomerReviews([]);
+  } finally {
+    hideLoading();
+  }
 }
 
 // Display customer reviews
 function displayCustomerReviews(reviews) {
-    const container = document.getElementById('reviewsList');
-    if (!container) return;
-    
-    if (!reviews || reviews.length === 0) {
-        container.innerHTML = `
+  const container = document.getElementById("reviewsList");
+  if (!container) return;
+
+  if (!reviews || reviews.length === 0) {
+    container.innerHTML = `
             <div class="no-reviews">
                 <i class="fas fa-star"></i>
                 <h3>No reviews yet</h3>
                 <p>Complete an event to leave your first review!</p>
             </div>
         `;
-        return;
-    }
-    
-    container.innerHTML = reviews.map(review => `
+    return;
+  }
+
+  container.innerHTML = reviews
+    .map(
+      (review) => `
         <div class="review-card">
             <div class="review-header">
                 <div class="planner-info">
-                    <h4 style="color: #8b5cf6 !important;">${review.planner_name}</h4>
-                    <p>${review.event_type} - ${formatDate(review.event_date)}</p>
+                    <h4 style="color: #8b5cf6 !important;">${
+                      review.planner_name
+                    }</h4>
+                    <p>${review.event_type} - ${formatDate(
+        review.event_date
+      )}</p>
                 </div>
                 <div class="review-rating" style="color: rgb(255, 217, 0) !important;">
                     ${generateStars(review.rating || 0)}
-                    <span class="rating-number" style="color: rgb(0, 0, 0) !important;">${review.rating || 0}/5</span>
+                    <span class="rating-number" style="color: rgb(0, 0, 0) !important;">${
+                      review.rating || 0
+                    }/5</span>
                 </div>
             </div>
             <div class="review-content">
-                <p>${review.comment || 'No comment provided'}</p>
+                <p>${review.comment || "No comment provided"}</p>
             </div>
             <div class="review-footer">
                 <small class="text-gray-500">
                     Reviewed on ${formatDate(review.created_at)}
                 </small>
-                ${review.rating ? `
+                ${
+                  review.rating
+                    ? `
                     <button class="btn-sm secondary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;" onclick="editReview(${review.booking_id})">
                         <i class="fas fa-edit"></i> Edit Review
                     </button>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
         </div>
-    `).join('');
+    `
+    )
+    .join("");
 }
 
 // Show review modal for completed bookings
 function showReviewModal(bookingId, plannerName, eventType, eventDate) {
-    const modalBody = document.getElementById('reviewModalBody');
-    if (!modalBody) return;
-    
-    modalBody.innerHTML = `
+  const modalBody = document.getElementById("reviewModalBody");
+  if (!modalBody) return;
+
+  modalBody.innerHTML = `
         <div class="review-form-container">
             <div class="booking-info">
                 <h4>Review ${plannerName}</h4>
@@ -1685,160 +1795,164 @@ function showReviewModal(bookingId, plannerName, eventType, eventDate) {
             </form>
         </div>
     `;
-    
-    setupStarRating();
-    
-    const modal = document.getElementById('reviewModal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
+
+  setupStarRating();
+
+  const modal = document.getElementById("reviewModal");
+  if (modal) {
+    modal.style.display = "block";
+  }
 }
 
 // Setup star rating interaction
 function setupStarRating() {
-    const stars = document.querySelectorAll('#starRating i');
-    const ratingInput = document.getElementById('selectedRating');
-    
-    stars.forEach((star, index) => {
-        star.addEventListener('mouseover', () => {
-            highlightStars(index + 1);
-        });
-        
-        star.addEventListener('click', () => {
-            const rating = index + 1;
-            ratingInput.value = rating;
-            setStarRating(rating);
-        });
+  const stars = document.querySelectorAll("#starRating i");
+  const ratingInput = document.getElementById("selectedRating");
+
+  stars.forEach((star, index) => {
+    star.addEventListener("mouseover", () => {
+      highlightStars(index + 1);
     });
-    
-    // Reset on mouse leave
-    document.getElementById('starRating').addEventListener('mouseleave', () => {
-        const currentRating = parseInt(ratingInput.value) || 0;
-        setStarRating(currentRating);
+
+    star.addEventListener("click", () => {
+      const rating = index + 1;
+      ratingInput.value = rating;
+      setStarRating(rating);
     });
+  });
+
+  // Reset on mouse leave
+  document.getElementById("starRating").addEventListener("mouseleave", () => {
+    const currentRating = parseInt(ratingInput.value) || 0;
+    setStarRating(currentRating);
+  });
 }
 
 // Highlight stars on hover
 function highlightStars(count) {
-    const stars = document.querySelectorAll('#starRating i');
-    stars.forEach((star, index) => {
-        if (index < count) {
-            star.classList.add('highlighted');
-            star.classList.remove('inactive');
-        } else {
-            star.classList.remove('highlighted');
-            star.classList.add('inactive');
-        }
-    });
+  const stars = document.querySelectorAll("#starRating i");
+  stars.forEach((star, index) => {
+    if (index < count) {
+      star.classList.add("highlighted");
+      star.classList.remove("inactive");
+    } else {
+      star.classList.remove("highlighted");
+      star.classList.add("inactive");
+    }
+  });
 }
 
 // Set permanent star rating
 function setStarRating(rating) {
-    const stars = document.querySelectorAll('#starRating i');
-    stars.forEach((star, index) => {
-        star.classList.remove('highlighted', 'inactive');
-        if (index < rating) {
-            star.classList.add('selected');
-        } else {
-            star.classList.remove('selected');
-        }
-    });
+  const stars = document.querySelectorAll("#starRating i");
+  stars.forEach((star, index) => {
+    star.classList.remove("highlighted", "inactive");
+    if (index < rating) {
+      star.classList.add("selected");
+    } else {
+      star.classList.remove("selected");
+    }
+  });
 }
 
 // Submit review
 async function submitReview(event, bookingId) {
-    event.preventDefault();
-    
-    const rating = parseInt(document.getElementById('selectedRating').value);
-    const comment = document.getElementById('reviewComment').value.trim();
-    
-    if (rating === 0) {
-        showNotification('Please select a rating', 'error');
-        return;
+  event.preventDefault();
+
+  const rating = parseInt(document.getElementById("selectedRating").value);
+  const comment = document.getElementById("reviewComment").value.trim();
+
+  if (rating === 0) {
+    showNotification("Please select a rating", "error");
+    return;
+  }
+
+  if (!comment) {
+    showNotification("Please write a review comment", "error");
+    return;
+  }
+
+  try {
+    showLoading();
+
+    const response = await fetch("/api/customer/reviews", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        booking_id: bookingId,
+        rating: rating,
+        comment: comment,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showNotification("Review submitted successfully!", "success");
+      closeModal();
+
+      loadEventHistory();
+
+      const reviewsSection = document.getElementById("reviews");
+      if (reviewsSection && reviewsSection.classList.contains("active")) {
+        loadReviews();
+      }
+    } else {
+      showNotification(data.error || "Error submitting review", "error");
     }
-    
-    if (!comment) {
-        showNotification('Please write a review comment', 'error');
-        return;
-    }
-    
-    try {
-        showLoading();
-        
-        const response = await fetch('/api/customer/reviews', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                booking_id: bookingId,
-                rating: rating,
-                comment: comment
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Review submitted successfully!', 'success');
-            closeModal();
-            
-            loadEventHistory();
-            
-            const reviewsSection = document.getElementById('reviews');
-            if (reviewsSection && reviewsSection.classList.contains('active')) {
-                loadReviews();
-            }
-        } else {
-            showNotification(data.error || 'Error submitting review', 'error');
-        }
-    } catch (error) {
-        console.error('Error submitting review:', error);
-        showNotification('Error submitting review', 'error');
-    } finally {
-        hideLoading();
-    }
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    showNotification("Error submitting review", "error");
+  } finally {
+    hideLoading();
+  }
 }
 
 // Edit existing review
 async function editReview(bookingId) {
-    try {
-        showLoading();
-        
-        // Get current review data
-        const response = await fetch(`/api/customer/reviews/${bookingId}`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const reviewData = await response.json();
-            showEditReviewModal(reviewData);
-        } else {
-            showNotification('Error loading review data', 'error');
-        }
-    } catch (error) {
-        console.error('Error loading review:', error);
-        showNotification('Error loading review data', 'error');
-    } finally {
-        hideLoading();
+  try {
+    showLoading();
+
+    // Get current review data
+    const response = await fetch(`/api/customer/reviews/${bookingId}`, {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const reviewData = await response.json();
+      showEditReviewModal(reviewData);
+    } else {
+      showNotification("Error loading review data", "error");
     }
+  } catch (error) {
+    console.error("Error loading review:", error);
+    showNotification("Error loading review data", "error");
+  } finally {
+    hideLoading();
+  }
 }
 
 // Show edit review modal
 function showEditReviewModal(reviewData) {
-    const modalBody = document.getElementById('reviewModalBody');
-    if (!modalBody) return;
-    
-    modalBody.innerHTML = `
+  const modalBody = document.getElementById("reviewModalBody");
+  if (!modalBody) return;
+
+  modalBody.innerHTML = `
         <div class="review-form-container">
             <div class="booking-info">
                 <h4>Edit Review for ${reviewData.planner_name}</h4>
                 <p><strong>Event:</strong> ${reviewData.event_type}</p>
-                <p><strong>Date:</strong> ${formatDate(reviewData.event_date)}</p>
+                <p><strong>Date:</strong> ${formatDate(
+                  reviewData.event_date
+                )}</p>
             </div>
             
-            <form id="editReviewForm" onsubmit="updateReview(event, ${reviewData.booking_id})">
+            <form id="editReviewForm" onsubmit="updateReview(event, ${
+              reviewData.booking_id
+            })">
                 <div class="form-group">
                     <label>Rating*</label>
                     <div class="star-rating" id="starRating">
@@ -1848,113 +1962,123 @@ function showEditReviewModal(reviewData) {
                         <i class="fas fa-star" data-rating="4"></i>
                         <i class="fas fa-star" data-rating="5"></i>
                     </div>
-                    <input type="hidden" id="selectedRating" value="${reviewData.rating}" required>
+                    <input type="hidden" id="selectedRating" value="${
+                      reviewData.rating
+                    }" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="reviewComment">Your Review</label>
                     <textarea id="reviewComment" name="comment" rows="4" 
-                        placeholder="Share your experience with this planner..." required>${reviewData.comment}</textarea>
+                        placeholder="Share your experience with this planner..." required>${
+                          reviewData.comment
+                        }</textarea>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" style="background: linear-gradient(135deg, rgb(255, 67, 67), rgb(255, 158, 158) ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"   class="btn-danger" onclick="deleteReview(${reviewData.booking_id})">Delete Review</button>
+                    <button type="button" style="background: linear-gradient(135deg, rgb(255, 67, 67), rgb(255, 158, 158) ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"   class="btn-danger" onclick="deleteReview(${
+                      reviewData.booking_id
+                    })">Delete Review</button>
                     <button type="button" style="background: linear-gradient(135deg, rgb(143, 141, 141), rgb(198, 198, 198) ) !important; color: #000 !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;"  class="btn-secondary" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4 ) !important; color: #fff !important; height: 45px !important; padding: 6px 12px !important; border: 1px solid transparent !important;" >Update Review</button>
                 </div>
             </form>
         </div>
     `;
-    
-    setupStarRating();
-    setStarRating(reviewData.rating);
-    
-    const modal = document.getElementById('reviewModal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
+
+  setupStarRating();
+  setStarRating(reviewData.rating);
+
+  const modal = document.getElementById("reviewModal");
+  if (modal) {
+    modal.style.display = "block";
+  }
 }
 
 // Update existing review
 async function updateReview(event, bookingId) {
-    event.preventDefault();
-    
-    const rating = parseInt(document.getElementById('selectedRating').value);
-    const comment = document.getElementById('reviewComment').value.trim();
-    
-    if (rating === 0) {
-        showNotification('Please select a rating', 'error');
-        return;
+  event.preventDefault();
+
+  const rating = parseInt(document.getElementById("selectedRating").value);
+  const comment = document.getElementById("reviewComment").value.trim();
+
+  if (rating === 0) {
+    showNotification("Please select a rating", "error");
+    return;
+  }
+
+  if (!comment) {
+    showNotification("Please write a review comment", "error");
+    return;
+  }
+
+  try {
+    showLoading();
+
+    const response = await fetch(`/api/customer/reviews/${bookingId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        rating: rating,
+        comment: comment,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showNotification("Review updated successfully!", "success");
+      closeModal();
+
+      loadReviews();
+      loadEventHistory();
+    } else {
+      showNotification(data.error || "Error updating review", "error");
     }
-    
-    if (!comment) {
-        showNotification('Please write a review comment', 'error');
-        return;
-    }
-    
-    try {
-        showLoading();
-        
-        const response = await fetch(`/api/customer/reviews/${bookingId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                rating: rating,
-                comment: comment
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Review updated successfully!', 'success');
-            closeModal();
-            
-            loadReviews();
-            loadEventHistory();
-        } else {
-            showNotification(data.error || 'Error updating review', 'error');
-        }
-    } catch (error) {
-        console.error('Error updating review:', error);
-        showNotification('Error updating review', 'error');
-    } finally {
-        hideLoading();
-    }
+  } catch (error) {
+    console.error("Error updating review:", error);
+    showNotification("Error updating review", "error");
+  } finally {
+    hideLoading();
+  }
 }
 
 // Delete review
 async function deleteReview(bookingId) {
-    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-        return;
+  if (
+    !confirm(
+      "Are you sure you want to delete this review? This action cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  try {
+    showLoading();
+
+    const response = await fetch(`/api/customer/reviews/${bookingId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showNotification("Review deleted successfully", "success");
+      closeModal();
+
+      loadReviews();
+      loadEventHistory();
+    } else {
+      showNotification(data.error || "Error deleting review", "error");
     }
-    
-    try {
-        showLoading();
-        
-        const response = await fetch(`/api/customer/reviews/${bookingId}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Review deleted successfully', 'success');
-            closeModal();
-            
-            loadReviews();
-            loadEventHistory();
-        } else {
-            showNotification(data.error || 'Error deleting review', 'error');
-        }
-    } catch (error) {
-        console.error('Error deleting review:', error);
-        showNotification('Error deleting review', 'error');
-    } finally {
-        hideLoading();
-    }
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    showNotification("Error deleting review", "error");
+  } finally {
+    hideLoading();
+  }
 }
