@@ -20,7 +20,6 @@
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
 
-
     <!-- Speed Insight Analytics -->
     <script>
       window.si =
@@ -30,7 +29,6 @@
         };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
-    
   </head>
   <body>
     <!-- Navigation -->
@@ -387,6 +385,131 @@
                       min="0"
                     />
                   </div>
+
+                  <div class="form-group full-width">
+                    <h3
+                      style="
+                        color: var(--primary-color);
+                        border-bottom: 2px solid var(--primary-color);
+                        padding-bottom: 0.5rem;
+                        margin-bottom: 1rem;
+                      "
+                    >
+                      <i class="fas fa-file-upload"></i> Required Documents
+                    </h3>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="idCardInput">ID Card (Front & Back)*</label>
+                    <div class="document-upload-container">
+                      <div
+                        class="upload-area"
+                        id="idCardUploadArea"
+                        onclick="document.getElementById('idCardInput').click()"
+                      >
+                        <div class="upload-placeholder" id="idCardPlaceholder">
+                          <i class="fas fa-id-card fa-3x"></i>
+                          <p>Click to upload ID Card</p>
+                          <small
+                            >Upload both front and back in one image or PDF (Max
+                            10MB)</small
+                          >
+                        </div>
+                        <div
+                          class="upload-preview"
+                          id="idCardPreview"
+                          style="display: none"
+                        >
+                          <img id="idCardImage" style="display: none" />
+                          <div id="idCardPdfPreview" style="display: none">
+                            <i class="fas fa-file-pdf fa-3x"></i>
+                            <p id="idCardPdfName"></p>
+                          </div>
+                          <div class="upload-overlay">
+                            <button
+                              type="button"
+                              class="remove-upload-btn"
+                              onclick="removeUpload('idCard', event)"
+                            >
+                              <i class="fas fa-times"></i>
+                            </button>
+                            <button type="button" class="change-upload-btn">
+                              <i class="fas fa-edit"></i> Change
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        id="idCardInput"
+                        accept="image/*,application/pdf"
+                        hidden
+                      />
+                      <div class="upload-status" id="idCardStatus"></div>
+                    </div>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="birthCertificateInput"
+                      >Birth Certificate*</label
+                    >
+                    <div class="document-upload-container">
+                      <div
+                        class="upload-area"
+                        id="birthCertificateUploadArea"
+                        onclick="document.getElementById('birthCertificateInput').click()"
+                      >
+                        <div
+                          class="upload-placeholder"
+                          id="birthCertificatePlaceholder"
+                        >
+                          <i class="fas fa-certificate fa-3x"></i>
+                          <p>Click to upload Birth Certificate</p>
+                          <small>Upload as image or PDF (Max 10MB)</small>
+                        </div>
+                        <div
+                          class="upload-preview"
+                          id="birthCertificatePreview"
+                          style="display: none"
+                        >
+                          <img
+                            id="birthCertificateImage"
+                            style="display: none"
+                          />
+                          <div
+                            id="birthCertificatePdfPreview"
+                            style="display: none"
+                          >
+                            <i class="fas fa-file-pdf fa-3x"></i>
+                            <p id="birthCertificatePdfName"></p>
+                          </div>
+                          <div class="upload-overlay">
+                            <button
+                              type="button"
+                              class="remove-upload-btn"
+                              onclick="removeUpload('birthCertificate', event)"
+                            >
+                              <i class="fas fa-times"></i>
+                            </button>
+                            <button type="button" class="change-upload-btn">
+                              <i class="fas fa-edit"></i> Change
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        id="birthCertificateInput"
+                        accept="image/*,application/pdf"
+                        hidden
+                      />
+                      <div
+                        class="upload-status"
+                        id="birthCertificateStatus"
+                      ></div>
+                    </div>
+                  </div>
+
                 </div>
                 <div class="form-actions">
                   <button type="submit" class="btn-primary">

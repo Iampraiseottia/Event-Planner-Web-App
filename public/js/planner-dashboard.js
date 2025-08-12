@@ -18,11 +18,14 @@ let currentBookingId = null;
 let scheduleData = [];
 let notificationsData = [];
 let filteredNotifications = [];
+let hasIdCard = false;
+let hasBirthCertificate = false;
 
 // Initialize dashboard
 function initializeDashboard() {
   checkAuthStatus();
   setupSidebarNavigation();
+  setupDocumentUploads();
 
   setTimeout(() => {
     setupMobileNavigation();
@@ -75,6 +78,45 @@ async function checkAuthStatus() {
     }
 
     currentPlanner = statusData.user;
+
+    // Check profile completion more thoroughly
+    const profileCompleteResponse = await fetch("/api/planner/profile", {
+      credentials: "include",
+    });
+
+    let isProfileComplete = false;
+    if (profileCompleteResponse.ok) {
+      const profileData = await profileCompleteResponse.json();
+      const planner = profileData.planner;
+
+      // Check if all required fields are present
+      isProfileComplete = !!(
+        planner.business_name &&
+        planner.bio &&
+        planner.experience &&
+        planner.base_price &&
+        planner.has_id_card &&
+        planner.has_birth_certificate
+      );
+    }
+
+    // Update current planner with profile completion status
+    currentPlanner.profile_completed = isProfileComplete;
+
+    // Profile completion status
+    if (!isProfileComplete) {
+      disableIncompleteSidebarLinks();
+      showNotification(
+        "Please complete your profile to access all features.",
+        "warning"
+      );
+
+      showSection("profile");
+    } else {
+      enableAllSidebarLinks();
+      removeProfileIncompleteWarning();
+    }
+
     updateUserInterface();
 
     console.log("Auth check successful for planner:", currentPlanner.full_name);
@@ -86,6 +128,329 @@ async function checkAuthStatus() {
     }, 2000);
   } finally {
     hideLoading();
+  }
+}
+
+// Disable sidebar links when profile is incomplete
+function disableIncompleteSidebarLinks() {
+  const menuItems = document.querySelectorAll(".menu-item");
+  menuItems.forEach((item) => {
+    const section = item.dataset.section;
+    if (section !== "profile" && section !== "overview") {
+      item.classList.add("disabled");
+      item.style.opacity = "0.5";
+      item.style.cursor = "not-allowed";
+
+      const newItem = item.cloneNode(true);
+      item.parentNode.replaceChild(newItem, item);
+
+      newItem.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showNotification("Please complete your profile first.", "warning");
+      });
+    }
+  });
+}
+
+// Enable all sidebar links when profile is complete
+function enableAllSidebarLinks() {
+  const menuItems = document.querySelectorAll(".menu-item");
+  menuItems.forEach((item) => {
+    item.classList.remove("disabled");
+    item.style.opacity = "";
+    item.style.cursor = "";
+  });
+  setupSidebarNavigation();
+}
+
+// Setup document uploads
+function setupDocumentUploads() {
+  const idCardInput = document.getElementById("idCardInput");
+  const birthCertificateInput = document.getElementById(
+    "birthCertificateInput"
+  );
+
+  if (idCardInput) {
+    idCardInput.addEventListener("change", (e) =>
+      handleDocumentUpload(e, "idCard")
+    );
+  }
+
+  if (birthCertificateInput) {
+    birthCertificateInput.addEventListener("change", (e) =>
+      handleDocumentUpload(e, "birthCertificate")
+    );
+  }
+
+  setupDragAndDrop("idCard");
+  setupDragAndDrop("birthCertificate");
+}
+
+// Setup drag and drop
+function setupDragAndDrop(docType) {
+  const uploadArea = document.getElementById(`${docType}UploadArea`);
+  if (!uploadArea) return;
+
+  uploadArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadArea.classList.add("drag-over");
+  });
+
+  uploadArea.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("drag-over");
+  });
+
+  uploadArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("drag-over");
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const input = document.getElementById(`${docType}Input`);
+      input.files = files;
+      handleDocumentUpload({ target: input }, docType);
+    }
+  });
+}
+
+// Handle document upload
+async function handleDocumentUpload(event, docType) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  console.log(`Uploading ${docType}:`, file.name, file.type, file.size);
+
+  // Validate file
+  if (!validateDocumentFile(file, docType)) {
+    return;
+  }
+
+  showDocumentPreview(file, docType);
+
+  await uploadDocument(file, docType);
+}
+
+// Validate document file
+function validateDocumentFile(file, docType) {
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+  ];
+
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    showNotification("Please select a valid image or PDF file", "error");
+    return false;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showNotification("File size must be less than 10MB", "error");
+    return false;
+  }
+
+  return true;
+}
+
+// Show document preview
+function showDocumentPreview(file, docType) {
+  const placeholder = document.getElementById(`${docType}Placeholder`);
+  const preview = document.getElementById(`${docType}Preview`);
+  const image = document.getElementById(`${docType}Image`);
+  const pdfPreview = document.getElementById(`${docType}PdfPreview`);
+  const pdfName = document.getElementById(`${docType}PdfName`);
+
+  if (!placeholder || !preview) return;
+
+  placeholder.style.display = "none";
+  preview.style.display = "flex";
+
+  if (file.type === "application/pdf") {
+    // PDF preview
+    image.style.display = "none";
+    pdfPreview.style.display = "flex";
+    if (pdfName) pdfName.textContent = file.name;
+  } else {
+    // Image preview
+    pdfPreview.style.display = "none";
+    image.style.display = "block";
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      image.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Upload document 
+async function uploadDocument(file, docType) {
+  const formData = new FormData();
+  const fieldName = docType === "idCard" ? "idCard" : "birthCertificate";
+  const endpoint =
+    docType === "idCard" ? "upload-id-card" : "upload-birth-certificate";
+
+  formData.append(fieldName, file);
+
+  const statusElement = document.getElementById(`${docType}Status`);
+
+  try {
+    if (statusElement) {
+      statusElement.textContent = "Uploading...";
+      statusElement.className = "upload-status uploading";
+    }
+
+    console.log(`=== UPLOADING ${docType.toUpperCase()} ===`);
+    console.log("Endpoint:", `/api/planner/profile/${endpoint}`);
+    console.log("Field name:", fieldName);
+
+    const response = await fetch(`/api/planner/profile/${endpoint}`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    const result = await response.json();
+    console.log("Upload response:", result);
+
+    if (response.ok) {
+      if (statusElement) {
+        statusElement.textContent = "Upload successful!";
+        statusElement.className = "upload-status success";
+      }
+
+      // Update flags immediately
+      if (docType === "idCard") {
+        hasIdCard = true;
+      } else {
+        hasBirthCertificate = true;
+      }
+
+      // Update currentPlanner object
+      if (currentPlanner) {
+        if (docType === "idCard") {
+          currentPlanner.has_id_card = true;
+        } else {
+          currentPlanner.has_birth_certificate = true;
+        }
+      }
+
+      console.log("Document flags updated:", { hasIdCard, hasBirthCertificate });
+
+      // Check profile completion
+      if (hasIdCard && hasBirthCertificate) {
+        setTimeout(() => {
+          refreshProfileCompletionStatus();
+        }, 500);
+      }
+
+      showNotification(
+        `${
+          docType === "idCard" ? "ID Card" : "Birth Certificate"
+        } uploaded successfully`,
+        "success"
+      );
+
+      checkProfileCompletion();
+
+      setTimeout(() => {
+        if (statusElement) {
+          statusElement.textContent = "";
+          statusElement.className = "upload-status";
+        }
+      }, 3000);
+    } else {
+      throw new Error(result.error || "Upload failed");
+    }
+  } catch (error) {
+    console.error(`Error uploading ${docType}:`, error);
+
+    if (statusElement) {
+      statusElement.textContent = "Upload failed. Please try again.";
+      statusElement.className = "upload-status error";
+    }
+
+    showNotification(
+      `Error uploading ${
+        docType === "idCard" ? "ID Card" : "Birth Certificate"
+      }`,
+      "error"
+    );
+
+    resetDocumentPreview(docType);
+  }
+}
+
+// Remove uploaded document
+function removeUpload(docType, event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (
+    confirm(
+      `Are you sure you want to remove the ${
+        docType === "idCard" ? "ID Card" : "Birth Certificate"
+      }?`
+    )
+  ) {
+    resetDocumentPreview(docType);
+
+    // Clear the file input
+    const input = document.getElementById(`${docType}Input`);
+    if (input) input.value = "";
+
+    if (docType === "idCard") {
+      hasIdCard = false;
+    } else {
+      hasBirthCertificate = false;
+    }
+
+    showNotification(
+      `${docType === "idCard" ? "ID Card" : "Birth Certificate"} removed`,
+      "info"
+    );
+    checkProfileCompletion();
+  }
+}
+
+// Reset document preview
+function resetDocumentPreview(docType) {
+  const placeholder = document.getElementById(`${docType}Placeholder`);
+  const preview = document.getElementById(`${docType}Preview`);
+  const image = document.getElementById(`${docType}Image`);
+  const statusElement = document.getElementById(`${docType}Status`);
+
+  if (placeholder) placeholder.style.display = "block";
+  if (preview) preview.style.display = "none";
+  if (image) image.src = "";
+  if (statusElement) {
+    statusElement.textContent = "";
+    statusElement.className = "upload-status";
+  }
+}
+
+// Check if profile is complete
+async function checkProfileCompletion() {
+  try {
+    const response = await fetch("/api/auth/status", {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.authenticated && data.user.profile_completed) {
+        enableAllSidebarLinks();
+        showNotification(
+          "Profile completed! You can now access all features.",
+          "success"
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Error checking profile completion:", error);
   }
 }
 
@@ -160,6 +525,19 @@ function setupSidebarNavigation() {
 
 // Show specific section
 function showSection(sectionName) {
+  // Check if profile is incomplete and trying to access restricted sections
+  if (
+    !currentPlanner?.profile_completed &&
+    sectionName !== "profile" &&
+    sectionName !== "overview"
+  ) {
+    showNotification(
+      "Please complete your profile first to access this section.",
+      "warning"
+    );
+    return;
+  }
+
   const sections = document.querySelectorAll(".content-section");
   sections.forEach((section) => section.classList.remove("active"));
 
@@ -168,6 +546,11 @@ function showSection(sectionName) {
     targetSection.classList.add("active");
 
     switch (sectionName) {
+      case "overview":
+        if (!currentPlanner?.profile_completed) {
+          addProfileIncompleteWarning();
+        }
+        break;
       case "bookings":
         loadBookings();
         const filterClientId = sessionStorage.getItem("filterClientId");
@@ -185,7 +568,6 @@ function showSection(sectionName) {
       case "clients":
         loadClients();
         break;
-
       case "earnings":
         loadEarnings();
         break;
@@ -204,6 +586,78 @@ function showSection(sectionName) {
         break;
     }
   }
+}
+
+// File size formatter
+function formatFileSize(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+// Drag and drop visual
+function addDragDropStyles() {
+  const style = document.createElement("style");
+  style.textContent = `
+    .drag-over {
+      border-color: var(--primary-color) !important;
+      background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+      transform: scale(1.02) !important;
+    }
+    
+    .drag-over .upload-placeholder {
+      color: var(--primary-color) !important;
+    }
+    
+    .drag-over .upload-placeholder i {
+      color: var(--primary-color) !important;
+      transform: scale(1.2) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  addDragDropStyles();
+});
+
+// Show Upload Progress
+function showUploadProgress(docType, progress) {
+  const statusElement = document.getElementById(`${docType}Status`);
+  if (statusElement) {
+    statusElement.innerHTML = `
+      <div class="upload-progress">
+        <div class="upload-progress-bar" style="width: ${progress}%"></div>
+      </div>
+      <span>Uploading... ${progress}%</span>
+    `;
+    statusElement.className = "upload-status uploading";
+  }
+}
+
+// Error handling for uploads
+function handleUploadError(error, docType) {
+  console.error(`Upload error for ${docType}:`, error);
+
+  const statusElement = document.getElementById(`${docType}Status`);
+  if (statusElement) {
+    statusElement.innerHTML = `
+      <i class="fas fa-exclamation-triangle"></i>
+      Upload failed: ${error.message || "Please try again"}
+    `;
+    statusElement.className = "upload-status error";
+  }
+
+  resetDocumentPreview(docType);
+
+  setTimeout(() => {
+    if (statusElement) {
+      statusElement.textContent = "";
+      statusElement.className = "upload-status";
+    }
+  }, 5000);
 }
 
 // Load notifications
@@ -3149,6 +3603,22 @@ async function updateProfile(event) {
     if (response.ok) {
       currentPlanner = data.planner;
       updateUserInterface();
+
+      // Check if profile is now complete
+      if (data.profileComplete) {
+        enableAllSidebarLinks();
+        removeProfileIncompleteWarning();
+        showProfileCompletionCelebration();
+
+        // Update session storage
+        currentPlanner.profile_completed = true;
+
+        // Refresh auth status to update sidebar access
+        setTimeout(() => {
+          checkAuthStatus();
+        }, 1000);
+      }
+
       showNotification("Profile updated successfully", "success");
     } else {
       showNotification(data.error || "Error updating profile", "error");
@@ -3161,9 +3631,32 @@ async function updateProfile(event) {
   }
 }
 
+// Force refresh profile completion status
+async function refreshProfileCompletionStatus() {
+  try {
+    const response = await fetch("/api/auth/status", {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.authenticated && data.user.profile_completed) {
+        currentPlanner.profile_completed = true;
+        enableAllSidebarLinks();
+        removeProfileIncompleteWarning();
+        showNotification("All features are now available!", "success");
+      }
+    }
+  } catch (error) {
+    console.error("Error refreshing profile status:", error);
+  }
+}
+
 // Load profile data
 async function loadProfile() {
   try {
+    console.log("=== LOADING PROFILE DATA ===");
+    
     const response = await fetch("/api/planner/profile", {
       method: "GET",
       credentials: "include",
@@ -3171,6 +3664,8 @@ async function loadProfile() {
 
     if (response.ok) {
       const data = await response.json();
+      console.log("Profile data received:", data);
+      
       currentPlanner = data.planner;
 
       if (currentPlanner) {
@@ -3181,13 +3676,145 @@ async function loadProfile() {
           specializations: data.planner.specializations,
           base_price: data.planner.base_price,
           home_address: data.planner.home_address,
+          has_id_card: data.planner.has_id_card,
+          has_birth_certificate: data.planner.has_birth_certificate,
+        });
+
+        // Set global flags based on database status
+        hasIdCard = data.planner.has_id_card || false;
+        hasBirthCertificate = data.planner.has_birth_certificate || false;
+        
+        console.log("Document flags set:", {
+          hasIdCard,
+          hasBirthCertificate
         });
       }
 
       populateProfileForm();
+      
+      setTimeout(() => {
+        loadExistingDocuments();
+      }, 100);
+      
+    } else {
+      console.error("Failed to load profile:", response.status);
     }
   } catch (error) {
     console.error("Error loading profile:", error);
+  }
+}
+
+// Load existing documents
+async function loadExistingDocuments() {
+  if (!currentPlanner) return;
+
+  console.log("=== LOADING EXISTING DOCUMENTS ===");
+  console.log("Has ID Card:", currentPlanner.has_id_card);
+  console.log("Has Birth Certificate:", currentPlanner.has_birth_certificate);
+
+  // Load ID card
+  if (currentPlanner.has_id_card) {
+    try {
+      const response = await fetch("/api/planner/profile/id-card", {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        showExistingDocument(url, "idCard", blob.type);
+        hasIdCard = true;
+        console.log("ID Card loaded successfully");
+      } else {
+        console.error("Failed to load ID card:", response.status);
+      }
+    } catch (error) {
+      console.error("Error loading ID card:", error);
+    }
+  }
+
+  // Load birth certificate
+  if (currentPlanner.has_birth_certificate) {
+    try {
+      console.log("Attempting to load birth certificate...");
+      
+      const response = await fetch("/api/planner/profile/birth-certificate", {
+        credentials: "include",
+      });
+
+      console.log("Birth certificate response status:", response.status);
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        showExistingDocument(url, "birthCertificate", blob.type);
+        hasBirthCertificate = true;
+        console.log("Birth certificate loaded successfully");
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to load birth certificate:", response.status, errorText);
+      }
+    } catch (error) {
+      console.error("Error loading birth certificate:", error);
+    }
+  } else {
+    console.log("No birth certificate data available");
+  }
+}
+
+
+// Show existing document
+function showExistingDocument(url, docType, mimeType) {
+  console.log(`=== SHOWING EXISTING DOCUMENT: ${docType} ===`);
+  console.log("MIME Type:", mimeType);
+  
+  const placeholder = document.getElementById(`${docType}Placeholder`);
+  const preview = document.getElementById(`${docType}Preview`);
+  const image = document.getElementById(`${docType}Image`);
+  const pdfPreview = document.getElementById(`${docType}PdfPreview`);
+  const pdfName = document.getElementById(`${docType}PdfName`);
+
+  if (!placeholder || !preview) {
+    console.error(`Missing elements for ${docType}:`, {
+      placeholder: !!placeholder,
+      preview: !!preview
+    });
+    return;
+  }
+
+  console.log(`Setting up preview for ${docType}`);
+  
+  placeholder.style.display = "none";
+  preview.style.display = "flex";
+
+  if (mimeType === "application/pdf") {
+    console.log(`Showing PDF preview for ${docType}`);
+    if (image) image.style.display = "none";
+    if (pdfPreview) {
+      pdfPreview.style.display = "flex";
+      if (pdfName) {
+        pdfName.textContent = `${
+          docType === "idCard" ? "ID Card" : "Birth Certificate"
+        }.pdf`;
+      }
+    }
+  } else {
+    console.log(`Showing image preview for ${docType}`);
+    if (pdfPreview) pdfPreview.style.display = "none";
+    if (image) {
+      image.style.display = "block";
+      image.src = url;
+      
+      image.onerror = function() {
+        console.error(`Failed to load image for ${docType}`);
+        placeholder.style.display = "block";
+        preview.style.display = "none";
+      };
+      
+      image.onload = function() {
+        console.log(`Image loaded successfully for ${docType}`);
+      };
+    }
   }
 }
 
@@ -3241,6 +3868,68 @@ function populateProfileForm() {
         option.selected = specializations.includes(option.value);
       });
     }
+  }
+}
+
+// Show profile completion celebration
+function showProfileCompletionCelebration() {
+  const celebration = document.createElement("div");
+  celebration.className = "profile-complete-celebration";
+  celebration.innerHTML = `
+    <div class="celebration-content">
+      <i class="fas fa-check-circle"></i>
+      <h2>Profile Complete! 🎉</h2>
+      <p>Your profile is now complete and you can access all dashboard features.</p>
+      <button class="btn-primary" onclick="hideProfileCompletionCelebration()">
+        Get Started
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(celebration);
+
+  setTimeout(() => {
+    hideProfileCompletionCelebration();
+  }, 5000);
+}
+
+// Hide profile completion celebration
+function hideProfileCompletionCelebration() {
+  const celebration = document.querySelector(".profile-complete-celebration");
+  if (celebration) {
+    celebration.remove();
+  }
+}
+
+// Add profile completion warning to dashboard
+function addProfileIncompleteWarning() {
+  const overviewSection = document.getElementById("overview");
+  if (!overviewSection) return;
+
+  const warning = document.createElement("div");
+  warning.className = "profile-incomplete-warning";
+  warning.innerHTML = `
+    <div class="document-type-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3>Profile Incomplete</h3>
+    <p>Please complete your profile by uploading your ID card and birth certificate to access all dashboard features.</p>
+    <button class="btn-primary" onclick="navigateToSection('profile')" style="margin-top: 1rem;">
+      Complete Profile
+    </button>
+  `;
+
+  const sectionHeader = overviewSection.querySelector(".section-header");
+  if (sectionHeader) {
+    sectionHeader.parentNode.insertBefore(warning, sectionHeader.nextSibling);
+  }
+}
+
+// Remove profile incomplete warning
+function removeProfileIncompleteWarning() {
+  const warning = document.querySelector(".profile-incomplete-warning");
+  if (warning) {
+    warning.remove();
   }
 }
 

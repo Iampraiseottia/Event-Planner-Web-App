@@ -1,4 +1,3 @@
-// routes/planner.js
 const express = require("express");
 const {
   requireAuth,
@@ -446,7 +445,6 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
     try {
       await client.query("BEGIN");
 
-      // Update users table
       const userUpdateQuery = `
         UPDATE users 
         SET full_name = $1, email = $2, phone_number = $3, location = $4, updated_at = CURRENT_TIMESTAMP
@@ -540,6 +538,27 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
 
       console.log("Planner update/insert result:", plannerResult.rows[0]);
 
+      // Check if profile is complete
+      const profileCompleteCheck = await client.query(
+        `
+        SELECT 
+          CASE WHEN 
+            id_card_data IS NOT NULL AND 
+            birth_certificate_data IS NOT NULL AND
+            EXISTS (SELECT 1 FROM planners WHERE user_id = $1)
+          THEN TRUE ELSE FALSE END as is_complete
+        FROM users WHERE id = $1
+      `,
+        [userId]
+      );
+
+      const isComplete = profileCompleteCheck.rows[0]?.is_complete || false;
+
+      await client.query(
+        "UPDATE users SET profile_completed = $1 WHERE id = $2",
+        [isComplete, userId]
+      );
+
       await client.query("COMMIT");
 
       // Update session data
@@ -549,6 +568,7 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
         email: userResult.rows[0].email,
         phone_number: userResult.rows[0].phone_number,
         location: userResult.rows[0].location,
+        profile_completed: isComplete,
       };
 
       // Get complete updated profile
@@ -582,6 +602,7 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
       res.json({
         message: "Profile updated successfully",
         planner: profileData,
+        profileComplete: isComplete,
       });
     } catch (error) {
       await client.query("ROLLBACK");
@@ -598,10 +619,11 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
-// profile route
+// profile get
 router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
   try {
     const userId = req.session.user.id;
+    console.log(`=== FETCHING PROFILE FOR USER ${userId} ===`);
 
     const query = `
       SELECT u.*, 
@@ -612,7 +634,9 @@ router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
              p.base_price, 
              p.home_address,
              p.average_rating, 
-             p.total_reviews
+             p.total_reviews,
+             CASE WHEN u.id_card_data IS NOT NULL THEN true ELSE false END as has_id_card,
+             CASE WHEN u.birth_certificate_data IS NOT NULL THEN true ELSE false END as has_birth_certificate
       FROM users u
       LEFT JOIN planners p ON u.id = p.user_id
       WHERE u.id = $1
@@ -625,8 +649,12 @@ router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
     }
 
     const profileData = result.rows[0];
+    console.log("Profile document flags:", {
+      has_id_card: profileData.has_id_card,
+      has_birth_certificate: profileData.has_birth_certificate,
+    });
 
-    // Specializations is always an array
+    // Ensure specializations is always an array
     if (!Array.isArray(profileData.specializations)) {
       profileData.specializations = [];
     }
@@ -1464,12 +1492,11 @@ router.get("/analytics", requireAuth, requirePlanner, async (req, res) => {
   }
 });
 
-
 // Get recent activity for planner
 router.get("/activity", requireAuth, requirePlanner, async (req, res) => {
   try {
     const plannerId = req.session.user.id;
-    
+
     const activityQuery = `
       SELECT 
         'booking' as type,
@@ -1518,18 +1545,18 @@ router.get("/activity", requireAuth, requirePlanner, async (req, res) => {
     `;
 
     const result = await pool.query(activityQuery, [plannerId]);
-    
-    const activities = result.rows.map(activity => ({
+
+    const activities = result.rows.map((activity) => ({
       type: activity.type,
       title: activity.title,
       description: activity.description,
-      created_at: activity.created_at
+      created_at: activity.created_at,
     }));
 
     res.json(activities);
   } catch (error) {
     console.error("Error loading recent activity:", error);
-    
+
     try {
       const fallbackQuery = `
         SELECT 
@@ -1551,16 +1578,15 @@ router.get("/activity", requireAuth, requirePlanner, async (req, res) => {
         ORDER BY created_at DESC
         LIMIT 5
       `;
-      
+
       const fallbackResult = await pool.query(fallbackQuery, [plannerId]);
       res.json(fallbackResult.rows);
     } catch (fallbackError) {
       console.error("Fallback activity query failed:", fallbackError);
-      res.json([]); 
+      res.json([]);
     }
   }
 });
-
 
 // Get all notifications for planner
 router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
@@ -1572,10 +1598,10 @@ router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
       FROM information_schema.columns 
       WHERE table_name = 'notifications' AND column_name = 'priority'
     `;
-    
+
     const columnCheck = await pool.query(columnCheckQuery);
     const hasPriorityColumn = columnCheck.rows.length > 0;
-    
+
     const baseColumns = `
       n.id,
       n.title,
@@ -1585,8 +1611,10 @@ router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
       n.created_at,
       n.updated_at
     `;
-    
-    const priorityColumn = hasPriorityColumn ? ', n.priority' : ", 'medium' as priority";
+
+    const priorityColumn = hasPriorityColumn
+      ? ", n.priority"
+      : ", 'medium' as priority";
     const actionUrlColumn = `
       , CASE 
           WHEN EXISTS (
@@ -1610,13 +1638,13 @@ router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error("Error loading notifications:", error);
-    
-    if (error.code === '42P01') { 
+
+    if (error.code === "42P01") {
       console.log("Notifications table doesn't exist, returning empty array");
       res.json([]);
       return;
     }
-    
+
     try {
       const fallbackQuery = `
         SELECT 
@@ -1633,7 +1661,7 @@ router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
         WHERE user_id = $1
         ORDER BY is_read ASC, created_at DESC
       `;
-      
+
       const fallbackResult = await pool.query(fallbackQuery, [plannerId]);
       res.json(fallbackResult.rows);
     } catch (fallbackError) {
@@ -1642,7 +1670,6 @@ router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
     }
   }
 });
-
 
 // Mark notification as read
 router.put(
@@ -1794,7 +1821,187 @@ async function createNotification(
   }
 }
 
+// Upload ID card
+router.post(
+  "/profile/upload-id-card",
+  requireAuth,
+  requirePlanner,
 
+  upload.single("idCard"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
 
+      const userId = req.session.user.id;
+      const fileBuffer = req.file.buffer;
+      const mimeType = req.file.mimetype;
+
+      const query = `
+        UPDATE users 
+        SET id_card_data = $1, id_card_mime_type = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        RETURNING id
+      `;
+
+      const result = await pool.query(query, [fileBuffer, mimeType, userId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({
+        message: "ID card uploaded successfully",
+      });
+    } catch (error) {
+      console.error("Error uploading ID card:", error);
+      res.status(500).json({ error: "Failed to upload ID card" });
+    }
+  }
+);
+
+// Upload birth certificate
+router.post(
+  "/profile/upload-birth-certificate",
+  requireAuth,
+  requirePlanner,
+  upload.single("birthCertificate"),
+  async (req, res) => {
+    try {
+      console.log("=== BIRTH CERTIFICATE UPLOAD ===");
+      console.log("Request file:", req.file ? "Present" : "Missing");
+
+      if (!req.file) {
+        console.log("No file in request");
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      const userId = req.session.user.id;
+      const fileBuffer = req.file.buffer;
+      const mimeType = req.file.mimetype;
+
+      console.log("User ID:", userId);
+      console.log("File info:", {
+        originalname: req.file.originalname,
+        mimetype: mimeType,
+        size: fileBuffer.length,
+      });
+
+      const query = `
+        UPDATE users 
+        SET birth_certificate_data = $1, 
+            birth_certificate_mime_type = $2, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+        RETURNING id
+      `;
+
+      const result = await pool.query(query, [fileBuffer, mimeType, userId]);
+      console.log(
+        "Update result:",
+        result.rows.length > 0 ? "Success" : "Failed"
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      console.log("Birth certificate uploaded successfully for user", userId);
+
+      res.json({
+        message: "Birth certificate uploaded successfully",
+      });
+    } catch (error) {
+      console.error("Error uploading birth certificate:", error);
+      res.status(500).json({
+        error: "Failed to upload birth certificate",
+        details: error.message,
+      });
+    }
+  }
+);
+
+// Get ID card
+router.get(
+  "/profile/id-card",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+
+      const query = `
+      SELECT id_card_data, id_card_mime_type FROM users WHERE id = $1
+    `;
+
+      const result = await pool.query(query, [userId]);
+      const user = result.rows[0];
+
+      if (!user || !user.id_card_data) {
+        return res.status(404).json({ error: "ID card not found" });
+      }
+
+      res.set("Content-Type", user.id_card_mime_type);
+      res.send(user.id_card_data);
+    } catch (error) {
+      console.error("Error getting ID card:", error);
+      res.status(500).json({ error: "Failed to retrieve ID card" });
+    }
+  }
+);
+
+// Get birth certificate
+router.get(
+  "/profile/birth-certificate",
+  requireAuth,
+  requirePlanner,
+  async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      console.log(`=== FETCHING BIRTH CERTIFICATE FOR USER ${userId} ===`);
+
+      const query = `
+        SELECT birth_certificate_data, birth_certificate_mime_type 
+        FROM users 
+        WHERE id = $1
+      `;
+
+      const result = await pool.query(query, [userId]);
+      console.log("Query result rows:", result.rows.length);
+
+      const user = result.rows[0];
+
+      if (!user) {
+        console.log("User not found");
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (!user.birth_certificate_data) {
+        console.log("Birth certificate data not found for user", userId);
+        return res.status(404).json({ error: "Birth certificate not found" });
+      }
+
+      console.log(
+        "Birth certificate found, MIME type:",
+        user.birth_certificate_mime_type
+      );
+      console.log("Data size:", user.birth_certificate_data.length);
+
+      // Set appropriate headers
+      res.set({
+        "Content-Type":
+          user.birth_certificate_mime_type || "application/octet-stream",
+        "Content-Length": user.birth_certificate_data.length,
+        "Cache-Control": "private, max-age=3600",
+      });
+
+      res.send(user.birth_certificate_data);
+    } catch (error) {
+      console.error("Error getting birth certificate:", error);
+      res.status(500).json({ error: "Failed to retrieve birth certificate" });
+    }
+  }
+);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+const pool = require('../config/database');
 
 // Authentication using sessions
 const requireAuth = (req, res, next) => {
@@ -68,10 +69,57 @@ const requireOwnership = (req, res, next) => {
   }
 };
 
+// Check Complete Profile
+const requireCompleteProfile = async (req, res, next) => {
+  try {
+    if (!req.session.user || req.session.user.user_type !== 'planner') {
+      return res.status(403).json({ 
+        error: "Access denied. Planner account required." 
+      });
+    }
+
+    const userId = req.session.user.id;
+
+    // Check profile completion
+    const profileCheck = await pool.query(`
+      SELECT 
+        CASE WHEN 
+          u.id_card_data IS NOT NULL AND 
+          u.birth_certificate_data IS NOT NULL AND
+          EXISTS (
+            SELECT 1 FROM planners p 
+            WHERE p.user_id = u.id 
+            AND p.business_name IS NOT NULL 
+            AND p.bio IS NOT NULL 
+            AND p.experience IS NOT NULL 
+            AND p.base_price IS NOT NULL
+          )
+        THEN TRUE ELSE FALSE END as is_complete
+      FROM users u WHERE u.id = $1
+    `, [userId]);
+    
+    const isComplete = profileCheck.rows[0]?.is_complete || false;
+    
+    if (!isComplete) {
+      return res.status(400).json({
+        error: "Please complete your profile before accessing this feature.",
+        profileComplete: false
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Profile completion check error:', error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
 module.exports = {
   requireAuth,
   requireCustomer,
   requirePlanner,
   requireAnyAuth,
   requireOwnership,
+  requireCompleteProfile
 };

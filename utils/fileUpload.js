@@ -11,8 +11,14 @@ const fileFilter = (req, file, cb) => {
     size: file.size,
   });
 
-  // Check file type
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  // Allow both images and PDFs for documents
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+  ];
 
   if (allowedTypes.includes(file.mimetype.toLowerCase())) {
     console.log("File type accepted:", file.mimetype);
@@ -21,7 +27,7 @@ const fileFilter = (req, file, cb) => {
     console.log("File type rejected:", file.mimetype);
     cb(
       new Error(
-        "Invalid file type. Only JPEG, PNG, and WebP images are allowed."
+        "Invalid file type. Only JPEG, PNG, WebP images and PDF documents are allowed."
       ),
       false
     );
@@ -32,7 +38,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
@@ -45,11 +51,11 @@ const handleMulterError = (error, req, res, next) => {
     switch (error.code) {
       case "LIMIT_FILE_SIZE":
         return res.status(400).json({
-          error: "File too large. Maximum size is 5MB.",
+          error: "File too large. Maximum size is 10MB.",
         });
       case "LIMIT_FILE_COUNT":
         return res.status(400).json({
-          error: "Too many files. Only one file is allowed.",
+          error: "Too many files uploaded.",
         });
       case "LIMIT_UNEXPECTED_FILE":
         return res.status(400).json({

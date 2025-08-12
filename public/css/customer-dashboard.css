@@ -2208,9 +2208,7 @@ body {
   display: none;
 }
 
-
 /* Profile responsive */
-
 
 @media (min-width: 1025px) and (max-width: 1199px) {
   #profileForm {
@@ -2245,7 +2243,6 @@ body {
   }
 }
 
-
 @media (min-width: 1401px) and (max-width: 1500px) {
   #profileForm .form-grid .form-group input,
   #profileForm .form-grid .form-group textarea {
@@ -2256,7 +2253,6 @@ body {
     margin-left: 2% !important;
   }
 }
-
 
 @media (min-width: 1501px) and (max-width: 2100px) {
   #profileForm .form-grid .form-group input,
@@ -2269,10 +2265,7 @@ body {
   }
 }
 
-
-
 @media (min-width: 1701px) and (max-width: 2100px) {
-  
   #profileForm {
     margin-left: 14% !important;
   }

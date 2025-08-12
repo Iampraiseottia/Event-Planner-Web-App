@@ -265,8 +265,45 @@ router.get("/status", async (req, res) => {
       return res.json({ authenticated: false, user: null });
     }
 
+    // Check profile completion for planners
+    let profileComplete = true;
+    if (user.user_type === "planner") {
+      const profileCheck = await pool.query(
+        `
+        SELECT 
+          CASE WHEN 
+            u.id_card_data IS NOT NULL AND 
+            u.birth_certificate_data IS NOT NULL AND
+            EXISTS (
+              SELECT 1 FROM planners p 
+              WHERE p.user_id = u.id 
+              AND p.business_name IS NOT NULL 
+              AND p.bio IS NOT NULL 
+              AND p.experience IS NOT NULL 
+              AND p.base_price IS NOT NULL
+            )
+          THEN TRUE ELSE FALSE END as is_complete
+        FROM users u WHERE u.id = $1
+      `,
+        [user.id]
+      );
+
+      profileComplete = profileCheck.rows[0]?.is_complete || false;
+
+      if (user.profile_completed !== profileComplete) {
+        await pool.query(
+          "UPDATE users SET profile_completed = $1 WHERE id = $2",
+          [profileComplete, user.id]
+        );
+        user.profile_completed = profileComplete;
+      }
+    }
+
     // Update session with fresh data
-    req.session.user = user;
+    req.session.user = {
+      ...user,
+      profile_completed: profileComplete,
+    };
 
     res.json({
       authenticated: true,
@@ -280,6 +317,7 @@ router.get("/status", async (req, res) => {
         date_of_birth: user.date_of_birth,
         preferences: user.preferences,
         profile_image: user.profile_image,
+        profile_completed: profileComplete,
         created_at: user.created_at,
         updated_at: user.updated_at,
         ...(user.user_type === "planner" && {
