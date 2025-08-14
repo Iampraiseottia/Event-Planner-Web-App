@@ -1,6 +1,12 @@
 const express = require("express");
 const User = require("../models/User");
 const { requireAuth } = require("../middleware/auth");
+const {
+  generateToken,
+  getCookieOptions,
+  extractTokenFromRequest,
+  verifyToken,
+} = require("../utils/jwt");
 
 const pool = require("../config/database");
 
@@ -51,8 +57,8 @@ router.post("/register", async (req, res) => {
 
     const user = await User.create(userData);
 
-    // Store user in session
-    req.session.user = {
+    // Create JWT token
+    const tokenPayload = {
       id: user.id,
       full_name: user.full_name,
       email: user.email,
@@ -60,8 +66,14 @@ router.post("/register", async (req, res) => {
       user_type: user.user_type,
     };
 
+    const token = generateToken(tokenPayload);
+
+    // Set cookie
+    res.cookie("authToken", token, getCookieOptions());
+
     res.status(201).json({
       message: "User registered successfully",
+      authenticated: true,
       user: {
         id: user.id,
         full_name: user.full_name,
@@ -110,8 +122,8 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Create session
-    req.session.user = {
+    // Create JWT token
+    const tokenPayload = {
       id: user.id,
       full_name: user.full_name,
       email: user.email,
@@ -122,6 +134,11 @@ router.post("/login", async (req, res) => {
       preferences: user.preferences,
       profile_image: user.profile_image,
     };
+
+    const token = generateToken(tokenPayload);
+
+    // Set cookie
+    res.cookie("authToken", token, getCookieOptions());
 
     // Log activity
     try {
@@ -136,6 +153,7 @@ router.post("/login", async (req, res) => {
 
     res.json({
       message: "Login successful",
+      authenticated: true,
       user: {
         id: user.id,
         full_name: user.full_name,
@@ -149,7 +167,7 @@ router.post("/login", async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({
       error:
-        "Internal server error, PLease check your internet connetion and try again",
+        "Internal server error. Please check your internet connection and try again",
     });
   }
 });
@@ -157,14 +175,16 @@ router.post("/login", async (req, res) => {
 // Logout user
 router.post("/logout", (req, res) => {
   try {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Error destroying session:", err);
-        return res.status(500).json({ error: "Error during logout" });
-      }
+    // Clear the auth cookie
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
 
-      res.clearCookie("connect.sid");
-      res.json({ message: "Logout successful" });
+    res.json({
+      message: "Logout successful",
+      authenticated: false,
     });
   } catch (error) {
     console.error("Logout error:", error);
@@ -175,7 +195,7 @@ router.post("/logout", (req, res) => {
 // Get current user
 router.get("/me", requireAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.session.user.id);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
         error: "User not found",
@@ -203,7 +223,7 @@ router.get("/me", requireAuth, async (req, res) => {
 router.put("/profile", requireAuth, async (req, res) => {
   try {
     const { full_name, email, phone_number } = req.body;
-    const userId = req.session.user.id;
+    const userId = req.user.id;
 
     if (!full_name || !email) {
       return res.status(400).json({
@@ -225,13 +245,16 @@ router.put("/profile", requireAuth, async (req, res) => {
       phone_number,
     });
 
-    // Update session data
-    req.session.user = {
-      ...req.session.user,
+    // Create new token with updated data
+    const tokenPayload = {
+      ...req.user,
       full_name: updatedUser.full_name,
       email: updatedUser.email,
       phone_number: updatedUser.phone_number,
     };
+
+    const newToken = generateToken(tokenPayload);
+    res.cookie("authToken", newToken, getCookieOptions());
 
     res.json({
       message: "Profile updated successfully",
@@ -254,15 +277,35 @@ router.put("/profile", requireAuth, async (req, res) => {
 // Check authentication status
 router.get("/status", async (req, res) => {
   try {
-    if (!req.session.user || !req.session.user.id) {
-      return res.json({ authenticated: false, user: null });
+    const token = extractTokenFromRequest(req);
+
+    if (!token) {
+      return res.json({
+        authenticated: false,
+        user: null,
+      });
     }
 
-    const user = await User.findById(req.session.user.id);
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      // Clear invalid cookie
+      res.clearCookie("authToken");
+      return res.json({
+        authenticated: false,
+        user: null,
+      });
+    }
+
+    // Get fresh user data from database
+    const user = await User.findById(decoded.id);
 
     if (!user) {
-      req.session.destroy();
-      return res.json({ authenticated: false, user: null });
+      res.clearCookie("authToken");
+      return res.json({
+        authenticated: false,
+        user: null,
+      });
     }
 
     // Check profile completion for planners
@@ -299,11 +342,21 @@ router.get("/status", async (req, res) => {
       }
     }
 
-    // Update session with fresh data
-    req.session.user = {
-      ...user,
+    const tokenPayload = {
+      id: user.id,
+      full_name: user.full_name,
+      email: user.email,
+      phone_number: user.phone_number,
+      user_type: user.user_type,
+      location: user.location,
+      date_of_birth: user.date_of_birth,
+      preferences: user.preferences,
+      profile_image: user.profile_image,
       profile_completed: profileComplete,
     };
+
+    const freshToken = generateToken(tokenPayload);
+    res.cookie("authToken", freshToken, getCookieOptions());
 
     res.json({
       authenticated: true,

@@ -14,7 +14,7 @@ const router = express.Router();
 // Get planner statistics
 router.get("/stats", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     // Extract price from category string
     const extractPriceFromCategory = (category) => {
@@ -94,7 +94,7 @@ router.get("/stats", requireAuth, requirePlanner, async (req, res) => {
 // Get planner bookings
 router.get("/bookings", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
     const bookings = await Booking.findByPlannerId(plannerId);
     res.json(bookings);
   } catch (error) {
@@ -120,7 +120,7 @@ router.post(
       }
 
       // Check if planner owns this booking
-      if (booking.planner_id !== req.session.user.id) {
+      if (booking.planner_id !== req.user.id) {
         return res.status(403).json({
           error: "You can only accept your own bookings",
         });
@@ -158,7 +158,7 @@ router.post(
         });
       }
 
-      if (booking.planner_id !== req.session.user.id) {
+      if (booking.planner_id !== req.user.id) {
         return res.status(403).json({
           error: "You can only reject your own bookings",
         });
@@ -190,7 +190,7 @@ router.get(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
 
       const query = `
             SELECT b.*, 
@@ -216,7 +216,7 @@ router.get(
 // Get schedule
 router.get("/schedule", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
     const { year, month } = req.query;
 
     // Today's schedule query
@@ -288,7 +288,7 @@ router.get("/schedule", requireAuth, requirePlanner, async (req, res) => {
 // Update working hours
 router.put("/working-hours", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
     const { workingHours } = req.body;
 
     await pool.query("DELETE FROM working_hours WHERE planner_id = $1", [
@@ -345,7 +345,7 @@ router.post(
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const userId = req.session.user.id;
+      const userId = req.user.id;
       const imageBuffer = req.file.buffer;
       const mimeType = req.file.mimetype;
 
@@ -376,7 +376,7 @@ router.post(
 
 router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.user.id;
 
     console.log("=== PROFILE UPDATE DEBUG ===");
     console.log("User ID from session:", userId);
@@ -562,8 +562,8 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
       await client.query("COMMIT");
 
       // Update session data
-      req.session.user = {
-        ...req.session.user,
+      req.user = {
+        ...req.user,
         full_name: userResult.rows[0].full_name,
         email: userResult.rows[0].email,
         phone_number: userResult.rows[0].phone_number,
@@ -622,7 +622,7 @@ router.put("/profile", requireAuth, requirePlanner, async (req, res) => {
 // profile get
 router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     console.log(`=== FETCHING PROFILE FOR USER ${userId} ===`);
 
     const query = `
@@ -671,7 +671,7 @@ router.get("/profile", requireAuth, requirePlanner, async (req, res) => {
 // Get Profile Image
 router.get("/profile/image", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.user.id;
 
     const query = `
       SELECT profile_image_data, profile_image_mime_type FROM users WHERE id = $1
@@ -695,7 +695,7 @@ router.get("/profile/image", requireAuth, requirePlanner, async (req, res) => {
 // Get planner clients (customers who have made bookings)
 router.get("/clients", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     const query = `
       SELECT DISTINCT
@@ -733,7 +733,7 @@ router.get(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
       const clientId = parseInt(req.params.clientId);
 
       // Get client basic info
@@ -797,7 +797,7 @@ router.get(
 // Blocked date
 router.post("/blocked-dates", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
     const { date, reason } = req.body;
 
     if (!date) {
@@ -835,7 +835,7 @@ router.post("/blocked-dates", requireAuth, requirePlanner, async (req, res) => {
 // Get blocked dates
 router.get("/blocked-dates", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     const query = `
       SELECT id, blocked_date, reason, created_at
@@ -860,7 +860,7 @@ router.delete(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
       const blockedDateId = parseInt(req.params.id);
 
       const result = await pool.query(
@@ -883,7 +883,7 @@ router.delete(
 // Get working hours
 router.get("/working-hours", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     const query = `
       SELECT day_of_week, is_available, start_time, end_time
@@ -925,7 +925,7 @@ router.get("/working-hours", requireAuth, requirePlanner, async (req, res) => {
 // Get earnings data
 router.get("/earnings", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
@@ -1159,7 +1159,7 @@ router.get("/earnings", requireAuth, requirePlanner, async (req, res) => {
 // Get planner reviews
 router.get("/reviews", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     // Iverall rating and total reviews
     const overallQuery = `
@@ -1241,7 +1241,7 @@ router.get("/reviews", requireAuth, requirePlanner, async (req, res) => {
 // Get analytics data
 router.get("/analytics", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
@@ -1495,7 +1495,7 @@ router.get("/analytics", requireAuth, requirePlanner, async (req, res) => {
 // Get recent activity for planner
 router.get("/activity", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     const activityQuery = `
       SELECT 
@@ -1591,7 +1591,7 @@ router.get("/activity", requireAuth, requirePlanner, async (req, res) => {
 // Get all notifications for planner
 router.get("/notifications", requireAuth, requirePlanner, async (req, res) => {
   try {
-    const plannerId = req.session.user.id;
+    const plannerId = req.user.id;
 
     const columnCheckQuery = `
       SELECT column_name 
@@ -1678,7 +1678,7 @@ router.put(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
       const notificationId = parseInt(req.params.id);
 
       const result = await pool.query(
@@ -1711,7 +1711,7 @@ router.put(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
 
       const result = await pool.query(
         `UPDATE notifications 
@@ -1740,7 +1740,7 @@ router.delete(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
       const notificationId = parseInt(req.params.id);
 
       const result = await pool.query(
@@ -1770,7 +1770,7 @@ router.delete(
   requirePlanner,
   async (req, res) => {
     try {
-      const plannerId = req.session.user.id;
+      const plannerId = req.user.id;
 
       const result = await pool.query(
         `UPDATE notifications 
@@ -1834,7 +1834,7 @@ router.post(
         return res.status(400).json({ error: "No file provided" });
       }
 
-      const userId = req.session.user.id;
+      const userId = req.user.id;
       const fileBuffer = req.file.buffer;
       const mimeType = req.file.mimetype;
 
@@ -1877,7 +1877,7 @@ router.post(
         return res.status(400).json({ error: "No file provided" });
       }
 
-      const userId = req.session.user.id;
+      const userId = req.user.id;
       const fileBuffer = req.file.buffer;
       const mimeType = req.file.mimetype;
 
@@ -1929,7 +1929,7 @@ router.get(
   requirePlanner,
   async (req, res) => {
     try {
-      const userId = req.session.user.id;
+      const userId = req.user.id;
 
       const query = `
       SELECT id_card_data, id_card_mime_type FROM users WHERE id = $1
@@ -1958,7 +1958,7 @@ router.get(
   requirePlanner,
   async (req, res) => {
     try {
-      const userId = req.session.user.id;
+      const userId = req.user.id;
       console.log(`=== FETCHING BIRTH CERTIFICATE FOR USER ${userId} ===`);
 
       const query = `

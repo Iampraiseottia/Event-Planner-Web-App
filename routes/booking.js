@@ -121,7 +121,7 @@ router.post("/", requireAuth, async (req, res) => {
     console.log("Found planner:", planner);
 
     const bookingData = {
-      customer_id: req.session.user.id,
+      customer_id: req.user.id,
       planner_id: planner.id,
       planner_name: planner.full_name,
       customer_name,
@@ -166,8 +166,8 @@ router.get("/:id", requireAuth, async (req, res) => {
 
     // Check if user has permission to view this booking
     if (
-      req.session.user.user_type === "customer" &&
-      booking.customer_id !== req.session.user.id
+      req.user.user_type === "customer" &&
+      booking.customer_id !== req.user.id
     ) {
       return res.status(403).json({
         error: "Unauthorized access to this booking",
@@ -175,8 +175,8 @@ router.get("/:id", requireAuth, async (req, res) => {
     }
 
     if (
-      req.session.user.user_type === "planner" &&
-      booking.planner_id !== req.session.user.id
+      req.user.user_type === "planner" &&
+      booking.planner_id !== req.user.id
     ) {
       return res.status(403).json({
         error: "Unauthorized access to this booking",
@@ -195,7 +195,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 // Update booking status (planners only)
 router.patch("/:id/status", requireAuth, async (req, res) => {
   try {
-    if (req.session.user.user_type !== "planner") {
+    if (req.user.user_type !== "planner") {
       return res.status(403).json({
         error: "Only planners can update booking status",
       });
@@ -220,7 +220,7 @@ router.patch("/:id/status", requireAuth, async (req, res) => {
     }
 
     // Check if planner owns this booking using planner_id
-    if (booking.planner_id !== req.session.user.id) {
+    if (booking.planner_id !== req.user.id) {
       return res.status(403).json({
         error: "You can only update your own bookings",
       });
@@ -253,8 +253,8 @@ router.put("/:id", requireAuth, async (req, res) => {
     }
 
     // Check permissions
-    if (req.session.user.user_type === "customer") {
-      if (booking.customer_id !== req.session.user.id) {
+    if (req.user.user_type === "customer") {
+      if (booking.customer_id !== req.user.id) {
         return res.status(403).json({
           error: "You can only update your own bookings",
         });
@@ -265,8 +265,8 @@ router.put("/:id", requireAuth, async (req, res) => {
           error: "You can only update pending bookings",
         });
       }
-    } else if (req.session.user.user_type === "planner") {
-      if (booking.planner_id !== req.session.user.id) {
+    } else if (req.user.user_type === "planner") {
+      if (booking.planner_id !== req.user.id) {
         return res.status(403).json({
           error: "You can only update your own bookings",
         });
@@ -354,8 +354,8 @@ router.delete("/:id", requireAuth, async (req, res) => {
     }
 
     // Check permissions
-    if (req.session.user.user_type === "customer") {
-      if (booking.customer_id !== req.session.user.id) {
+    if (req.user.user_type === "customer") {
+      if (booking.customer_id !== req.user.id) {
         return res.status(403).json({
           error: "You can only delete your own bookings",
         });
@@ -366,8 +366,8 @@ router.delete("/:id", requireAuth, async (req, res) => {
           error: "You can only delete pending bookings",
         });
       }
-    } else if (req.session.user.user_type === "planner") {
-      if (booking.planner_id !== req.session.user.id) {
+    } else if (req.user.user_type === "planner") {
+      if (booking.planner_id !== req.user.id) {
         return res.status(403).json({
           error: "You can only delete your own bookings",
         });
@@ -441,12 +441,12 @@ router.get("/my-bookings", requireAuth, async (req, res) => {
   try {
     let bookings;
 
-    if (req.session.user.user_type === "customer") {
+    if (req.user.user_type === "customer") {
       // Customer sees their own bookings
-      bookings = await Booking.findByCustomerId(req.session.user.id);
-    } else if (req.session.user.user_type === "planner") {
+      bookings = await Booking.findByCustomerId(req.user.id);
+    } else if (req.user.user_type === "planner") {
       // Planner sees bookings assigned to them
-      bookings = await Booking.findByPlannerId(req.session.user.id);
+      bookings = await Booking.findByPlannerId(req.user.id);
     } else {
       return res.status(403).json({
         error: "Unauthorized access",
@@ -468,7 +468,7 @@ router.get("/my-bookings", requireAuth, async (req, res) => {
 router.get("/all", requireAuth, async (req, res) => {
   try {
     // Only planners can see all bookings
-    if (req.session.user.user_type !== "planner") {
+    if (req.user.user_type !== "planner") {
       return res.status(403).json({
         error: "Unauthorized access",
       });
@@ -499,7 +499,7 @@ router.get("/all", requireAuth, async (req, res) => {
 router.get("/history", requireAuth, async (req, res) => {
   try {
     // Only customers can access their event history
-    if (req.session.user.user_type !== "customer") {
+    if (req.user.user_type !== "customer") {
       return res.status(403).json({
         error: "Only customers can access event history",
       });
@@ -521,7 +521,7 @@ router.get("/history", requireAuth, async (req, res) => {
       ORDER BY b.event_date DESC, b.event_time DESC
     `;
 
-    const result = await pool.query(query, [req.session.user.id]);
+    const result = await pool.query(query, [req.user.id]);
 
     res.json({
       success: true,
@@ -542,13 +542,13 @@ router.get("/history", requireAuth, async (req, res) => {
 // Customer stats
 router.get("/stats", requireAuth, async (req, res) => {
   try {
-    if (req.session.user.user_type !== "customer") {
+    if (req.user.user_type !== "customer") {
       return res.status(403).json({
         error: "Only customers can access stats",
       });
     }
 
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     // Get booking stats and categories for completed bookings
     const bookingStatsQuery = `
@@ -567,7 +567,7 @@ router.get("/stats", requireAuth, async (req, res) => {
       WHERE customer_id = $1
     `;
 
-    // Get total spent from payments 
+    // Get total spent from payments
     const paymentsQuery = `
       SELECT COALESCE(SUM(amount), 0) as total_from_payments
       FROM payments 
@@ -619,7 +619,7 @@ router.get("/stats", requireAuth, async (req, res) => {
       totalBookings: parseInt(bookingStats.total_bookings),
       upcomingEvents: parseInt(bookingStats.upcoming_events),
       completedEvents: parseInt(bookingStats.completed_events),
-      totalSpent: totalSpent || 0, 
+      totalSpent: totalSpent || 0,
     };
 
     res.json(stats);

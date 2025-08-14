@@ -10,7 +10,7 @@ const router = express.Router();
 // Get customer statistics
 router.get("/stats", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const statsQuery = `
       SELECT 
@@ -91,7 +91,7 @@ router.get("/stats", requireAuth, requireCustomer, async (req, res) => {
 // Get customer bookings
 router.get("/bookings", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const query = `
       SELECT b.*, 
@@ -120,7 +120,7 @@ router.get("/bookings", requireAuth, requireCustomer, async (req, res) => {
     console.error("Error loading bookings:", error);
     res.status(500).json({
       error: "Failed to load bookings",
-      bookings: [], 
+      bookings: [],
     });
   }
 });
@@ -129,7 +129,7 @@ router.get("/bookings", requireAuth, requireCustomer, async (req, res) => {
 router.get("/bookings/:id", requireAuth, requireCustomer, async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const query = `
       SELECT b.*, 
@@ -164,7 +164,7 @@ router.get(
   requireCustomer,
   async (req, res) => {
     try {
-      const customerId = req.session.user.id;
+      const customerId = req.user.id;
 
       const query = `
       SELECT b.*, 
@@ -192,7 +192,7 @@ router.get(
 // Get event history
 router.get("/event-history", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const query = `
       SELECT b.*, 
@@ -219,7 +219,7 @@ router.get("/event-history", requireAuth, requireCustomer, async (req, res) => {
 // Get notifications
 router.get("/notifications", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const query = `
       SELECT id, title, message, type, is_read as read, created_at
@@ -240,7 +240,7 @@ router.get("/notifications", requireAuth, requireCustomer, async (req, res) => {
 // Get recent activity
 router.get("/activity", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const query = `
       SELECT title, description, type, created_at
@@ -265,7 +265,7 @@ router.post(
   requireCustomer,
   async (req, res) => {
     try {
-      const customerId = req.session.user.id;
+      const customerId = req.user.id;
 
       const query = `
       UPDATE notifications 
@@ -292,7 +292,7 @@ router.delete(
   requireCustomer,
   async (req, res) => {
     try {
-      const customerId = req.session.user.id;
+      const customerId = req.user.id;
 
       const query = `
       UPDATE notifications 
@@ -324,7 +324,7 @@ router.post(
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const userId = req.session.user.id;
+      const userId = req.user.id;
       const imageBuffer = req.file.buffer;
       const mimeType = req.file.mimetype;
 
@@ -342,9 +342,8 @@ router.post(
       }
 
       // Update the session with the new data
-      req.session.user.profile_image_data = result.rows[0].profile_image_data;
-      req.session.user.profile_image_mime_type =
-        result.rows[0].profile_image_mime_type;
+      req.user.profile_image_data = result.rows[0].profile_image_data;
+      req.user.profile_image_mime_type = result.rows[0].profile_image_mime_type;
 
       res.json({
         message: "Profile image updated successfully",
@@ -361,7 +360,7 @@ router.post(
 // Get Profile Image
 router.get("/profile/image", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.user.id;
 
     const query = `
       SELECT profile_image_data, profile_image_mime_type FROM users WHERE id = $1
@@ -385,7 +384,7 @@ router.get("/profile/image", requireAuth, requireCustomer, async (req, res) => {
 // Update customer profile
 router.put("/profile", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     const profileData = req.body;
 
     if (profileData.email && !User.isValidEmail(profileData.email)) {
@@ -406,8 +405,8 @@ router.put("/profile", requireAuth, requireCustomer, async (req, res) => {
     }
 
     // Update session with new user data
-    req.session.user = {
-      ...req.session.user,
+    req.user = {
+      ...req.user,
       ...updatedUser,
     };
 
@@ -423,7 +422,7 @@ router.put("/profile", requireAuth, requireCustomer, async (req, res) => {
 // Get customer's reviews
 router.get("/reviews", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
 
     const query = `
       SELECT r.*, 
@@ -461,7 +460,7 @@ router.get(
   async (req, res) => {
     try {
       const bookingId = req.params.bookingId;
-      const customerId = req.session.user.id;
+      const customerId = req.user.id;
 
       const query = `
       SELECT r.*, 
@@ -496,7 +495,7 @@ router.get(
 // New review
 router.post("/reviews", requireAuth, requireCustomer, async (req, res) => {
   try {
-    const customerId = req.session.user.id;
+    const customerId = req.user.id;
     const { booking_id, rating, comment } = req.body;
 
     if (!booking_id || !rating || !comment) {
@@ -552,7 +551,7 @@ router.post("/reviews", requireAuth, requireCustomer, async (req, res) => {
       });
     }
 
-    // Create review 
+    // Create review
     const insertQuery = `
       INSERT INTO reviews (booking_id, customer_id, planner_id, rating, comment, created_at)
       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
@@ -588,7 +587,7 @@ router.put(
   async (req, res) => {
     try {
       const bookingId = req.params.bookingId;
-      const customerId = req.session.user.id;
+      const customerId = req.user.id;
       const { rating, comment } = req.body;
 
       // Validate input
@@ -656,7 +655,7 @@ router.delete(
   async (req, res) => {
     try {
       const bookingId = req.params.bookingId;
-      const customerId = req.session.user.id;
+      const customerId = req.user.id;
 
       // Check if review exists and belongs to customer
       const checkQuery = `

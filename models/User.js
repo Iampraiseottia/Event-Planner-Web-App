@@ -278,7 +278,6 @@ class User {
     return phoneRegex.test(cleanPhone);
   }
 
-
   static async updatePlannerProfile(userId, plannerData) {
     const {
       business_name,

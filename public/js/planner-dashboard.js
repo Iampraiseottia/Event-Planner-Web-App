@@ -286,7 +286,7 @@ function showDocumentPreview(file, docType) {
   }
 }
 
-// Upload document 
+// Upload document
 async function uploadDocument(file, docType) {
   const formData = new FormData();
   const fieldName = docType === "idCard" ? "idCard" : "birthCertificate";
@@ -338,7 +338,10 @@ async function uploadDocument(file, docType) {
         }
       }
 
-      console.log("Document flags updated:", { hasIdCard, hasBirthCertificate });
+      console.log("Document flags updated:", {
+        hasIdCard,
+        hasBirthCertificate,
+      });
 
       // Check profile completion
       if (hasIdCard && hasBirthCertificate) {
@@ -3656,7 +3659,7 @@ async function refreshProfileCompletionStatus() {
 async function loadProfile() {
   try {
     console.log("=== LOADING PROFILE DATA ===");
-    
+
     const response = await fetch("/api/planner/profile", {
       method: "GET",
       credentials: "include",
@@ -3665,7 +3668,7 @@ async function loadProfile() {
     if (response.ok) {
       const data = await response.json();
       console.log("Profile data received:", data);
-      
+
       currentPlanner = data.planner;
 
       if (currentPlanner) {
@@ -3683,19 +3686,18 @@ async function loadProfile() {
         // Set global flags based on database status
         hasIdCard = data.planner.has_id_card || false;
         hasBirthCertificate = data.planner.has_birth_certificate || false;
-        
+
         console.log("Document flags set:", {
           hasIdCard,
-          hasBirthCertificate
+          hasBirthCertificate,
         });
       }
 
       populateProfileForm();
-      
+
       setTimeout(() => {
         loadExistingDocuments();
       }, 100);
-      
     } else {
       console.error("Failed to load profile:", response.status);
     }
@@ -3737,7 +3739,7 @@ async function loadExistingDocuments() {
   if (currentPlanner.has_birth_certificate) {
     try {
       console.log("Attempting to load birth certificate...");
-      
+
       const response = await fetch("/api/planner/profile/birth-certificate", {
         credentials: "include",
       });
@@ -3752,7 +3754,11 @@ async function loadExistingDocuments() {
         console.log("Birth certificate loaded successfully");
       } else {
         const errorText = await response.text();
-        console.error("Failed to load birth certificate:", response.status, errorText);
+        console.error(
+          "Failed to load birth certificate:",
+          response.status,
+          errorText
+        );
       }
     } catch (error) {
       console.error("Error loading birth certificate:", error);
@@ -3762,12 +3768,11 @@ async function loadExistingDocuments() {
   }
 }
 
-
 // Show existing document
 function showExistingDocument(url, docType, mimeType) {
   console.log(`=== SHOWING EXISTING DOCUMENT: ${docType} ===`);
   console.log("MIME Type:", mimeType);
-  
+
   const placeholder = document.getElementById(`${docType}Placeholder`);
   const preview = document.getElementById(`${docType}Preview`);
   const image = document.getElementById(`${docType}Image`);
@@ -3777,13 +3782,13 @@ function showExistingDocument(url, docType, mimeType) {
   if (!placeholder || !preview) {
     console.error(`Missing elements for ${docType}:`, {
       placeholder: !!placeholder,
-      preview: !!preview
+      preview: !!preview,
     });
     return;
   }
 
   console.log(`Setting up preview for ${docType}`);
-  
+
   placeholder.style.display = "none";
   preview.style.display = "flex";
 
@@ -3804,14 +3809,14 @@ function showExistingDocument(url, docType, mimeType) {
     if (image) {
       image.style.display = "block";
       image.src = url;
-      
-      image.onerror = function() {
+
+      image.onerror = function () {
         console.error(`Failed to load image for ${docType}`);
         placeholder.style.display = "block";
         preview.style.display = "none";
       };
-      
-      image.onload = function() {
+
+      image.onload = function () {
         console.log(`Image loaded successfully for ${docType}`);
       };
     }

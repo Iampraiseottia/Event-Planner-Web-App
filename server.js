@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const path = require("path");
 require("dotenv").config();
 
@@ -31,20 +31,8 @@ app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secret-key",
-    resave: false,
-    saveUninitialized: false,
-    name: 'session_id',
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    },
-  })
-);
+// Cookie parser middleware
+app.use(cookieParser());
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
@@ -52,27 +40,29 @@ app.use(express.static(path.join(__dirname, "public")));
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
-app.use('/api/customer', require('./routes/customer'));
-app.use('/api/planner', require('./routes/planner'));
+app.use("/api/customer", require("./routes/customer"));
+app.use("/api/planner", require("./routes/planner"));
 
 // Catch-all route for frontend files
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "html", "index.html"));
 });
 
-
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "html", "login.html"));
 });
 
-app.get('/customer-dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'customer-dashboard.html'));
+app.get("/customer-dashboard", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "html", "customer-dashboard.html")
+  );
 });
 
-app.get('/planner-dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'planner-dashboard.html'));
+app.get("/planner-dashboard", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "html", "planner-dashboard.html")
+  );
 });
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {
